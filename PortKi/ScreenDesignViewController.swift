@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  ScreenDesignViewController.swift
 //  PortKi
 //
 //  Created by John Gallaugher on 5/14/19.
@@ -8,13 +8,13 @@
 
 import UIKit
 
-class ScreenListViewController: UIViewController {
+class ScreenDesignViewController: UIViewController {
 
+    var element: Element!
+    var elements: Elements!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
     }
 
-
 }
-
