@@ -88,13 +88,14 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         newField.becomeFirstResponder()
     }
     
-    func sizeOfString (string: String, constrainedToWidth width: Double) -> CGSize {
-        let attributes = [NSAttributedString.Key.font:self,]
-        let attString = NSAttributedString(string: string,attributes: attributes)
-        let framesetter = CTFramesetterCreateWithAttributedString(attString)
-        return CTFramesetterSuggestFrameSizeWithConstraints(framesetter, CFRange(location: 0,length: 0), nil, CGSize(width: width, height: Double.infinity), nil)
-    }
+    //    func sizeOfString (string: String, constrainedToWidth width: Double) -> CGSize {
+    //        let attributes = [NSAttributedString.Key.font:self,]
+    //        let attString = NSAttributedString(string: string,attributes: attributes)
+    //        let framesetter = CTFramesetterCreateWithAttributedString(attString)
+    //        return CTFramesetterSuggestFrameSizeWithConstraints(framesetter, CFRange(location: 0,length: 0), nil, CGSize(width: width, height: Double.infinity), nil)
+    //    }
     
+    // Allows text field to be moved via click & drag
     func addGestureToField() -> UIPanGestureRecognizer {
         var panGesture = UIPanGestureRecognizer()
         panGesture = UIPanGestureRecognizer(target: self, action: #selector(draggedView(_:)))
@@ -107,7 +108,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             destination.delegate = self
             destination.selectedFont = fieldCollection[selectedTextBlockIndex].font
         } else {
-            print("ERROR: Should not have arrived in the else in prepareForSegue")
+            print("😡 ERROR: Should not have arrived in the else in prepareForSegue")
         }
     }
     
@@ -126,9 +127,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     
     // event handler when a field(view) is dragged
     @objc func draggedView(_ sender:UIPanGestureRecognizer){
-        
         if (sender.state == UIGestureRecognizer.State.began) {
-            
             sender.view!.becomeFirstResponder()
             let selectedView = sender.view as! UITextField
             selectedTextBlockIndex = fieldCollection.firstIndex(of: selectedView)!
@@ -162,15 +161,22 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         tableView.reloadData()
     }
     
+    // Click the "Two As and a pencil" bar button in the navigation controller
     @IBAction func editStylePressed(_ sender: UIBarButtonItem) {
         fieldCollection[selectedTextBlockIndex].resignFirstResponder()
+    }
+    
+    @IBAction func cancelButtonPressed(_ sender: UIBarButtonItem) {
+        
+    }
+    
+    @IBAction func saveButtonPressed(_ sender: Any) {
     }
 }
 
 class PaddedTextField: UITextField {
     let padding = UIEdgeInsets(top: 0, left: 7, bottom: 0, right: 8)
     let noPadding = UIEdgeInsets(top: 4, left: 0, bottom: 0, right: 0)
-    
     override open func textRect(forBounds bounds: CGRect) -> CGRect {
         if self.borderStyle == .none {
             let content = bounds.inset(by: padding)
@@ -216,7 +222,6 @@ extension ScreenDesignViewController: UITableViewDataSource, UITableViewDelegate
             let cell = tableView.dequeueReusableCell(withIdentifier: ScreenCells.size.rawValue, for: indexPath) as! SizeTableViewCell
             cell.delegate = self
             cell.configureSizeCell(size: Int(textBlocks[selectedTextBlockIndex].fontSize))
-            
             fieldCollection[selectedTextBlockIndex].font = fieldCollection[selectedTextBlockIndex].font?.withSize(CGFloat(textBlocks[selectedTextBlockIndex].fontSize))
             fieldCollection[selectedTextBlockIndex].adjustHeight()
             return cell
@@ -226,19 +231,20 @@ extension ScreenDesignViewController: UITableViewDataSource, UITableViewDelegate
             cell.configureColorCell(textBlock: textBlocks[selectedTextBlockIndex])
             return cell
         default:
-            print("HEY THIS SHOULD NOT HAVE OCCURRED *** ERROR ***")
+            print("😡 ERROR: unexpected case in cellForRowAt")
             return UITableViewCell()
         }
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         if indexPath.row == 3 {
-            return 70
+            return 96 // hard coded, not the best practice :(
         } else {
             return 44
         }
     }
     
+    // Clicking the fonts cell (the only one with a disclosure icon) segues to a list of fonts
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if cells[indexPath.row] == ScreenCells.font {
             performSegue(withIdentifier: "ShowFonts", sender: nil)
@@ -246,40 +252,11 @@ extension ScreenDesignViewController: UITableViewDataSource, UITableViewDelegate
     }
 }
 
-// Created protocol to handle clicks within custom cells
-extension ScreenDesignViewController: AlignmentCellDelegate, ColorCellDelegate {
-    func changeColorSelected(slider: ColorSlider, textColorButton: UIButton, textBackgroundButton: UIButton) {
-        let color = slider.color
-        print("slider.color is = \(color)")
-        if textColorSelected {
-            textColorButton.backgroundColor = color
-            textBlocks[selectedTextBlockIndex].textColor = color
-            fieldCollection[selectedTextBlockIndex].textColor = color
-        } else {
-            textBackgroundButton.backgroundColor = color
-            textBlocks[selectedTextBlockIndex].backgroundColor = color
-            fieldCollection[selectedTextBlockIndex].backgroundColor = color
-        }
-        
-    }
-    
-    func setSelectedFrame(sender: UIButton, textColorSelected: Bool, textColorFrame: UIView, textBackgroundFrame: UIView) {
-        print("**** textColorSelected pressed *** and it equals \(textColorSelected)")
-        if textColorSelected {
-            textColorFrame.layer.borderWidth = 1.0
-            textBackgroundFrame.layer.borderWidth = 0.0
-        } else {
-            textColorFrame.layer.borderWidth = 0.0
-            textBackgroundFrame.layer.borderWidth = 1.0
-        }
-        self.textColorSelected = textColorSelected
-    }
+// Custom protocols handle clicks within custom cells
+extension ScreenDesignViewController: AlignmentCellDelegate, SizeCellDelegate, ColorCellDelegate {
     
     func alignmentSegmentSelected(selectedSegment: Int) {
-        print("*** HEY, you pressed alignment segment # \(selectedSegment)")
         textBlocks[selectedTextBlockIndex].alignment = selectedSegment
-        print("selectedTextBlockIndex in alignmentSegmentSelected = \(selectedSegment)")
-        print("textBlocks[selectedTextBlockIndex].alignment in alignmentSegmentSelected = \(textBlocks[selectedTextBlockIndex].alignment)")
         switch selectedSegment {
         case 0: // left
             fieldCollection[selectedTextBlockIndex].textAlignment = NSTextAlignment.left
@@ -288,15 +265,14 @@ extension ScreenDesignViewController: AlignmentCellDelegate, ColorCellDelegate {
         case 2: // right
             fieldCollection[selectedTextBlockIndex].textAlignment = NSTextAlignment.right
         default:
-            print("😡 ERROR: Should not have occurred!")
+            print("😡 ERROR: unexpected case in alignmentSegmentSelected!")
         }
     }
     
     func styleButtonSelected(_ sender: ToggleButton) {
-        print("*** HEY, you pressed buttton tagged \(sender.tag)")
         sender.isSelected = !sender.isSelected
         switch sender.tag {
-        case 0:
+        case 0: // bold
             textBlocks[selectedTextBlockIndex].isBold = sender.isSelected
             if sender.isSelected {
                 fieldCollection[selectedTextBlockIndex].font = fieldCollection[selectedTextBlockIndex].font?.setBoldFnc()
@@ -305,7 +281,7 @@ extension ScreenDesignViewController: AlignmentCellDelegate, ColorCellDelegate {
                 fieldCollection[selectedTextBlockIndex].font = fieldCollection[selectedTextBlockIndex].font?.toggleBoldFnc()
                 sender.configureButtonState(state: .normal)
             }
-        case 1:
+        case 1: // italics
             textBlocks[selectedTextBlockIndex].isItalic = sender.isSelected
             if sender.isSelected {
                 fieldCollection[selectedTextBlockIndex].font = fieldCollection[selectedTextBlockIndex].font?.setItalicFnc()
@@ -314,7 +290,7 @@ extension ScreenDesignViewController: AlignmentCellDelegate, ColorCellDelegate {
                 fieldCollection[selectedTextBlockIndex].font = fieldCollection[selectedTextBlockIndex].font?.deleteItalicFont()
                 sender.configureButtonState(state: .normal)
             }
-        case 2:
+        case 2: // underline
             textBlocks[selectedTextBlockIndex].isUnderlined = sender.isSelected
             if sender.isSelected {
                 sender.configureButtonState(state: .selected)
@@ -331,24 +307,47 @@ extension ScreenDesignViewController: AlignmentCellDelegate, ColorCellDelegate {
                 sender.configureButtonState(state: .normal)
             }
         default:
-            print("😡 ERROR: styleButton func hit a case outside of cases accounted for")
+            print("😡 ERROR: unexpected case in styleButtonSelected.")
         }
     }
-}
-
-extension ScreenDesignViewController: PassFontDelegate {
     
-    func getSelectedFont(selectedFont: UIFont) {
-        textBlocks[selectedTextBlockIndex].font = selectedFont
-        fieldCollection[selectedTextBlockIndex].font = selectedFont
-        tableView.reloadData()
-    }
-}
-
-extension ScreenDesignViewController: SizeCellDelegate {
     func fontSizeStepperPressed(_ newFontSize: Int) {
         textBlocks[selectedTextBlockIndex].fontSize = CGFloat(newFontSize)
         fieldCollection[selectedTextBlockIndex].font = fieldCollection[selectedTextBlockIndex].font?.withSize(CGFloat(newFontSize))
+        tableView.reloadData()
+    }
+    
+    func changeColorSelected(slider: ColorSlider, textColorButton: UIButton, textBackgroundButton: UIButton) {
+        let color = slider.color
+        if textColorSelected {
+            textColorButton.backgroundColor = color
+            textBlocks[selectedTextBlockIndex].textColor = color
+            fieldCollection[selectedTextBlockIndex].textColor = color
+        } else {
+            textBackgroundButton.backgroundColor = color
+            textBlocks[selectedTextBlockIndex].backgroundColor = color
+            fieldCollection[selectedTextBlockIndex].backgroundColor = color
+        }
+    }
+    
+    // Puts a border around color indicator to show which is selected: text font or text background
+    func setSelectedFrame(sender: UIButton, textColorSelected: Bool, textColorFrame: UIView, textBackgroundFrame: UIView) {
+        if textColorSelected {
+            textColorFrame.layer.borderWidth = 1.0
+            textBackgroundFrame.layer.borderWidth = 0.0
+        } else {
+            textColorFrame.layer.borderWidth = 0.0
+            textBackgroundFrame.layer.borderWidth = 1.0
+        }
+        self.textColorSelected = textColorSelected
+    }
+}
+
+// Takes advantage of protocol user-selected font to be passed from the FontListViewController back to this view controller.
+extension ScreenDesignViewController: PassFontDelegate {
+    func getSelectedFont(selectedFont: UIFont) {
+        textBlocks[selectedTextBlockIndex].font = selectedFont
+        fieldCollection[selectedTextBlockIndex].font = selectedFont
         tableView.reloadData()
     }
 }
