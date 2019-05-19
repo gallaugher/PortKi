@@ -15,6 +15,8 @@ class ColorTableViewCell: UITableViewCell, ColorSliderPreviewing {
     @IBOutlet weak var textBackgroundFrame: UIView!
     @IBOutlet weak var textBackgroundButton: UIButton!
     @IBOutlet weak var colorHexValueField: UITextField!
+    @IBOutlet weak var screenColorFrame: UIView!
+    @IBOutlet weak var screenColorButton: UIButton!
     
     weak var delegate: ColorCellDelegate?
     
@@ -40,6 +42,8 @@ class ColorTableViewCell: UITableViewCell, ColorSliderPreviewing {
         textColorButton.layer.borderColor = UIColor.lightGray.cgColor
         textBackgroundButton.layer.borderWidth = 0.5
         textBackgroundButton.layer.borderColor = UIColor.lightGray.cgColor
+        screenColorButton.layer.borderWidth = 0.5
+        screenColorButton.layer.borderColor = UIColor.lightGray.cgColor
     }
     
     func configureSlider() {
