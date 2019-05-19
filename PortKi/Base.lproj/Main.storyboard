@@ -211,14 +211,14 @@
             <objects>
                 <viewController id="HMW-iS-5B3" customClass="ScreenDesignViewController" customModule="PortKi" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="3bR-vg-XDD">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="1000"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="596"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="epc-Hx-3UJ">
-                                <rect key="frame" x="0.0" y="64" width="320" height="936"/>
+                                <rect key="frame" x="0.0" y="64" width="320" height="528"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="GhD-Ac-jfq" userLabel="Content View">
-                                        <rect key="frame" x="0.0" y="0.0" width="320" height="539"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="320" height="532"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rwN-oy-nxB">
                                                 <rect key="frame" x="0.0" y="0.0" width="320" height="240"/>
@@ -228,6 +228,17 @@
                                                     <constraint firstAttribute="width" constant="320" id="SGQ-bc-8i3"/>
                                                 </constraints>
                                             </view>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="wOP-vr-vx6">
+                                                <rect key="frame" x="8" y="243" width="78" height="30"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="30" id="2b3-Xd-IIk"/>
+                                                    <constraint firstAttribute="width" constant="78" id="xv4-XC-4DC"/>
+                                                </constraints>
+                                                <state key="normal" title="Delete Text"/>
+                                                <connections>
+                                                    <action selector="deleteTextPressed:" destination="HMW-iS-5B3" eventType="touchUpInside" id="j1v-8F-Rx2"/>
+                                                </connections>
+                                            </button>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GzW-4C-Xzh">
                                                 <rect key="frame" x="251" y="243" width="61" height="30"/>
                                                 <constraints>
@@ -238,21 +249,11 @@
                                                     <action selector="addFieldPressed:" destination="HMW-iS-5B3" eventType="touchUpInside" id="JoR-JD-y0P"/>
                                                 </connections>
                                             </button>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Qk7-CS-khn">
-                                                <rect key="frame" x="8" y="243" width="78" height="30"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="height" constant="30" id="EjS-4Q-cld"/>
-                                                </constraints>
-                                                <state key="normal" title="Delete Text"/>
-                                                <connections>
-                                                    <action selector="deleteFieldPressed:" destination="HMW-iS-5B3" eventType="touchUpInside" id="FlD-cZ-Qro"/>
-                                                </connections>
-                                            </button>
                                             <tableView clipsSubviews="YES" contentMode="scaleToFill" bounces="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" style="plain" separatorStyle="none" allowsSelectionDuringEditing="YES" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="0nz-jn-N3S">
-                                                <rect key="frame" x="0.0" y="276" width="320" height="263"/>
+                                                <rect key="frame" x="0.0" y="276" width="320" height="255"/>
                                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
-                                                    <constraint firstAttribute="height" constant="263" id="X8y-XO-gOl"/>
+                                                    <constraint firstAttribute="height" constant="255" id="X8y-XO-gOl"/>
                                                 </constraints>
                                                 <prototypes>
                                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="AlignmentCell" id="3Sv-eI-ZVu" customClass="AlignmentTableViewCell" customModule="PortKi" customModuleProvider="target">
@@ -530,12 +531,12 @@
                                                                     <nil key="textColor"/>
                                                                     <nil key="highlightedColor"/>
                                                                 </label>
-                                                                <textField opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="top" text="0c000000" borderStyle="roundedRect" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="wpN-wc-p8a">
+                                                                <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="top" text="0c000000" borderStyle="roundedRect" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="wpN-wc-p8a">
                                                                     <rect key="frame" x="89" y="68" width="90" height="30"/>
                                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                     <nil key="textColor"/>
                                                                     <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                                                    <textInputTraits key="textInputTraits"/>
+                                                                    <textInputTraits key="textInputTraits" returnKeyType="done" enablesReturnKeyAutomatically="YES"/>
                                                                 </textField>
                                                             </subviews>
                                                             <constraints>
@@ -546,6 +547,7 @@
                                                             </constraints>
                                                         </tableViewCellContentView>
                                                         <connections>
+                                                            <outlet property="colorHexValueField" destination="wpN-wc-p8a" id="RSK-Nn-8wL"/>
                                                             <outlet property="textBackgroundButton" destination="g8E-CN-Q0g" id="Ax7-BN-MOZ"/>
                                                             <outlet property="textBackgroundFrame" destination="Ax6-7X-pMx" id="rT7-br-NSA"/>
                                                             <outlet property="textColorButton" destination="fe2-4c-yhe" id="amO-O7-Mmg"/>
@@ -558,15 +560,15 @@
                                         <color key="backgroundColor" red="0.92143100499999997" green="0.92145264149999995" blue="0.92144101860000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <constraints>
                                             <constraint firstAttribute="trailing" secondItem="0nz-jn-N3S" secondAttribute="trailing" id="0Sj-Qx-VSb"/>
-                                            <constraint firstItem="Qk7-CS-khn" firstAttribute="top" secondItem="rwN-oy-nxB" secondAttribute="bottom" constant="3" id="6Mw-0M-bFm"/>
                                             <constraint firstItem="rwN-oy-nxB" firstAttribute="top" secondItem="GhD-Ac-jfq" secondAttribute="top" id="GbW-sN-CJx"/>
                                             <constraint firstAttribute="trailing" secondItem="GzW-4C-Xzh" secondAttribute="trailing" constant="8" id="PSg-YB-ya4"/>
                                             <constraint firstItem="0nz-jn-N3S" firstAttribute="leading" secondItem="GhD-Ac-jfq" secondAttribute="leading" id="SVr-oP-nPs"/>
                                             <constraint firstItem="rwN-oy-nxB" firstAttribute="centerX" secondItem="GhD-Ac-jfq" secondAttribute="centerX" id="TpO-Ko-1Lu"/>
-                                            <constraint firstAttribute="bottom" secondItem="0nz-jn-N3S" secondAttribute="bottom" id="YFB-xi-Pi2"/>
+                                            <constraint firstAttribute="bottom" secondItem="0nz-jn-N3S" secondAttribute="bottom" constant="1" id="YFB-xi-Pi2"/>
+                                            <constraint firstItem="wOP-vr-vx6" firstAttribute="top" secondItem="rwN-oy-nxB" secondAttribute="bottom" constant="3" id="aHd-3R-LsD"/>
                                             <constraint firstItem="GzW-4C-Xzh" firstAttribute="top" secondItem="rwN-oy-nxB" secondAttribute="bottom" constant="3" id="pId-1A-WcR"/>
-                                            <constraint firstItem="Qk7-CS-khn" firstAttribute="leading" secondItem="GhD-Ac-jfq" secondAttribute="leading" constant="8" id="qDa-kC-rT7"/>
                                             <constraint firstItem="0nz-jn-N3S" firstAttribute="top" secondItem="GzW-4C-Xzh" secondAttribute="bottom" constant="3" id="sHU-NO-Whh"/>
+                                            <constraint firstItem="wOP-vr-vx6" firstAttribute="leading" secondItem="GhD-Ac-jfq" secondAttribute="leading" constant="8" id="xGC-Lm-MoC"/>
                                         </constraints>
                                     </view>
                                 </subviews>
@@ -585,7 +587,7 @@
                             <constraint firstItem="epc-Hx-3UJ" firstAttribute="leading" secondItem="EWW-fu-Efb" secondAttribute="leading" id="Cwk-4e-VMM"/>
                             <constraint firstItem="epc-Hx-3UJ" firstAttribute="trailing" secondItem="EWW-fu-Efb" secondAttribute="trailing" id="XNS-YT-nxR"/>
                             <constraint firstItem="epc-Hx-3UJ" firstAttribute="top" secondItem="EWW-fu-Efb" secondAttribute="top" id="bf2-Oh-yrd"/>
-                            <constraint firstAttribute="bottom" secondItem="epc-Hx-3UJ" secondAttribute="bottom" id="eyi-Mo-b5b"/>
+                            <constraint firstAttribute="bottom" secondItem="epc-Hx-3UJ" secondAttribute="bottom" constant="4" id="eyi-Mo-b5b"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="EWW-fu-Efb"/>
                     </view>
@@ -612,11 +614,12 @@
                             </barButtonItem>
                         </rightBarButtonItems>
                     </navigationItem>
-                    <size key="freeformSize" width="320" height="1000"/>
+                    <size key="freeformSize" width="320" height="596"/>
                     <connections>
-                        <outlet property="deleteTextButton" destination="Qk7-CS-khn" id="loU-DD-tHU"/>
+                        <outlet property="deleteTextButton" destination="wOP-vr-vx6" id="S5b-sd-EeF"/>
                         <outlet property="editStyleBarButton" destination="grL-pA-Vus" id="Ro0-8P-jUD"/>
                         <outlet property="screenView" destination="rwN-oy-nxB" id="ybv-kw-jfn"/>
+                        <outlet property="scrollView" destination="epc-Hx-3UJ" id="YNM-5i-Frz"/>
                         <outlet property="tableView" destination="0nz-jn-N3S" id="jIT-i2-aeM"/>
                         <segue destination="Eaf-TK-aHj" kind="show" identifier="ShowFonts" id="Bfo-SU-ORc"/>
                     </connections>

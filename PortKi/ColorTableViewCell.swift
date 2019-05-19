@@ -14,6 +14,8 @@ class ColorTableViewCell: UITableViewCell, ColorSliderPreviewing {
     @IBOutlet weak var textColorButton: UIButton!
     @IBOutlet weak var textBackgroundFrame: UIView!
     @IBOutlet weak var textBackgroundButton: UIButton!
+    @IBOutlet weak var colorHexValueField: UITextField!
+    
     weak var delegate: ColorCellDelegate?
     
     func colorChanged(to color: UIColor) {

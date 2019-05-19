@@ -30,6 +30,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var deleteTextButton: UIButton!
     @IBOutlet weak var editStyleBarButton: UIBarButtonItem!
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var scrollView: UIScrollView!
     
     var textColorSelected = true // if not, then textBackground must be selected
     var cells: [ScreenCells]!
@@ -37,9 +38,17 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     var selectedTextBlockIndex = 0
     var element: Element!
     var elements: Elements!
+    var originalScrollViewFrame: CGRect!
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        // sets up observers to alert code when keyboard is shown or hidden
+        let notificationCenter = NotificationCenter.default
+        //        notificationCenter.addObserver(self, selector: #selector(adjustInsetForKeyboard), name: UIResponder.keyboardWillHideNotification, object: nil)
+        //        notificationCenter.addObserver(self, selector: #selector(adjustInsetForKeyboard), name: UIResponder.keyboardWillShowNotification, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        
         tableView.delegate = self
         tableView.dataSource = self
         // hide keyboard if we tap outside of a field
@@ -51,17 +60,31 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         createNewField()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        originalScrollViewFrame = scrollView.frame
+    }
+    
     // Select / deselect text fields
     func textFieldDidBeginEditing(_ textField: UITextField) {
-        textField.borderStyle = .roundedRect
-        selectedTextBlockIndex = fieldCollection.firstIndex(of: textField)!
-        tableView.reloadData()
-        deleteTextButton.isEnabled = true
+        if textField.superview == screenView {
+            textField.borderStyle = .roundedRect
+            selectedTextBlockIndex = fieldCollection.firstIndex(of: textField)!
+            tableView.reloadData()
+            deleteTextButton.isEnabled = true
+        }
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
-        textField.borderStyle = .none
-        deleteTextButton.isEnabled = false
+        if textField.superview == screenView {
+            textField.borderStyle = .none
+            deleteTextButton.isEnabled = false
+        }
+        textField.resignFirstResponder()
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
     }
     
     // UITextField created & added to fieldCollection
@@ -88,12 +111,51 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         newField.becomeFirstResponder()
     }
     
-    //    func sizeOfString (string: String, constrainedToWidth width: Double) -> CGSize {
-    //        let attributes = [NSAttributedString.Key.font:self,]
-    //        let attString = NSAttributedString(string: string,attributes: attributes)
-    //        let framesetter = CTFramesetterCreateWithAttributedString(attString)
-    //        return CTFramesetterSuggestFrameSizeWithConstraints(framesetter, CFRange(location: 0,length: 0), nil, CGSize(width: width, height: Double.infinity), nil)
+    //    @objc func adjustInsetForKeyboard(notification: Notification) {
+    //        guard let keyboardValue = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else { return }
+    //        for field in fieldCollection {
+    //            if field.isFirstResponder {
+    //                return
+    //            }
+    //        }
+    //        let keyboardFrame = keyboardValue.cgRectValue
+    //        let show = (notification.name == UIResponder.keyboardWillShowNotification) ? true : false
+    //        let adjustmentHeight = (keyboardFrame.height + 20) * (show ? 1 : -1)
+    //        scrollView.contentInset.bottom += adjustmentHeight
     //    }
+    
+    @objc func keyboardWillShow(notification:NSNotification){
+        for field in fieldCollection { // make sure you don't shift keyboard for any of the textFields in the screen view
+            if field.isFirstResponder {
+                return
+            }
+        }
+        
+        print("*** scrollView.frame.height = \(scrollView.frame.height)")
+        print("*** scrollView.bounds.height = \(scrollView.bounds.height)")
+        //give room at the bottom of the scroll view, so it doesn't cover up anything the user needs to tap
+        var userInfo = notification.userInfo!
+        var keyboardFrame:CGRect = (userInfo[UIResponder.keyboardFrameEndUserInfoKey] as! NSValue).cgRectValue
+        keyboardFrame = self.view.convert(keyboardFrame, from: nil)
+        
+        let adjustmentHeight = keyboardFrame.height + 20
+        let contentInset:UIEdgeInsets = scrollView.contentInset
+        let offsetPoint = CGPoint(x: 0, y: contentInset.bottom + adjustmentHeight)
+        scrollView.setContentOffset(offsetPoint, animated: true)
+    }
+    
+    @objc func keyboardWillHide(notification:NSNotification){
+        for field in fieldCollection { // make sure you don't shift keyboard for any of the textFields in the screen view
+            if field.isFirstResponder {
+                return
+            }
+        }
+        scrollView.contentInset = UIEdgeInsets.zero
+        let adjustmentHeight = CGFloat(20)
+        scrollView.contentInset.bottom = scrollView.contentInset.bottom - adjustmentHeight
+        originalScrollViewFrame = CGRect(x: originalScrollViewFrame.origin.x, y: originalScrollViewFrame.origin.y, width: originalScrollViewFrame.width, height: originalScrollViewFrame.height + adjustmentHeight)
+        scrollView.frame = originalScrollViewFrame
+    }
     
     // Allows text field to be moved via click & drag
     func addGestureToField() -> UIPanGestureRecognizer {
@@ -144,7 +206,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         createNewField()
     }
     
-    @IBAction func deleteFieldPressed(_ sender: UIButton) {
+    @IBAction func deleteTextPressed(_ sender: UIButton) {
         let fieldRemoved = fieldCollection[selectedTextBlockIndex]
         for subview in screenView.subviews {
             if subview == fieldRemoved {
@@ -155,7 +217,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         textBlocks.remove(at: selectedTextBlockIndex)
         if fieldCollection.count == 0 { // deleted the only row
             createNewField()
-        } else if fieldCollection.count < selectedTextBlockIndex {
+        } else if fieldCollection.count <= selectedTextBlockIndex {
             selectedTextBlockIndex = selectedTextBlockIndex - 1
         } // else unchanged since row that was selectedTextBlockIndex + 1 is now one below, where the deleted row used to be
         tableView.reloadData()
