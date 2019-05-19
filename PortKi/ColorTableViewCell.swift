@@ -17,6 +17,9 @@ class ColorTableViewCell: UITableViewCell, ColorSliderPreviewing {
     @IBOutlet weak var colorHexValueField: UITextField!
     @IBOutlet weak var screenColorFrame: UIView!
     @IBOutlet weak var screenColorButton: UIButton!
+    @IBOutlet var colorButtons: [UIButton]!
+    @IBOutlet var colorButtonFrames: [UIView]!
+    
     
     weak var delegate: ColorCellDelegate?
     
@@ -65,15 +68,12 @@ class ColorTableViewCell: UITableViewCell, ColorSliderPreviewing {
     }
     
     @objc func changedColor(_ slider: ColorSlider) {
-        delegate?.changeColorSelected(slider: slider, textColorButton: textColorButton, textBackgroundButton: textBackgroundButton)
+        delegate?.changeColorSelected(slider: slider, colorButtons: colorButtons)
     }
     
-    @IBAction func textColorPressed(_ sender: UIButton) {
-        delegate?.setSelectedFrame(sender: sender, textColorSelected: true, textColorFrame: textColorFrame, textBackgroundFrame: textBackgroundFrame)
-    }
     
-    @IBAction func textBackgroundPressed(_ sender: UIButton) {
-        delegate?.setSelectedFrame(sender: sender, textColorSelected: false, textColorFrame: textColorFrame, textBackgroundFrame: textBackgroundFrame)
-    }
     
+    @IBAction func colorButtonPressed(_ sender: UIButton) {
+        delegate?.setSelectedFrame(sender: sender, colorButtonFrames: colorButtonFrames, selectedButtonTag: sender.tag)
+    }
 }

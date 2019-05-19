@@ -23,6 +23,6 @@ protocol SizeCellDelegate: class {
 }
 
 protocol ColorCellDelegate: class {
-    func changeColorSelected(slider: ColorSlider, textColorButton: UIButton, textBackgroundButton: UIButton)
-    func setSelectedFrame(sender: UIButton, textColorSelected: Bool, textColorFrame: UIView, textBackgroundFrame: UIView)
+    func changeColorSelected(slider: ColorSlider, colorButtons: [UIButton])
+    func setSelectedFrame(sender: UIButton, colorButtonFrames: [UIView], selectedButtonTag: Int)
 }

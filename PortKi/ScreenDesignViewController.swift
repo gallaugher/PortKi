@@ -32,7 +32,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var scrollView: UIScrollView!
     
-    var textColorSelected = true // if not, then textBackground must be selected
+    var selectedColorButtonTag = 0 // 0 = text, 1 = text background, 2 = screen background
     var cells: [ScreenCells]!
     var textBlocks: [TextBlock] = []
     var selectedTextBlockIndex = 0
@@ -384,29 +384,32 @@ extension ScreenDesignViewController: AlignmentCellDelegate, SizeCellDelegate, C
         tableView.reloadData()
     }
     
-    func changeColorSelected(slider: ColorSlider, textColorButton: UIButton, textBackgroundButton: UIButton) {
+    func changeColorSelected(slider: ColorSlider, colorButtons: [UIButton]) {
         let color = slider.color
-        if textColorSelected {
-            textColorButton.backgroundColor = color
+        switch selectedColorButtonTag {
+        case 0: // text color selected
+            colorButtons[selectedColorButtonTag].backgroundColor = color
             textBlocks[selectedTextBlockIndex].textColor = color
             fieldCollection[selectedTextBlockIndex].textColor = color
-        } else {
-            textBackgroundButton.backgroundColor = color
+        case 1: // text background selected
+            colorButtons[selectedColorButtonTag].backgroundColor = color
             textBlocks[selectedTextBlockIndex].backgroundColor = color
             fieldCollection[selectedTextBlockIndex].backgroundColor = color
+        case 2: // screen color selected
+            colorButtons[selectedColorButtonTag].backgroundColor = color
+            screenView.backgroundColor = color
+        default:
+            print("😡ERROR: Unexpected case in function changeColorSelected")
         }
     }
     
     // Puts a border around color indicator to show which is selected: text font or text background
-    func setSelectedFrame(sender: UIButton, textColorSelected: Bool, textColorFrame: UIView, textBackgroundFrame: UIView) {
-        if textColorSelected {
-            textColorFrame.layer.borderWidth = 1.0
-            textBackgroundFrame.layer.borderWidth = 0.0
-        } else {
-            textColorFrame.layer.borderWidth = 0.0
-            textBackgroundFrame.layer.borderWidth = 1.0
+    func setSelectedFrame(sender: UIButton, colorButtonFrames: [UIView], selectedButtonTag: Int) {
+        selectedColorButtonTag = selectedButtonTag
+        for colorButtonFrame in colorButtonFrames {
+            colorButtonFrame.layer.borderWidth = 0.0
         }
-        self.textColorSelected = textColorSelected
+        colorButtonFrames[selectedButtonTag].layer.borderWidth = 1.0
     }
 }
 
