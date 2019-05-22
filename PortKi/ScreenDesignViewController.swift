@@ -39,11 +39,13 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var textColorButton: UIButton!
     @IBOutlet weak var textBackgroundFrameView: UIView!
     @IBOutlet weak var textBackgroundButton: UIButton!
+    @IBOutlet weak var textBackgroundStaticLabel: UILabel!
     @IBOutlet weak var screenBackgroundFrameView: UIView!
     @IBOutlet weak var screenBackgroundColorButton: UIButton!
     @IBOutlet weak var hexTextField: AllowedCharsTextField!
     @IBOutlet var colorButtonCollection: [UIButton]!
     @IBOutlet var colorFrameViewCollection: [UIView]!
+    @IBOutlet weak var allowTextBackgroundCheckButton: UIButton!
     
     var selectedColorButtonTag = 0 // 0 = text, 1 = text background, 2 = screen background
     var textBlocks: [TextBlock] = []
@@ -72,6 +74,9 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         screenView.backgroundColor = UIColor.white
         createNewField()
         configureColorSlider()
+        // initially disable textBackgroundColor
+        colorButtonCollection[1].isSelected = true // call below will set it to false
+        allowTextBackgroundPressed(allowTextBackgroundCheckButton)
     }
     
     func configureColorSlider() {
@@ -140,6 +145,9 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
                 colorSlider = subview as? ColorSlider
             }
         }
+        if colorSlider == nil { // this is the case if a new field is added
+            configureColorSlider()
+        }
         hexTextField.text = colorButtonCollection[sender.tag].backgroundColor?.hexString
         setSelectedFrame(sender: sender)
     }
@@ -152,9 +160,8 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         }
         colorFrameViewCollection[selectedColorButtonTag].layer.borderWidth = 1.0
         // TODO: Check to see if we should remocve the comments, below
-        // colorSlider.layoutSubviews()
+        colorSlider.layoutSubviews()
     }
-    
     
     // UITextField created & added to fieldCollection
     func createNewField() {
@@ -172,6 +179,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         newField.frame = newFieldRect
         newField.textColor = UIColor.black
         newField.backgroundColor = UIColor.clear
+        hexTextField.text = ""
         screenView.addSubview(newField)
         if fieldCollection == nil {
             fieldCollection = [newField]
@@ -180,6 +188,15 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         }
         newField.delegate = self
         newField.becomeFirstResponder()
+        // initially disable textBackgroundColor
+        colorButtonCollection[1].isSelected = false // call below will set it to false
+        colorButtonCollection[1].isEnabled = false
+        colorButtonCollection[1].backgroundColor = UIColor.clear
+        textBackgroundStaticLabel.textColor = UIColor.gray
+        colorFrameViewCollection[1].layer.borderWidth = 0.0
+        selectedColorButtonTag = 0
+        allowTextBackgroundCheckButton.isSelected = false
+        changeColor(color: newField.textColor!, colorButtons: colorButtonCollection)
     }
     
     // Allows text field to be moved via click & drag
@@ -192,10 +209,16 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     func updateInterfaceForSelectedTextField() {
         // TODO: Fill me in!!
         fontNameLabel.text = fieldCollection[selectedTextBlockIndex].font?.familyName
+        fieldCollection[selectedTextBlockIndex].adjustHeight()
         formatAlignmentCell()
         configureSizeCell()
         updateFieldBasedOnStyleButtons()
         configureColorSlider()
+        if fieldCollection[selectedTextBlockIndex].backgroundColor == UIColor.clear {
+            // initially disable textBackgroundColor
+            colorButtonCollection[1].isSelected = true // call below will set it to false
+            allowTextBackgroundPressed(allowTextBackgroundCheckButton)
+        }
     }
     
     // Select / deselect text fields
@@ -248,16 +271,16 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     }
     
     // func changeColorSelected(slider: ColorSlider, colorButtons: [UIButton], colorHexValueField: UITextField) {
-//    func changeColorSelected() {
-//        let color = colorSlider.color
-//        colorSlider.layoutSubviews()
-//        if hexTextField.text! != "" {
-//            hexTextField.text = color.hexString
-//            changeColor(color: color, colorButtons: colorButtons)
-//        } else {
-//            changeColor(color: UIColor.clear, colorButtons: colorButtons)
-//        }
-//    }
+    //    func changeColorSelected() {
+    //        let color = colorSlider.color
+    //        colorSlider.layoutSubviews()
+    //        if hexTextField.text! != "" {
+    //            hexTextField.text = color.hexString
+    //            changeColor(color: color, colorButtons: colorButtons)
+    //        } else {
+    //            changeColor(color: UIColor.clear, colorButtons: colorButtons)
+    //        }
+    //    }
     
     func changeColorFromHex(hexString: String, slider: ColorSlider, colorButtons: [UIButton]) {
         slider.color = UIColor(hexString: hexString)
@@ -281,17 +304,18 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         default:
             print("😡ERROR: Unexpected case in function changeColor")
         }
+        hexTextField.text = color.hexString
     }
     
     // Puts a border around color indicator to show which is selected: text font or text background
-    func setSelectedFrame(sender: UIButton, colorButtons: [UIButton], colorButtonFrames: [UIView], selectedButtonTag: Int, colorHexValueField: UITextField, slider: ColorSlider) {
-        selectedColorButtonTag = selectedButtonTag
-        for colorButtonFrame in colorButtonFrames {
-            colorButtonFrame.layer.borderWidth = 0.0
-        }
-        colorButtonFrames[selectedButtonTag].layer.borderWidth = 1.0
-        // slider.layoutSubviews()
-    }
+    //    func setSelectedFrame(sender: UIButton, colorButtons: [UIButton], colorButtonFrames: [UIView], selectedButtonTag: Int, colorHexValueField: UITextField, slider: ColorSlider) {
+    //        selectedColorButtonTag = selectedButtonTag
+    //        for colorButtonFrame in colorButtonFrames {
+    //            colorButtonFrame.layer.borderWidth = 0.0
+    //        }
+    //        colorButtonFrames[selectedButtonTag].layer.borderWidth = 1.0
+    //        // slider.layoutSubviews()
+    //    }
     
     func updateFieldBasedOnStyleButtons() {
         if boldButton.isSelected {
@@ -451,13 +475,37 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     
     @IBAction func saveButtonPressed(_ sender: Any) {
     }
+    
+    @IBAction func allowTextBackgroundPressed(_ sender: UIButton) {
+        sender.isSelected = !sender.isSelected
+        textBackgroundButton.isEnabled = sender.isSelected
+        textBackgroundStaticLabel.textColor = (sender.isSelected ? UIColor.black : UIColor.gray)
+        
+        if sender.isSelected {
+            hexTextField.text = ""
+            colorButtonPressed(colorButtonCollection[1])
+        } else {
+            colorButtonCollection[1].backgroundColor = UIColor.white
+            textBlocks[selectedTextBlockIndex].backgroundColor = UIColor.clear
+            fieldCollection[selectedTextBlockIndex].backgroundColor = UIColor.clear
+            colorButtonPressed(colorButtonCollection[0])
+        }
+    }
 }
 
 // Takes advantage of protocol user-selected font to be passed from the FontListViewController back to this view controller.
 extension ScreenDesignViewController: PassFontDelegate {
     func getSelectedFont(selectedFont: UIFont) {
+        let pointSizeBeforeChange = fieldCollection[selectedTextBlockIndex].font?.pointSize ?? CGFloat(17.0)
         textBlocks[selectedTextBlockIndex].font = selectedFont
+        textBlocks[selectedTextBlockIndex].fontSize = CGFloat(pointSizeBeforeChange)
         fieldCollection[selectedTextBlockIndex].font = selectedFont
+        fieldCollection[selectedTextBlockIndex].font = fieldCollection[selectedTextBlockIndex].font?.withSize(CGFloat(pointSizeBeforeChange))
         updateInterfaceForSelectedTextField()
+        
+//        textBlocks[selectedTextBlockIndex].font = selectedFont
+//        fieldCollection[selectedTextBlockIndex].font = selectedFont
+//        textBlocks[selectedTextBlockIndex].font.withSize(pointSizeBeforeChange)
+//        fieldCollection[selectedTextBlockIndex].font!.withSize(pointSizeBeforeChange)
     }
 }
