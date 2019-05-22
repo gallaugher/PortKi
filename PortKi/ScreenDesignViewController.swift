@@ -91,13 +91,14 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         
         configureSlider()
         
-        textColorFrameView.layer.borderWidth = 1.0
-        textColorButton.layer.borderWidth = 0.5
-        textColorButton.layer.borderColor = UIColor.lightGray.cgColor
-        textBackgroundButton.layer.borderWidth = 0.5
-        textBackgroundButton.layer.borderColor = UIColor.lightGray.cgColor
-        screenBackgroundColorButton.layer.borderWidth = 0.5
-        screenBackgroundColorButton.layer.borderColor = UIColor.lightGray.cgColor
+        // I'm hoping these are configured elsewhere
+//        textColorFrameView.layer.borderWidth = 1.0
+//        textColorButton.layer.borderWidth = 0.5
+//        textColorButton.layer.borderColor = UIColor.lightGray.cgColor
+//        textBackgroundButton.layer.borderWidth = 0.5
+//        textBackgroundButton.layer.borderColor = UIColor.lightGray.cgColor
+//        screenBackgroundColorButton.layer.borderWidth = 0.5
+//        screenBackgroundColorButton.layer.borderColor = UIColor.lightGray.cgColor
     }
     
     func configureSlider() {
@@ -194,7 +195,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         newField.delegate = self
         newField.becomeFirstResponder()
         enableTextBackgroundColor(false)
-        changeColor(color: newField.textColor!, colorButtons: colorButtonCollection)
+        changeColor(color: newField.textColor!)
     }
     
     func enableTextBackgroundColor(_ enable: Bool) {
@@ -253,6 +254,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         if textField.superview == screenView {
             textField.borderStyle = .roundedRect
             selectedTextBlockIndex = fieldCollection.firstIndex(of: textField)!
+            print("<><><> preparing to updateInterfaceForSelectedTextField in textFieldDidBeginEditing")
             updateInterfaceForSelectedTextField()
             deleteTextButton.isEnabled = true
         }
@@ -266,6 +268,10 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         
         if textField == hexTextField {
             print("********* YOU ENDED THE HEX COLOR CELL!!!!")
+            let hexString = hexTextField.text!
+            let newColor = UIColor(hexString: hexString)
+            print("*** CHANGING COLOR TO ENTERED HEX STRING \(newColor) ***")
+            changeColor(color: newColor)
         }
         textField.resignFirstResponder()
     }
@@ -312,21 +318,22 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     func changeColorFromHex(hexString: String, slider: ColorSlider, colorButtons: [UIButton]) {
         slider.color = UIColor(hexString: hexString)
         // slider.color = UIColor(hex: hexString) ?? UIColor.clear
-        changeColor(color: slider.color, colorButtons: colorButtons)
+        changeColor(color: slider.color)
     }
     
-    func changeColor(color: UIColor, colorButtons: [UIButton]) {
+    // func changeColor(color: UIColor, colorButtons: [UIButton]) {
+    func changeColor(color: UIColor) {
         switch selectedColorButtonTag {
         case 0: // text color selected
-            colorButtons[selectedColorButtonTag].backgroundColor = color
+            colorButtonCollection[selectedColorButtonTag].backgroundColor = color
             textBlocks[selectedTextBlockIndex].textColor = color
             fieldCollection[selectedTextBlockIndex].textColor = color
         case 1: // text background selected
-            colorButtons[selectedColorButtonTag].backgroundColor = color
+            colorButtonCollection[selectedColorButtonTag].backgroundColor = color
             textBlocks[selectedTextBlockIndex].backgroundColor = color
             fieldCollection[selectedTextBlockIndex].backgroundColor = color
         case 2: // screen color selected
-            colorButtons[selectedColorButtonTag].backgroundColor = color
+            colorButtonCollection[selectedColorButtonTag].backgroundColor = color
             screenView.backgroundColor = color
         default:
             print("😡ERROR: Unexpected case in function changeColor")
