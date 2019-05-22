@@ -46,6 +46,10 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet var colorButtonCollection: [UIButton]!
     @IBOutlet var colorFrameViewCollection: [UIView]!
     @IBOutlet weak var allowTextBackgroundCheckButton: UIButton!
+    @IBOutlet weak var previousButton: UIButton!
+    @IBOutlet weak var nextButton: UIButton!
+    @IBOutlet weak var backButton: UIButton!
+    @IBOutlet weak var backgroundImageView: UIImageView!
     
     var selectedColorButtonTag = 0 // 0 = text, 1 = text background, 2 = screen background
     var textBlocks: [TextBlock] = []
