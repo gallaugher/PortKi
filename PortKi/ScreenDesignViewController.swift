@@ -75,8 +75,9 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         createNewField()
         configureColorSlider()
         // initially disable textBackgroundColor
-        colorButtonCollection[1].isSelected = true // call below will set it to false
-        allowTextBackgroundPressed(allowTextBackgroundCheckButton)
+        enableTextBackgroundColor(false)
+//        colorButtonCollection[1].isSelected = true // call below will set it to false
+//        allowTextBackgroundPressed(allowTextBackgroundCheckButton)
     }
     
     func configureColorSlider() {
@@ -148,7 +149,11 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         if colorSlider == nil { // this is the case if a new field is added
             configureColorSlider()
         }
-        hexTextField.text = colorButtonCollection[sender.tag].backgroundColor?.hexString
+        if selectedColorButtonTag == 1 && colorButtonCollection[sender.tag].backgroundColor == UIColor.clear {
+            hexTextField.text = ""
+        } else {
+            hexTextField.text = colorButtonCollection[sender.tag].backgroundColor?.hexString
+        }
         setSelectedFrame(sender: sender)
     }
     
@@ -179,8 +184,8 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         newField.frame = newFieldRect
         newField.textColor = UIColor.black
         newField.backgroundColor = UIColor.clear
-        hexTextField.text = ""
         screenView.addSubview(newField)
+        selectedColorButtonTag = 0 // New field? Select textColor button
         if fieldCollection == nil {
             fieldCollection = [newField]
         } else {
@@ -188,15 +193,34 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         }
         newField.delegate = self
         newField.becomeFirstResponder()
-        // initially disable textBackgroundColor
-        colorButtonCollection[1].isSelected = false // call below will set it to false
-        colorButtonCollection[1].isEnabled = false
-        colorButtonCollection[1].backgroundColor = UIColor.clear
-        textBackgroundStaticLabel.textColor = UIColor.gray
-        colorFrameViewCollection[1].layer.borderWidth = 0.0
-        selectedColorButtonTag = 0
-        allowTextBackgroundCheckButton.isSelected = false
+        enableTextBackgroundColor(false)
         changeColor(color: newField.textColor!, colorButtons: colorButtonCollection)
+    }
+    
+    func enableTextBackgroundColor(_ enable: Bool) {
+        if enable {
+            // enable textBackgroundColor
+            colorButtonCollection[1].isSelected = true // call below will set it to false
+            colorButtonCollection[1].isEnabled = true
+            // colorButtonCollection[1].backgroundColor = UIColor.clear
+            colorButtonCollection[1].backgroundColor = fieldCollection[selectedTextBlockIndex].backgroundColor
+            textBackgroundStaticLabel.textColor = UIColor.black
+            colorFrameViewCollection[1].layer.borderWidth = 1.0
+            selectedColorButtonTag = 1
+            allowTextBackgroundCheckButton.isSelected = true
+// move setting hex to empty string to confirmed press disabling.
+//            hexTextField.text = ""
+        } else {
+            // initially disable textBackgroundColor
+            colorButtonCollection[1].backgroundColor = UIColor.white
+            colorButtonCollection[1].isSelected = false // call below will set it to false
+            colorButtonCollection[1].isEnabled = false
+            colorButtonCollection[1].backgroundColor = UIColor.clear
+            textBackgroundStaticLabel.textColor = UIColor.gray
+            colorFrameViewCollection[1].layer.borderWidth = 0.0
+            selectedColorButtonTag = 0
+            allowTextBackgroundCheckButton.isSelected = false
+        }
     }
     
     // Allows text field to be moved via click & drag
@@ -216,8 +240,11 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         configureColorSlider()
         if fieldCollection[selectedTextBlockIndex].backgroundColor == UIColor.clear {
             // initially disable textBackgroundColor
-            colorButtonCollection[1].isSelected = true // call below will set it to false
-            allowTextBackgroundPressed(allowTextBackgroundCheckButton)
+            enableTextBackgroundColor(false)
+//            colorButtonCollection[1].isSelected = true // call below will set it to false
+//            allowTextBackgroundPressed(allowTextBackgroundCheckButton)
+        } else {
+            enableTextBackgroundColor(true)
         }
     }
     
@@ -305,6 +332,12 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             print("😡ERROR: Unexpected case in function changeColor")
         }
         hexTextField.text = color.hexString
+        
+        // Remove frames from all color buttons, then add frame to selected color button
+        for colorButtonFrame in colorFrameViewCollection {
+            colorButtonFrame.layer.borderWidth = 0.0
+        }
+        colorFrameViewCollection[selectedColorButtonTag].layer.borderWidth = 1.0
     }
     
     // Puts a border around color indicator to show which is selected: text font or text background
@@ -349,6 +382,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             selectedTextBlockIndex = fieldCollection.firstIndex(of: selectedView)!
             selectedView.bringSubviewToFront(selectedView)
             // TODO: This was where tableView was reloaded. Update UI here based on what was selected.
+            selectedColorButtonTag = 0 // when selecting new field, start w/textColor selected
             updateInterfaceForSelectedTextField()
             deleteTextButton.isEnabled = true
         }
@@ -478,6 +512,8 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     
     @IBAction func allowTextBackgroundPressed(_ sender: UIButton) {
         sender.isSelected = !sender.isSelected
+        enableTextBackgroundColor(sender.isSelected)
+        
         textBackgroundButton.isEnabled = sender.isSelected
         textBackgroundStaticLabel.textColor = (sender.isSelected ? UIColor.black : UIColor.gray)
         
@@ -485,7 +521,6 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             hexTextField.text = ""
             colorButtonPressed(colorButtonCollection[1])
         } else {
-            colorButtonCollection[1].backgroundColor = UIColor.white
             textBlocks[selectedTextBlockIndex].backgroundColor = UIColor.clear
             fieldCollection[selectedTextBlockIndex].backgroundColor = UIColor.clear
             colorButtonPressed(colorButtonCollection[0])
