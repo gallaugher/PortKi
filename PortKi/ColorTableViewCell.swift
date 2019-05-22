@@ -9,7 +9,7 @@
 import UIKit
 import ColorSlider
 
-class ColorTableViewCell: UITableViewCell, ColorSliderPreviewing {
+class ColorTableViewCell: UITableViewCell, ColorSliderPreviewing, UITextFieldDelegate {
     @IBOutlet weak var textColorFrame: UIView!
     @IBOutlet weak var textColorButton: UIButton!
     @IBOutlet weak var textBackgroundFrame: UIView!
@@ -19,11 +19,10 @@ class ColorTableViewCell: UITableViewCell, ColorSliderPreviewing {
     @IBOutlet weak var screenColorButton: UIButton!
     @IBOutlet var colorButtons: [UIButton]!
     @IBOutlet var colorButtonFrames: [UIView]!
-    
-    
     weak var delegate: ColorCellDelegate?
     
     func colorChanged(to color: UIColor) {
+        // changes background color of slider. Not needed. May be able to delete. Check.
         print("nothing needed here")
     }
     
@@ -31,12 +30,14 @@ class ColorTableViewCell: UITableViewCell, ColorSliderPreviewing {
         print("nothing needed here")
     }
     
-    func configureColorCell(textBlock: TextBlock) {
+    func configureColorCell(field: UITextField, screenColor: UIColor) {
         textColorFrame.layer.borderColor = Colors.buttonTint.cgColor
         textBackgroundFrame.layer.borderColor = Colors.buttonTint.cgColor
         
-        textColorButton.backgroundColor = textBlock.textColor
-        textBackgroundButton.backgroundColor = textBlock.backgroundColor
+        textColorButton.backgroundColor = field.textColor
+        textBackgroundButton.backgroundColor = field.backgroundColor
+        
+        screenColorButton.backgroundColor = screenColor
         
         configureSlider()
         
@@ -68,12 +69,37 @@ class ColorTableViewCell: UITableViewCell, ColorSliderPreviewing {
     }
     
     @objc func changedColor(_ slider: ColorSlider) {
-        delegate?.changeColorSelected(slider: slider, colorButtons: colorButtons)
+        colorHexValueField.text = slider.color.hexString
+        delegate?.changeColorSelected(slider: slider, colorButtons: colorButtons, colorHexValueField: colorHexValueField, colorHexValueString: colorHexValueField.text!)
     }
-    
-    
     
     @IBAction func colorButtonPressed(_ sender: UIButton) {
-        delegate?.setSelectedFrame(sender: sender, colorButtonFrames: colorButtonFrames, selectedButtonTag: sender.tag)
+        var slider = ColorSlider()
+        for subview in self.contentView.subviews {
+            if subview is ColorSlider {
+                slider = subview as! ColorSlider
+            }
+        }
+        
+        colorHexValueField.text = colorButtons[sender.tag].backgroundColor?.hexString
+        delegate?.setSelectedFrame(sender: sender, colorButtons: colorButtons, colorButtonFrames: colorButtonFrames, selectedButtonTag: sender.tag, colorHexValueField: colorHexValueField, slider: slider)
     }
+    
+    @IBAction func colorFieldDidChange(_ sender: AllowedCharsTextField) {
+        var slider = ColorSlider()
+        for subview in self.contentView.subviews {
+            if subview is ColorSlider {
+                slider = subview as! ColorSlider
+            }
+        }
+        
+        if sender.text! == "" {
+            slider.color = UIColor.clear
+            delegate?.changeColorSelected(slider: slider, colorButtons: colorButtons, colorHexValueField: colorHexValueField, colorHexValueString: "")
+        } else if sender.text!.count == 6 {
+            slider.color = UIColor.init(hexString: sender.text!)
+            delegate?.changeColorSelected(slider: slider, colorButtons: colorButtons, colorHexValueField: colorHexValueField, colorHexValueString: colorHexValueField.text!)
+        }
+    }
+    
 }

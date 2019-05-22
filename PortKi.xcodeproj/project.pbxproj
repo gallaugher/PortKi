@@ -12,6 +12,12 @@
 		3E11E3B6228B8435001599ED /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3E11E3B4228B8435001599ED /* Main.storyboard */; };
 		3E11E3B8228B8436001599ED /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3E11E3B7228B8436001599ED /* Assets.xcassets */; };
 		3E11E3BB228B8436001599ED /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3E11E3B9228B8436001599ED /* LaunchScreen.storyboard */; };
+		3E185C682293533800A5FB7E /* UIColor+toHex+initHex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E185C672293533800A5FB7E /* UIColor+toHex+initHex.swift */; };
+		3E279ACA229472BA000A20E0 /* ScreenDesignViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E279AC9229472BA000A20E0 /* ScreenDesignViewController.swift */; };
+		3E3CF42922949CF300ACD87B /* UITextField+adjustHeight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E3CF42822949CF300ACD87B /* UITextField+adjustHeight.swift */; };
+		3E3CF42B22949D4900ACD87B /* UIFont+helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E3CF42A22949D4900ACD87B /* UIFont+helpers.swift */; };
+		3E4E3A81229342AE0078DB45 /* UITextField+Characters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4E3A80229342AE0078DB45 /* UITextField+Characters.swift */; };
+		3E4E3A83229345D60078DB45 /* UITextField+limitLength.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4E3A82229345D60078DB45 /* UITextField+limitLength.swift */; };
 		3E89CC7D228B86D40067B0F0 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3E89CC7C228B86D40067B0F0 /* GoogleService-Info.plist */; };
 		3E89CC7F228B88550067B0F0 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC7E228B88550067B0F0 /* Constants.swift */; };
 		3E89CC81228B889E0067B0F0 /* Element.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC80228B889E0067B0F0 /* Element.swift */; };
@@ -21,7 +27,7 @@
 		3E89CC89228B99940067B0F0 /* PageTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC88228B99940067B0F0 /* PageTableViewCell.swift */; };
 		3E89CC8B228B99DA0067B0F0 /* PlusAndDisclosureDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC8A228B99DA0067B0F0 /* PlusAndDisclosureDelegate.swift */; };
 		3E89CC8D228B9DEB0067B0F0 /* UIImage+toData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC8C228B9DEB0067B0F0 /* UIImage+toData.swift */; };
-		3E89CC8F228B9F460067B0F0 /* ScreenDesignViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC8E228B9F460067B0F0 /* ScreenDesignViewController.swift */; };
+		3E89CC8F228B9F460067B0F0 /* ScreenTableDesignViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC8E228B9F460067B0F0 /* ScreenTableDesignViewController.swift */; };
 		3E89CC91228BA0D90067B0F0 /* UIViewController+DialogsAndAlerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC90228BA0D90067B0F0 /* UIViewController+DialogsAndAlerts.swift */; };
 		3E89CC93228C4BCD0067B0F0 /* ScreenDesignCellDelegates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC92228C4BCD0067B0F0 /* ScreenDesignCellDelegates.swift */; };
 		3E89CC95228C4C660067B0F0 /* ToggleButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC94228C4C660067B0F0 /* ToggleButton.swift */; };
@@ -43,6 +49,12 @@
 		3E11E3B7228B8436001599ED /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3E11E3BA228B8436001599ED /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		3E11E3BC228B8436001599ED /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3E185C672293533800A5FB7E /* UIColor+toHex+initHex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+toHex+initHex.swift"; sourceTree = "<group>"; };
+		3E279AC9229472BA000A20E0 /* ScreenDesignViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenDesignViewController.swift; sourceTree = "<group>"; };
+		3E3CF42822949CF300ACD87B /* UITextField+adjustHeight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITextField+adjustHeight.swift"; sourceTree = "<group>"; };
+		3E3CF42A22949D4900ACD87B /* UIFont+helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIFont+helpers.swift"; sourceTree = "<group>"; };
+		3E4E3A80229342AE0078DB45 /* UITextField+Characters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITextField+Characters.swift"; sourceTree = "<group>"; };
+		3E4E3A82229345D60078DB45 /* UITextField+limitLength.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITextField+limitLength.swift"; sourceTree = "<group>"; };
 		3E89CC7C228B86D40067B0F0 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = SOURCE_ROOT; };
 		3E89CC7E228B88550067B0F0 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		3E89CC80228B889E0067B0F0 /* Element.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Element.swift; sourceTree = "<group>"; };
@@ -52,7 +64,7 @@
 		3E89CC88228B99940067B0F0 /* PageTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageTableViewCell.swift; sourceTree = "<group>"; };
 		3E89CC8A228B99DA0067B0F0 /* PlusAndDisclosureDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlusAndDisclosureDelegate.swift; sourceTree = "<group>"; };
 		3E89CC8C228B9DEB0067B0F0 /* UIImage+toData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+toData.swift"; sourceTree = "<group>"; };
-		3E89CC8E228B9F460067B0F0 /* ScreenDesignViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenDesignViewController.swift; sourceTree = "<group>"; };
+		3E89CC8E228B9F460067B0F0 /* ScreenTableDesignViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenTableDesignViewController.swift; sourceTree = "<group>"; };
 		3E89CC90228BA0D90067B0F0 /* UIViewController+DialogsAndAlerts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+DialogsAndAlerts.swift"; sourceTree = "<group>"; };
 		3E89CC92228C4BCD0067B0F0 /* ScreenDesignCellDelegates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenDesignCellDelegates.swift; sourceTree = "<group>"; };
 		3E89CC94228C4C660067B0F0 /* ToggleButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToggleButton.swift; sourceTree = "<group>"; };
@@ -115,7 +127,8 @@
 				3E89CC82228B88CC0067B0F0 /* Elements.swift */,
 				3EA68356228C622900990E61 /* TextBlock.swift */,
 				3E11E3B2228B8435001599ED /* ScreenListViewController.swift */,
-				3E89CC8E228B9F460067B0F0 /* ScreenDesignViewController.swift */,
+				3E279AC9229472BA000A20E0 /* ScreenDesignViewController.swift */,
+				3E89CC8E228B9F460067B0F0 /* ScreenTableDesignViewController.swift */,
 				3E89CC92228C4BCD0067B0F0 /* ScreenDesignCellDelegates.swift */,
 				3E89CC84228B995A0067B0F0 /* HomeTableViewCell.swift */,
 				3E89CC86228B99740067B0F0 /* ButtonTableViewCell.swift */,
@@ -128,8 +141,13 @@
 				3E89CC9E228C511A0067B0F0 /* CheckmarkTableViewCell.swift */,
 				3E89CC8A228B99DA0067B0F0 /* PlusAndDisclosureDelegate.swift */,
 				3E89CC94228C4C660067B0F0 /* ToggleButton.swift */,
+				3E185C672293533800A5FB7E /* UIColor+toHex+initHex.swift */,
+				3E3CF42A22949D4900ACD87B /* UIFont+helpers.swift */,
 				3E89CC8C228B9DEB0067B0F0 /* UIImage+toData.swift */,
 				3E89CC90228BA0D90067B0F0 /* UIViewController+DialogsAndAlerts.swift */,
+				3E4E3A80229342AE0078DB45 /* UITextField+Characters.swift */,
+				3E4E3A82229345D60078DB45 /* UITextField+limitLength.swift */,
+				3E3CF42822949CF300ACD87B /* UITextField+adjustHeight.swift */,
 				3E11E3B4228B8435001599ED /* Main.storyboard */,
 				3E11E3B7228B8436001599ED /* Assets.xcassets */,
 				3E11E3B9228B8436001599ED /* LaunchScreen.storyboard */,
@@ -320,12 +338,17 @@
 			files = (
 				3E89CC9F228C511A0067B0F0 /* CheckmarkTableViewCell.swift in Sources */,
 				3E89CC85228B995A0067B0F0 /* HomeTableViewCell.swift in Sources */,
+				3E279ACA229472BA000A20E0 /* ScreenDesignViewController.swift in Sources */,
 				3EA68357228C622900990E61 /* TextBlock.swift in Sources */,
 				3E11E3B3228B8435001599ED /* ScreenListViewController.swift in Sources */,
 				3E89CC89228B99940067B0F0 /* PageTableViewCell.swift in Sources */,
+				3E4E3A81229342AE0078DB45 /* UITextField+Characters.swift in Sources */,
 				3E11E3B1228B8435001599ED /* AppDelegate.swift in Sources */,
 				3E89CC81228B889E0067B0F0 /* Element.swift in Sources */,
+				3E3CF42B22949D4900ACD87B /* UIFont+helpers.swift in Sources */,
+				3E4E3A83229345D60078DB45 /* UITextField+limitLength.swift in Sources */,
 				3E89CC9D228C50F30067B0F0 /* ColorTableViewCell.swift in Sources */,
+				3E185C682293533800A5FB7E /* UIColor+toHex+initHex.swift in Sources */,
 				3E89CC7F228B88550067B0F0 /* Constants.swift in Sources */,
 				3E89CC97228C4D210067B0F0 /* AlignmentTableViewCell.swift in Sources */,
 				3E89CC93228C4BCD0067B0F0 /* ScreenDesignCellDelegates.swift in Sources */,
@@ -333,10 +356,11 @@
 				3E89CC9B228C50B50067B0F0 /* SizeTableViewCell.swift in Sources */,
 				3E89CC8B228B99DA0067B0F0 /* PlusAndDisclosureDelegate.swift in Sources */,
 				3E89CC87228B99740067B0F0 /* ButtonTableViewCell.swift in Sources */,
-				3E89CC8F228B9F460067B0F0 /* ScreenDesignViewController.swift in Sources */,
+				3E89CC8F228B9F460067B0F0 /* ScreenTableDesignViewController.swift in Sources */,
 				3E89CC99228C4D410067B0F0 /* FontTableViewCell.swift in Sources */,
 				3E89CC8D228B9DEB0067B0F0 /* UIImage+toData.swift in Sources */,
 				3E89CC83228B88CC0067B0F0 /* Elements.swift in Sources */,
+				3E3CF42922949CF300ACD87B /* UITextField+adjustHeight.swift in Sources */,
 				3EA68359228C631900990E61 /* FontListViewController.swift in Sources */,
 				3E89CC91228BA0D90067B0F0 /* UIViewController+DialogsAndAlerts.swift in Sources */,
 			);

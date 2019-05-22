@@ -56,7 +56,6 @@ class ToggleButton: UIButton {
         } else {
             setTitleColor(Colors.buttonTint, for: .normal)
         }
-        // layer.cornerRadius = 5.0
         backgroundColor = UIColor.white
         addTarget(self, action: #selector(ToggleButton.buttonPressed(_:)), for: .touchUpInside)
     }
@@ -66,25 +65,9 @@ class ToggleButton: UIButton {
         buttonBackgroundColor = buttonSelected ?  Colors.buttonTint: UIColor.white
         backgroundColor = buttonBackgroundColor
         self.sendActions(for: .valueChanged)
-        //        if tag == 2 { // It's the underline button
-        //            if isSelected {
-        //            let stringAttributes : [NSAttributedString.Key : Any] = [
-        //                NSAttributedString.Key.font : UIFont.systemFont(ofSize: 14.0),
-        //                NSAttributedString.Key.foregroundColor : buttonTextColor,
-        //                NSAttributedString.Key.backgroundColor : UIColor.white,
-        //                NSAttributedString.Key.underlineStyle : NSUnderlineStyle.single.rawValue
-        //            ]
-        //            let attributeString = NSMutableAttributedString(string: "U",
-        //                                                            attributes: stringAttributes)
-        //            setAttributedTitle(attributeString, for: .normal)
-        //            } else {
-        //
-        //            }
-        //        }
     }
     
     func configureButtonState(state: UIControl.State) {
-        print("*** calling setButtonState ***")
         if state == .selected {
             self.isSelected = true
             buttonTextColor = UIColor.white
