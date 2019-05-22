@@ -67,6 +67,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         // hide keyboard if we tap outside of a field
         let tap = UITapGestureRecognizer(target: self.view, action: #selector(UIView.endEditing(_:)))
         deleteTextButton.isEnabled = false
+        editStyleBarButton.isEnabled = false
         tap.cancelsTouchesInView = false
         self.view.addGestureRecognizer(tap)
         
@@ -257,6 +258,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             print("<><><> preparing to updateInterfaceForSelectedTextField in textFieldDidBeginEditing")
             updateInterfaceForSelectedTextField()
             deleteTextButton.isEnabled = true
+            editStyleBarButton.isEnabled = true
         }
     }
     
@@ -264,6 +266,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         if textField.superview == screenView {
             textField.borderStyle = .none
             deleteTextButton.isEnabled = false
+            editStyleBarButton.isEnabled = false
         }
         
         if textField == hexTextField {
@@ -392,6 +395,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             selectedColorButtonTag = 0 // when selecting new field, start w/textColor selected
             updateInterfaceForSelectedTextField()
             deleteTextButton.isEnabled = true
+            editStyleBarButton.isEnabled = true
         }
         let translation = sender.translation(in: screenView)
         sender.view!.center = CGPoint(x: sender.view!.center.x + translation.x, y: sender.view!.center.y + translation.y)
