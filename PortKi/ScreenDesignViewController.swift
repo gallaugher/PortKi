@@ -17,9 +17,19 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         case underline = 2
     }
     
+    enum BackgroundImageStatus {
+        case unchanged
+        case save
+        case delete
+    }
+    
     @IBOutlet weak var screenView: UIView! // a view with fixed dimensions, same size as the PyPortal's screen
     // The content view is inside the screenView, all interface elements are configured to the contentView, so any shifting of contentView will shift all elements by the same amount.
     @IBOutlet weak var contentView: UIView!
+    
+    @IBOutlet weak var grayBackgroundView: UIView!
+    
+    
     @IBOutlet var fieldCollection: [UITextField]! // Not connected, fields created programmatically
     @IBOutlet weak var deleteTextButton: UIButton!
     @IBOutlet weak var editStyleBarButton: UIBarButtonItem!
@@ -58,10 +68,13 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     var elements: Elements!
     var originalScrollViewFrame: CGRect!
     var colorSlider: ColorSlider!
+    var imagePicker = UIImagePickerController()
+    var backgroundImageStatus: BackgroundImageStatus = .unchanged
     
     override func viewDidLoad() {
         super.viewDidLoad()
         hexTextField.delegate = self
+        imagePicker.delegate = self
         
         // sets up observers to alert code when keyboard is shown or hidden
         let notificationCenter = NotificationCenter.default
@@ -76,7 +89,10 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         self.view.addGestureRecognizer(tap)
         
         // TODO: eventually will update this to whatever is saved
+        backgroundImageView.image = UIImage()
         screenView.backgroundColor = UIColor.white
+        grayBackgroundView.sendSubviewToBack(backgroundImageView)
+        grayBackgroundView.sendSubviewToBack(screenView)
         createNewField()
         configureColorSlider()
         // initially disable textBackgroundColor
@@ -95,19 +111,9 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         screenBackgroundColorButton.backgroundColor = screenView.backgroundColor
         
         configureSlider()
-        
-        // I'm hoping these are configured elsewhere
-//        textColorFrameView.layer.borderWidth = 1.0
-//        textColorButton.layer.borderWidth = 0.5
-//        textColorButton.layer.borderColor = UIColor.lightGray.cgColor
-//        textBackgroundButton.layer.borderWidth = 0.5
-//        textBackgroundButton.layer.borderColor = UIColor.lightGray.cgColor
-//        screenBackgroundColorButton.layer.borderWidth = 0.5
-//        screenBackgroundColorButton.layer.borderColor = UIColor.lightGray.cgColor
     }
     
     func configureSlider() {
-        // TODO: test if bottom is still true
         // Remove the prior slider, if any. If you don't do this, you'll see a buildup of accumulating sliders in the view hierarchy (click debug view hierarcy to see, if you comment out the loop below
         for subview in contentView.subviews {
             if subview is ColorSlider {
@@ -123,7 +129,6 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         colorSlider.frame = colorSliderFrame
         contentView.addSubview(colorSlider)
         colorSlider.addTarget(self, action: #selector(changedColor(_:)), for: .valueChanged)
-        // colorSlider.addTarget(self, action: #selector(changedColor(_: )), for: .valueChanged)
     }
     
     @objc func changedColor(_ colorSlider: ColorSlider) {
@@ -191,6 +196,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         newField.textColor = UIColor.black
         newField.backgroundColor = UIColor.clear
         screenView.addSubview(newField)
+        screenView.bringSubviewToFront(newField)
         selectedColorButtonTag = 0 // New field? Select textColor button
         if fieldCollection == nil {
             fieldCollection = [newField]
@@ -378,6 +384,30 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
+    func cameraOrLibraryAlert() {
+        let alertController = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        let cameraAction = UIAlertAction(title: "Camera", style: .default) { _ in
+            self.accessCamera()
+        }
+        let photoLibraryAction = UIAlertAction(title: "Photo Library", style: .default) { _ in
+            self.accessLibrary()
+        }
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        alertController.addAction(cameraAction)
+        alertController.addAction(photoLibraryAction)
+        alertController.addAction(cancelAction)
+        
+        if backgroundImageView.image!.size.width > 0 { // if there is an image to remove
+            let deleteAction = UIAlertAction(title: "Delete Background", style: .destructive) { _ in
+                self.backgroundImageView.image = UIImage()
+                self.backgroundImageStatus = .delete
+            }
+            alertController.addAction(deleteAction)
+        }
+        
+        present(alertController, animated: true, completion: nil)
+    }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "ShowFonts" { // then tableView cell was clicked
             let destination = segue.destination as! FontListViewController
@@ -395,7 +425,6 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             let selectedView = sender.view as! UITextField
             selectedTextBlockIndex = fieldCollection.firstIndex(of: selectedView)!
             selectedView.bringSubviewToFront(selectedView)
-            // TODO: This was where tableView was reloaded. Update UI here based on what was selected.
             selectedColorButtonTag = 0 // when selecting new field, start w/textColor selected
             updateInterfaceForSelectedTextField()
             deleteTextButton.isEnabled = true
@@ -428,6 +457,11 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     @IBAction func addFieldPressed(_ sender: UIButton) {
         createNewField()
     }
+    
+    @IBAction func addImageButtonPressed(_ sender: UIBarButtonItem) {
+        cameraOrLibraryAlert()
+    }
+    
     
     @IBAction func editStylePressed(_ sender: UIBarButtonItem) {
         fieldCollection[selectedTextBlockIndex].resignFirstResponder()
@@ -552,10 +586,39 @@ extension ScreenDesignViewController: PassFontDelegate {
         fieldCollection[selectedTextBlockIndex].font = selectedFont
         fieldCollection[selectedTextBlockIndex].font = fieldCollection[selectedTextBlockIndex].font?.withSize(CGFloat(pointSizeBeforeChange))
         updateInterfaceForSelectedTextField()
-        
-//        textBlocks[selectedTextBlockIndex].font = selectedFont
-//        fieldCollection[selectedTextBlockIndex].font = selectedFont
-//        textBlocks[selectedTextBlockIndex].font.withSize(pointSizeBeforeChange)
-//        fieldCollection[selectedTextBlockIndex].font!.withSize(pointSizeBeforeChange)
+    }
+}
+
+extension ScreenDesignViewController: UINavigationControllerDelegate, UIImagePickerControllerDelegate {
+    
+    func imagePickerController(_ picker: UIImagePickerController,
+                               didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        // show the selected image in the app's backgroundImageView
+        backgroundImageView.image = (info[UIImagePickerController.InfoKey.originalImage] as! UIImage)
+        element.backgroundImage = backgroundImageView.image! // and store image in element
+        backgroundImageStatus = .save
+        dismiss(animated: true) {
+            // TODO: image saving here
+            //            photo.saveData(spot: self.spot) { (success) in
+            //            }
+        }
+    }
+    
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        dismiss(animated: true, completion: nil)
+    }
+    
+    func accessLibrary() {
+        imagePicker.sourceType = .photoLibrary
+        present(imagePicker, animated: true, completion: nil)
+    }
+    
+    func accessCamera() {
+        if UIImagePickerController.isSourceTypeAvailable(.camera) {
+            imagePicker.sourceType = .camera
+            present(imagePicker, animated: true, completion: nil)
+        } else {
+            self.showAlert(title: "Camera Not Available", message: "There is no camera available on this device.")
+        }
     }
 }
