@@ -22,6 +22,8 @@
 		3E4DB79C2296205000F73F2F /* HomeTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4DB7992296205000F73F2F /* HomeTableViewCell.swift */; };
 		3E4E3A81229342AE0078DB45 /* UITextField+Characters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4E3A80229342AE0078DB45 /* UITextField+Characters.swift */; };
 		3E4E3A83229345D60078DB45 /* UITextField+limitLength.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4E3A82229345D60078DB45 /* UITextField+limitLength.swift */; };
+		3E850D462297169800F4B739 /* Screen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E850D452297169800F4B739 /* Screen.swift */; };
+		3E850D482297176300F4B739 /* ButtonInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E850D472297176300F4B739 /* ButtonInfo.swift */; };
 		3E89CC7D228B86D40067B0F0 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3E89CC7C228B86D40067B0F0 /* GoogleService-Info.plist */; };
 		3E89CC7F228B88550067B0F0 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC7E228B88550067B0F0 /* Constants.swift */; };
 		3E89CC81228B889E0067B0F0 /* Element.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC80228B889E0067B0F0 /* Element.swift */; };
@@ -56,6 +58,8 @@
 		3E4DB7992296205000F73F2F /* HomeTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HomeTableViewCell.swift; sourceTree = "<group>"; };
 		3E4E3A80229342AE0078DB45 /* UITextField+Characters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITextField+Characters.swift"; sourceTree = "<group>"; };
 		3E4E3A82229345D60078DB45 /* UITextField+limitLength.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITextField+limitLength.swift"; sourceTree = "<group>"; };
+		3E850D452297169800F4B739 /* Screen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screen.swift; sourceTree = "<group>"; };
+		3E850D472297176300F4B739 /* ButtonInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonInfo.swift; sourceTree = "<group>"; };
 		3E89CC7C228B86D40067B0F0 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = SOURCE_ROOT; };
 		3E89CC7E228B88550067B0F0 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		3E89CC80228B889E0067B0F0 /* Element.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Element.swift; sourceTree = "<group>"; };
@@ -117,6 +121,8 @@
 			children = (
 				3E11E3B0228B8435001599ED /* AppDelegate.swift */,
 				3E89CC7E228B88550067B0F0 /* Constants.swift */,
+				3E850D452297169800F4B739 /* Screen.swift */,
+				3E850D472297176300F4B739 /* ButtonInfo.swift */,
 				3E89CC80228B889E0067B0F0 /* Element.swift */,
 				3E89CC82228B88CC0067B0F0 /* Elements.swift */,
 				3EA68356228C622900990E61 /* TextBlock.swift */,
@@ -338,6 +344,7 @@
 				3E89CC81228B889E0067B0F0 /* Element.swift in Sources */,
 				3E3CF42B22949D4900ACD87B /* UIFont+helpers.swift in Sources */,
 				3E4DB79B2296205000F73F2F /* PageTableViewCell.swift in Sources */,
+				3E850D482297176300F4B739 /* ButtonInfo.swift in Sources */,
 				3EC8046B2295E85F0007FDC6 /* TextBlocks.swift in Sources */,
 				3E4E3A83229345D60078DB45 /* UITextField+limitLength.swift in Sources */,
 				3E185C682293533800A5FB7E /* UIColor+toHex+initHex.swift in Sources */,
@@ -347,6 +354,7 @@
 				3E89CC95228C4C660067B0F0 /* ToggleButton.swift in Sources */,
 				3E89CC8B228B99DA0067B0F0 /* PlusAndDisclosureDelegate.swift in Sources */,
 				3E89CC8D228B9DEB0067B0F0 /* UIImage+toData.swift in Sources */,
+				3E850D462297169800F4B739 /* Screen.swift in Sources */,
 				3E89CC83228B88CC0067B0F0 /* Elements.swift in Sources */,
 				3E3CF42922949CF300ACD87B /* UITextField+adjustHeight.swift in Sources */,
 				3EA68359228C631900990E61 /* FontListViewController.swift in Sources */,

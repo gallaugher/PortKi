@@ -27,7 +27,14 @@ class Element {
     
     var bmpImage: Data {
         let options: NSDictionary =     [:]
-        let convertToBmp = self.backgroundImage.toData(options: options, type: .bmp)
+        var convertToBmp = self.backgroundImage.toData(options: options, type: .bmp)
+        
+        // TODO: Get rid of this, below. Just experimenting with sizes since bmp conversion is too big.
+        let imgData = NSData(data: (backgroundImage).jpegData(compressionQuality: 1)!)
+        convertToBmp = imgData as? Data
+//        var imageSize: Int = imgData.count
+//        print(">>> backgroundImage.count = \(imageSize), convertToBmp = \(convertToBmp) ")
+//
         guard let bmpData = convertToBmp else {
             print("😡 ERROR: could not convert image to a bitmap bmpData var.")
             return Data()
@@ -74,6 +81,7 @@ class Element {
         if self.documentID != "" {
             let ref = db.collection("elements").document(self.documentID)
             ref.setData(dataToSave) { (error) in
+                
                 if let error = error {
                     print("*** ERROR: updating document \(self.documentID) \(error.localizedDescription)")
                     completed(false)
@@ -125,19 +133,19 @@ class Element {
         
         uploadTask.observe(.success) { (snapshot) in
             print("😎 successfully saved image to Firebase Storage")
-            //            // Create the dictionary representing the data we want to save
-            //            let dataToSave = self.dictionary
-            //            // This will either create a new doc at documentUUID or update the existing doc with that name
-            //            let ref = db.collection("spots").document(spot.documentID).collection("photos").document(self.documentUUID)
-            //            ref.setData(dataToSave) { (error) in
-            //                if let error = error {
-            //                    print("*** ERROR: updating document \(self.documentUUID) in spot \(spot.documentID) \(error.localizedDescription)")
-            //                    completed(false)
-            //                } else {
-            //                    print("^^^ Document updated with ref ID \(ref.documentID)")
-            //                    completed(true)
-            //                }
-            //            }
+//            // Create the dictionary representing the data we want to save
+//            let dataToSave = self.dictionary
+//            // This will either create a new doc at documentUUID or update the existing doc with that name
+//            let ref = db.collection("spots").document(spot.documentID).collection("photos").document(self.documentUUID)
+//            ref.setData(dataToSave) { (error) in
+//                if let error = error {
+//                    print("*** ERROR: updating document \(self.documentUUID) in spot \(spot.documentID) \(error.localizedDescription)")
+//                    completed(false)
+//                } else {
+//                    print("^^^ Document updated with ref ID \(ref.documentID)")
+//                    completed(true)
+//                }
+//            }
         }
         
         uploadTask.observe(.failure) { (snapshot) in

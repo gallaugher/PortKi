@@ -56,6 +56,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var previousButton: UIButton!
     @IBOutlet weak var nextButton: UIButton!
     @IBOutlet weak var backButton: UIButton!
+    @IBOutlet var actionButtons: [UIButton]! = []
     @IBOutlet weak var backgroundImageView: UIImageView!
     
     var element: Element!
@@ -67,6 +68,10 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     var colorSlider: ColorSlider!
     var imagePicker = UIImagePickerController()
     var backgroundImageStatus: BackgroundImageStatus = .unchanged
+    var screen = Screen()
+    var buttonInfoArray = [ButtonInfo]()
+    // TODO: pass in siblingButtonIDs
+    var siblingButtonIDArray: [String] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -97,6 +102,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         configureColorSlider()
         // initially disable textBackgroundColor
         enableTextBackgroundColor(false)
+        createButtons()
     }
     
     func createFieldCollectionFromTextBlocks(){
@@ -122,17 +128,12 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
                 self.configureUserInterface()
             }
         }
-        if element.backgroundImage != nil {
-            backgroundImageView.image = element.backgroundImage
-        } else {
-            print("😡 Background image is nil")
-            backgroundImageView.image = UIImage()
+        backgroundImageView.image = UIImage()
+        if element.backgroundImageUUID != "" {
+            element.loadBackgroundImage {
+                self.backgroundImageView.image = self.element.backgroundImage
+            }
         }
-        //        if element.backgroundImageUUID != "" {
-        //            element.loadBackgroundImage {
-        //                self.backgroundImageView.image = self.element.backgroundImage
-        //            }
-        //        }
     }
     
     func configurePreviousNextButtons(){
@@ -266,6 +267,104 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             enableTextBackgroundColor(true)
         }
         changeColor(color: newField.textColor!)
+    }
+    
+    @objc func changeButtonTitle(_ sender: UIButton) {
+        showInputDialog(title: nil,
+                        message: "Change the label on the '\(sender.titleLabel?.text ?? "")' button:",
+            actionTitle: "Change",
+            cancelTitle: "Cancel",
+            inputPlaceholder: nil,
+            inputKeyboardType: .default,
+            actionHandler: {(input:String?) in
+                guard let buttonTitle = input else {
+                    return
+                }
+                sender.setTitle(buttonTitle, for: .normal)
+                sender.sizeToFit()
+                sender.frame = CGRect(x: sender.frame.origin.x, y: sender.frame.origin.y, width: sender.frame.width + (ButtonPadding.paddingAroundText*2), height: sender.frame.height)
+                sender.center = CGPoint(x: self.screenView.frame.width/2, y: sender.center.y)
+                self.saveButtonTitle(sender: sender)
+        },
+            cancelHandler: nil)
+        
+    }
+    
+    func saveButtonTitle(sender: UIButton) {
+        
+        guard let clickedButtonIndex = actionButtons.firstIndex(where: {$0 == sender}) else {
+            print("😡 couldn't get clickedButtonIndex")
+            return
+        }
+        
+        let clickedButtonID = element.childrenIDs[clickedButtonIndex]
+        let clickedButtonElement = elements.elementArray.first(where: {$0.documentID == clickedButtonID})
+        clickedButtonElement?.elementName = sender.titleLabel?.text ?? "<ERROR CHANGING BUTTON TITLE>"
+        
+        clickedButtonElement?.saveData() {success in
+            if !success { // if not successful
+                print("😡 ERROR: couldn't save change to clicked button at documentID = \(clickedButtonElement!.documentID)")
+            } else {
+                print("-> Yeah, properly updated button title!")
+            }
+        }
+    }
+    
+    func createButton(buttonName: String) -> UIButton {
+        let newButton = UIButton(frame: self.screenView.frame)
+        newButton.setTitle(buttonName, for: .normal)
+        newButton.titleLabel?.font = .boldSystemFont(ofSize: 13.0)
+        newButton.sizeToFit()
+        newButton.frame = CGRect(x: newButton.frame.origin.x, y: newButton.frame.origin.y, width: newButton.frame.width + (ButtonPadding.paddingAroundText*2), height: newButton.frame.height)
+        newButton.backgroundColor = UIColor.init(hexString: "923125")
+        newButton.addTarget(self, action: #selector(changeButtonTitle), for: .touchUpInside)
+        return newButton
+    }
+    
+    func createButtons() {
+        // no buttons to create if there aren't any children
+        guard element.childrenIDs.count > 0 else {
+            return
+        }
+        
+        var buttonNames = [String]() // clear out button names
+        for childID in element.childrenIDs { // loop through all childIDs
+            if let buttonElement = elements.elementArray.first(where: {$0.documentID == childID}) { // if you can find an element with that childID
+                buttonNames.append(buttonElement.elementName) // add it's name to buttonNames
+            }
+        }
+        
+        // create a button (in actionButtons) for each buttonName
+        for buttonName in buttonNames {
+            actionButtons.append(createButton(buttonName: buttonName))
+        }
+        
+        // position action buttons
+        // 12 & 12 from lower right-hand corner
+        let indent: CGFloat = 12.0
+        // start in lower-left of screenView
+        var buttonX: CGFloat = 0.0
+        // var buttonX = screenView.frame.origin.x
+        let buttonY = screenView.frame.height-indent-actionButtons[0].frame.height
+        
+        for button in actionButtons {
+            var buttonFrame = button.frame
+            buttonX = buttonX + indent
+            buttonFrame = CGRect(x: buttonX, y: buttonY, width: buttonFrame.width, height: buttonFrame.height)
+            button.frame = buttonFrame
+            screenView.addSubview(button)
+            buttonX = buttonX + button.frame.width // move start portion of next button rect to the end of the current button rect
+        }
+        if element.elementType == "Home" {
+            var widthOfAllButtons = actionButtons.reduce(0.0,{$0 + $1.frame.width})
+            widthOfAllButtons = widthOfAllButtons + (CGFloat(actionButtons.count-1)*indent)
+            var shiftedX = (screenView.frame.width-widthOfAllButtons)/2
+            
+            for button in actionButtons {
+                button.frame.origin.x = shiftedX
+                shiftedX = shiftedX + button.frame.width + indent
+            }
+        }
     }
     
     // UITextField created & added to fieldCollection
@@ -611,6 +710,70 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         leaveViewController()
     }
     
+    func buildButtonArray() -> [ButtonInfo] {
+        
+        
+        if element.elementName != "Home" { // if it's not the Home screen, then it must have a parent, so find this so it can be used to find prev, next (if needed) and back buttons.
+            let parentID = element.parentID
+            let foundParent = elements.elementArray.first(where: {$0.documentID == parentID})
+            guard let parent = foundParent else { // unwrap found parent
+                if element.elementType != "Home" {
+                    print("😡 ERROR: could not get the element's parent")
+                }
+                return [ButtonInfo]()
+            }
+            var siblingIDs = foundParent?.childrenIDs
+            
+            if previousButton.isHidden == false { // add a previousButton
+                let newButton = ButtonInfo()
+                newButton.buttonName = "xPrevious"
+                newButton.buttonRect = previousButton.frame
+                let indexOfCurrentScreen = siblingButtonIDArray.firstIndex(of: element.documentID)
+                var prevButtonIndex = indexOfCurrentScreen! - 1
+                if indexOfCurrentScreen! < 0 {
+                    prevButtonIndex = siblingButtonIDArray.count-1
+                }
+                newButton.idToLoad = siblingButtonIDArray[prevButtonIndex] // two previous
+                buttonInfoArray.append(newButton)
+            }
+            
+            if nextButton.isHidden == false { // add a previousButton
+                let newButton = ButtonInfo()
+                newButton.buttonName = "xNext"
+                newButton.buttonRect = nextButton.frame
+                let indexOfCurrentScreen = siblingButtonIDArray.firstIndex(of: element.documentID)
+                var nextButtonIndex = indexOfCurrentScreen! + 1
+                if indexOfCurrentScreen! >= siblingButtonIDArray.count {
+                    nextButtonIndex = 0
+                }
+                newButton.idToLoad = siblingButtonIDArray[nextButtonIndex] // two previous
+                buttonInfoArray.append(newButton)
+            }
+            
+        }
+        
+        // add action buttons to buttonInfoArray
+        if element.childrenIDs.count == actionButtons.count {
+            for childIndex in 0..<element.childrenIDs.count { // loop through all childIDs
+                let newButton = ButtonInfo()
+                newButton.buttonName = actionButtons[childIndex].titleLabel!.text!
+                newButton.buttonRect = actionButtons[childIndex].frame
+                let buttonDocumentID = element.childrenIDs[childIndex]
+                print(">> Looking for buttonDocumentID: \(buttonDocumentID)")
+                if let foundButtonElement = elements.elementArray.first(where: {$0.documentID == buttonDocumentID}) {
+                    newButton.idToLoad = foundButtonElement.childrenIDs[0] // load the first child page. There's often only one, but if you have a bunch at the same level, load the first
+                    print(">> FOUND buttonDocumentID: \(buttonDocumentID) and it's first childrenIDs is \(newButton.idToLoad)")
+                } else {
+                    print("😡 ERROR: for some reason foundButtonElement couldn't be found!")
+                }
+                buttonInfoArray.append(newButton)
+            }
+        } else {
+            print("ERROR: For some reason element.childrenIDs.count \(element.childrenIDs.count) does not equal actionButtons.count \(actionButtons.count)")
+        }
+        return buttonInfoArray
+    }
+    
     @IBAction func saveButtonPressed(_ sender: Any) {
         for index in 0..<fieldCollection.count {
             let field = fieldCollection[index]
@@ -622,31 +785,51 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             textBlock.backgroundColor = field.backgroundColor ?? UIColor.clear
             textBlock.originPoint = field.frame.origin
         }
+        
+        buttonInfoArray = buildButtonArray()
+        let renderer = UIGraphicsImageRenderer(size: screenView.bounds.size)
+        let grabbedImage = renderer.image { ctx in
+            screenView.drawHierarchy(in: screenView.bounds, afterScreenUpdates: true)
+        }
+        // backgroundImageView.image = grabbedImage
+        screen.screenImage = grabbedImage
+        screen.saveData { (success) in
+            if !success {
+                print("*** DANG! didn't screen.saveData!")
+            }
+        }
+        
+        for buttonInfo in buttonInfoArray {
+            buttonInfo.saveData { (success) in
+                if !success {
+                    print("*** DANG! didn't buttonInfo.saveData!")
+                }
+            }
+        }
+        
         textBlocks.saveData(element: element) { success in
             if success {
                 self.leaveViewController()
-                //                switch self.backgroundImageStatus {
-                //                case .delete:
-                //                    // TODO: Something will go here, but for now, break
-                //                break // do nothing
-                //                case .save:
-                //                    self.element.backgroundImageUUID = UUID().uuidString
-                //                    self.element.saveData { (success) in
-                //                        if success {
-                //                            self.element.saveImage { (success) in
-                //                                self.leaveViewController()
-                //                                return
-                //                            }
-                //                        } else {
-                //                            print("😡 ERROR: Could not add backgroundImageUUID to elment \(self.element.elementName)")
-                //                            self.leaveViewController()
-                //                            return
-                //                        }
-                //                    }
-                //                case .unchanged:
-                //                    self.leaveViewController()
-                //                    break // do nothing
-                //                }
+                switch self.backgroundImageStatus {
+                case .delete:
+                    // TODO: Something will go here, but for now, break
+                break // do nothing for now
+                case .save:
+                    self.element.backgroundImageUUID = UUID().uuidString
+                    self.element.saveData { (success) in
+                        if success {
+                            self.element.saveImage { (success) in
+                                self.leaveViewController()
+                                return
+                            }
+                        } else {
+                            print("😡 ERROR: Could not add backgroundImageUUID to elment \(self.element.elementName)")
+                            self.leaveViewController()
+                        }
+                    }
+                case .unchanged:
+                    self.leaveViewController()
+                }
             } else {
                 print("*** ERROR: Couldn't leave this view controller because data wasn't saved.")
             }
@@ -685,11 +868,47 @@ extension ScreenDesignViewController: PassFontDelegate {
 
 extension ScreenDesignViewController: UINavigationControllerDelegate, UIImagePickerControllerDelegate {
     
+    func resizedImage(image: UIImage, for size: CGSize) -> UIImage? {
+        let renderer = UIGraphicsImageRenderer(size: size)
+        return renderer.image { (context) in
+            image.draw(in: CGRect(origin: .zero, size: size))
+        }
+    }
+    
+    func calculateImageSize(image: UIImage) {
+        // let image = info[UIImagePickerController.InfoKey.originalImage] as! UIImage
+        let imgData = NSData(data: (image).jpegData(compressionQuality: 1)!)
+        var imageSize: Int = imgData.count
+        print("actual size of image in KB: %f ", Double(imageSize) / 1000.0)
+    }
+    
     func imagePickerController(_ picker: UIImagePickerController,
                                didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        // show the selected image in the app's backgroundImageView
+        
+        // prepare to scale the image
+        let scaleFactor = UIScreen.main.scale
+        let scale = CGAffineTransform(scaleX: scaleFactor, y: scaleFactor)
+        let size = backgroundImageView.bounds.size.applying(scale)
+        // calculateImageSize(image: (info[UIImagePickerController.InfoKey.originalImage] as! UIImage).jpegData(compressionQuality: 1))
         backgroundImageView.image = (info[UIImagePickerController.InfoKey.originalImage] as! UIImage)
+        calculateImageSize(image: backgroundImageView.image!)
+        
+        // scale & show the selected image in the app's backgroundImageView
+       //  backgroundImageView.image = (info[UIImagePickerController.InfoKey.originalImage] as! UIImage)
+        backgroundImageView.image = resizedImage(image: backgroundImageView.image!, for: size)
         element.backgroundImage = backgroundImageView.image! // and store image in element
+        print("** BEFORE COMPRESSION")
+        calculateImageSize(image: element.backgroundImage)
+        
+        backgroundImageView.image = (info[UIImagePickerController.InfoKey.originalImage] as! UIImage)
+        let renderer = UIGraphicsImageRenderer(size: screenView.bounds.size)
+        let grabbedImage = renderer.image { ctx in
+            screenView.drawHierarchy(in: screenView.bounds, afterScreenUpdates: true)
+        }
+        backgroundImageView.image = grabbedImage
+        element.backgroundImage = backgroundImageView.image! // and store image in element
+        print("** AFTER COMPRESSION")
+        calculateImageSize(image: element.backgroundImage)
         backgroundImageStatus = .save
         dismiss(animated: true) {
             // TODO: image saving here

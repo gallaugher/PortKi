@@ -13,3 +13,8 @@ struct Colors {
     // TODO: Refactor at some point so it's more flexible, less constant
     static let buttonTint = UIColor(red: 52/255.0, green: 120/255.0, blue: 246/255.0, alpha: 1.0)
 }
+
+struct ButtonPadding {
+    // whitespace to left & right of button text for created buttons
+    static let paddingAroundText: CGFloat = 8.0
+}
