@@ -103,7 +103,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         for textBlock in textBlocks.textBlocksArray {
             let newFieldRect = CGRect(x: textBlock.originPoint.x, y: textBlock.originPoint.y, width: 320, height: 30)
             let newField = PaddedTextField(frame: newFieldRect)
-            newField.font?.withSize(textBlock.fontSize)
+            newField.font = UIFont(name: textBlock.font.fontName, size: textBlock.fontSize)
             newField.text = textBlock.text
             newField.textColor = textBlock.textColor
             newField.backgroundColor = textBlock.backgroundColor

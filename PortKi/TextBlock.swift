@@ -26,7 +26,7 @@ class TextBlock {
     var dictionary: [String: Any] {
         let fontName = font.fontName
         let xCoordinate = originPoint.x
-        let yCoordinate = originPoint.x
+        let yCoordinate = originPoint.y
         let textColorHex = textColor.hexString
         let backgroundColorHex = backgroundColor.hexString
         return ["text": text, "xCoordinate": xCoordinate, "yCoordinate": yCoordinate, "textColorHex": textColorHex, "fontSize": fontSize, "fontName": fontName, "backgroundColorHex": backgroundColorHex, "isBold": isBold, "isItalic": isItalic, "isUnderlined": isUnderlined, "alignment": alignment, "parentID": parentID]
