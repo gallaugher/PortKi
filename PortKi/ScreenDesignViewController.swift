@@ -26,10 +26,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var screenView: UIView! // a view with fixed dimensions, same size as the PyPortal's screen
     // The content view is inside the screenView, all interface elements are configured to the contentView, so any shifting of contentView will shift all elements by the same amount.
     @IBOutlet weak var contentView: UIView!
-    
     @IBOutlet weak var grayBackgroundView: UIView!
-    
-    
     @IBOutlet var fieldCollection: [UITextField]! // Not connected, fields created programmatically
     @IBOutlet weak var deleteTextButton: UIButton!
     @IBOutlet weak var editStyleBarButton: UIBarButtonItem!
@@ -61,12 +58,12 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var backButton: UIButton!
     @IBOutlet weak var backgroundImageView: UIImageView!
     
-    var selectedColorButtonTag = 0 // 0 = text, 1 = text background, 2 = screen background
-    var textBlocks: [TextBlock] = []
-    var selectedTextBlockIndex = 0
     var element: Element!
     var elements: Elements!
+    var textBlocks = TextBlocks()
     var originalScrollViewFrame: CGRect!
+    var selectedColorButtonTag = 0 // 0 = text, 1 = text background, 2 = screen background
+    var selectedTextBlockIndex = 0
     var colorSlider: ColorSlider!
     var imagePicker = UIImagePickerController()
     var backgroundImageStatus: BackgroundImageStatus = .unchanged
@@ -83,22 +80,84 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         
         // hide keyboard if we tap outside of a field
         let tap = UITapGestureRecognizer(target: self.view, action: #selector(UIView.endEditing(_:)))
-        deleteTextButton.isEnabled = false
-        editStyleBarButton.isEnabled = false
         tap.cancelsTouchesInView = false
         self.view.addGestureRecognizer(tap)
         
+        deleteTextButton.isEnabled = false
+        editStyleBarButton.isEnabled = false
+        loadTextBlocks()
+    }
+    
+    func configureUserInterface() {
         // TODO: eventually will update this to whatever is saved
-        backgroundImageView.image = UIImage()
-        screenView.backgroundColor = UIColor.white
+        configurePreviousNextButtons()
+        screenView.backgroundColor = element.backgroundColor
         grayBackgroundView.sendSubviewToBack(backgroundImageView)
         grayBackgroundView.sendSubviewToBack(screenView)
-        createNewField()
         configureColorSlider()
         // initially disable textBackgroundColor
         enableTextBackgroundColor(false)
-//        colorButtonCollection[1].isSelected = true // call below will set it to false
-//        allowTextBackgroundPressed(allowTextBackgroundCheckButton)
+    }
+    
+    func createFieldCollectionFromTextBlocks(){
+        for textBlock in textBlocks.textBlocksArray {
+            let newFieldRect = CGRect(x: textBlock.originPoint.x, y: textBlock.originPoint.y, width: 320, height: 30)
+            let newField = PaddedTextField(frame: newFieldRect)
+            newField.font?.withSize(textBlock.fontSize)
+            newField.text = textBlock.text
+            newField.textColor = textBlock.textColor
+            newField.backgroundColor = textBlock.backgroundColor
+            setUpBlockAndField(newBlock: textBlock, newField: newField)
+        }
+    }
+    
+    func loadTextBlocks() {
+        // get all the text blocks that make up the selected screen
+        textBlocks.loadData(element: element) {
+            if self.textBlocks.textBlocksArray.count == 0 {
+                self.createNewField()
+                self.configureUserInterface()
+            } else {
+                self.createFieldCollectionFromTextBlocks()
+                self.configureUserInterface()
+            }
+        }
+        if element.backgroundImage != nil {
+            backgroundImageView.image = element.backgroundImage
+        } else {
+            print("😡 Background image is nil")
+            backgroundImageView.image = UIImage()
+        }
+        //        if element.backgroundImageUUID != "" {
+        //            element.loadBackgroundImage {
+        //                self.backgroundImageView.image = self.element.backgroundImage
+        //            }
+        //        }
+    }
+    
+    func configurePreviousNextButtons(){
+        // Hide the back button if you're looking at the "Home" screen (because there's no way to go back if you're at home, the root of the tree hierarchy.
+        if element.elementType == "Home" {
+            backButton.isHidden = true
+            previousButton.isHidden = true
+            nextButton.isHidden = true
+        }
+        
+        let parentID = element.parentID
+        let foundParent = elements.elementArray.first(where: {$0.documentID == parentID})
+        guard let parent = foundParent else { // unwrap found parent
+            if element.elementType != "Home" {
+                print("😡 ERROR: could not get the element's parent")
+            }
+            return
+        }
+        if parent.childrenIDs.count > 1 {
+            previousButton.isHidden = false
+            nextButton.isHidden = false
+        } else {
+            previousButton.isHidden = true
+            nextButton.isHidden = true
+        }
     }
     
     func configureColorSlider() {
@@ -137,11 +196,11 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         switch selectedColorButtonTag {
         case 0: // text color selected
             colorButtonCollection[selectedColorButtonTag].backgroundColor = color
-            textBlocks[selectedTextBlockIndex].textColor = color
+            textBlocks.textBlocksArray[selectedTextBlockIndex].textColor = color
             fieldCollection[selectedTextBlockIndex].textColor = color
         case 1: // text background selected
             colorButtonCollection[selectedColorButtonTag].backgroundColor = color
-            textBlocks[selectedTextBlockIndex].backgroundColor = color
+            textBlocks.textBlocksArray[selectedTextBlockIndex].backgroundColor = color
             fieldCollection[selectedTextBlockIndex].backgroundColor = color
         case 2: // screen color selected
             colorButtonCollection[selectedColorButtonTag].backgroundColor = color
@@ -179,22 +238,18 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         colorSlider.layoutSubviews()
     }
     
-    // UITextField created & added to fieldCollection
-    func createNewField() {
-        let newBlock = TextBlock()
-        textBlocks.append(newBlock)
-        selectedTextBlockIndex = textBlocks.count-1
-        var newFieldRect = CGRect(x: 0, y: 0, width: 320, height: 30)
-        let newField = PaddedTextField(frame: newFieldRect)
+    func setUpBlockAndField(newBlock: TextBlock, newField: UITextField) {
+        selectedTextBlockIndex = textBlocks.textBlocksArray.count-1
         newField.borderStyle = .roundedRect
         newField.isUserInteractionEnabled = true
         newField.addGestureRecognizer(addGestureToField())
         newField.sizeToFit()
         let newFieldHeight = newField.frame.height
-        newFieldRect = CGRect(x: 0, y: 0, width: 320, height: newFieldHeight)
+        var newFieldRect = newField.frame
+        newFieldRect = CGRect(x: newFieldRect.origin.x, y: newFieldRect.origin.y, width: 320, height: newFieldHeight)
         newField.frame = newFieldRect
-        newField.textColor = UIColor.black
-        newField.backgroundColor = UIColor.clear
+        newField.textColor = newBlock.textColor
+        newField.backgroundColor = newBlock.backgroundColor
         screenView.addSubview(newField)
         screenView.bringSubviewToFront(newField)
         selectedColorButtonTag = 0 // New field? Select textColor button
@@ -205,8 +260,26 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         }
         newField.delegate = self
         newField.becomeFirstResponder()
-        enableTextBackgroundColor(false)
+        if newField.backgroundColor == UIColor.clear {
+            enableTextBackgroundColor(false)
+        } else {
+            enableTextBackgroundColor(true)
+        }
         changeColor(color: newField.textColor!)
+    }
+    
+    // UITextField created & added to fieldCollection
+    func createNewField() {
+        let newBlock = TextBlock()
+        textBlocks.textBlocksArray.append(newBlock)
+        
+        let newFieldRect = CGRect(x: newBlock.originPoint.x, y: newBlock.originPoint.y, width: 320, height: 30)
+        let newField = PaddedTextField(frame: newFieldRect)
+        newField.font?.withSize(newBlock.fontSize)
+        newField.text = newBlock.text
+        newField.textColor = newBlock.textColor
+        newField.backgroundColor = newBlock.backgroundColor
+        setUpBlockAndField(newBlock: newBlock, newField: newField)
     }
     
     func enableTextBackgroundColor(_ enable: Bool) {
@@ -220,8 +293,8 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             colorFrameViewCollection[1].layer.borderWidth = 1.0
             selectedColorButtonTag = 1
             allowTextBackgroundCheckButton.isSelected = true
-// move setting hex to empty string to confirmed press disabling.
-//            hexTextField.text = ""
+            // move setting hex to empty string to confirmed press disabling.
+            //            hexTextField.text = ""
         } else {
             // initially disable textBackgroundColor
             colorButtonCollection[1].backgroundColor = UIColor.white
@@ -253,8 +326,8 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         if fieldCollection[selectedTextBlockIndex].backgroundColor == UIColor.clear {
             // initially disable textBackgroundColor
             enableTextBackgroundColor(false)
-//            colorButtonCollection[1].isSelected = true // call below will set it to false
-//            allowTextBackgroundPressed(allowTextBackgroundCheckButton)
+            //            colorButtonCollection[1].isSelected = true // call below will set it to false
+            //            allowTextBackgroundPressed(allowTextBackgroundCheckButton)
         } else {
             enableTextBackgroundColor(true)
         }
@@ -265,7 +338,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         if textField.superview == screenView {
             textField.borderStyle = .roundedRect
             selectedTextBlockIndex = fieldCollection.firstIndex(of: textField)!
-            print("<><><> preparing to updateInterfaceForSelectedTextField in textFieldDidBeginEditing")
+            print("<><><> preparing to updateInterfaceForSelectedTextField in textFieldDidBeginEditing. selectedTextBlockIndex = \(selectedTextBlockIndex)")
             updateInterfaceForSelectedTextField()
             deleteTextButton.isEnabled = true
             editStyleBarButton.isEnabled = true
@@ -302,9 +375,9 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         styleView.layer.borderWidth = 1.0
         styleView.layer.borderColor = Colors.buttonTint.cgColor
         
-        alignmentSegmentedControl.selectedSegmentIndex = textBlocks[selectedTextBlockIndex].alignment
+        alignmentSegmentedControl.selectedSegmentIndex = textBlocks.textBlocksArray[selectedTextBlockIndex].alignment
         alignmentSegmentedControl.sendActions(for: .valueChanged)
-        let textBlock = textBlocks[selectedTextBlockIndex]
+        let textBlock = textBlocks.textBlocksArray[selectedTextBlockIndex]
         textBlock.isBold ? boldButton.configureButtonState(state: .selected) : boldButton.configureButtonState(state: .normal)
         textBlock.isItalic ? italicsButton.configureButtonState(state: .selected) : italicsButton.configureButtonState(state: .normal)
         textBlock.isUnderlined ? underlineButton.configureButtonState(state: .selected) : underlineButton.configureButtonState(state: .normal)
@@ -315,18 +388,6 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         fontSizeLabel.text = "\(size) pt."
         sizeStepper.value = Double(size)
     }
-    
-    // func changeColorSelected(slider: ColorSlider, colorButtons: [UIButton], colorHexValueField: UITextField) {
-    //    func changeColorSelected() {
-    //        let color = colorSlider.color
-    //        colorSlider.layoutSubviews()
-    //        if hexTextField.text! != "" {
-    //            hexTextField.text = color.hexString
-    //            changeColor(color: color, colorButtons: colorButtons)
-    //        } else {
-    //            changeColor(color: UIColor.clear, colorButtons: colorButtons)
-    //        }
-    //    }
     
     func changeColorFromHex(hexString: String, slider: ColorSlider, colorButtons: [UIButton]) {
         slider.color = UIColor(hexString: hexString)
@@ -339,11 +400,11 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         switch selectedColorButtonTag {
         case 0: // text color selected
             colorButtonCollection[selectedColorButtonTag].backgroundColor = color
-            textBlocks[selectedTextBlockIndex].textColor = color
+            textBlocks.textBlocksArray[selectedTextBlockIndex].textColor = color
             fieldCollection[selectedTextBlockIndex].textColor = color
         case 1: // text background selected
             colorButtonCollection[selectedColorButtonTag].backgroundColor = color
-            textBlocks[selectedTextBlockIndex].backgroundColor = color
+            textBlocks.textBlocksArray[selectedTextBlockIndex].backgroundColor = color
             fieldCollection[selectedTextBlockIndex].backgroundColor = color
         case 2: // screen color selected
             colorButtonCollection[selectedColorButtonTag].backgroundColor = color
@@ -359,16 +420,6 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         }
         colorFrameViewCollection[selectedColorButtonTag].layer.borderWidth = 1.0
     }
-    
-    // Puts a border around color indicator to show which is selected: text font or text background
-    //    func setSelectedFrame(sender: UIButton, colorButtons: [UIButton], colorButtonFrames: [UIView], selectedButtonTag: Int, colorHexValueField: UITextField, slider: ColorSlider) {
-    //        selectedColorButtonTag = selectedButtonTag
-    //        for colorButtonFrame in colorButtonFrames {
-    //            colorButtonFrame.layer.borderWidth = 0.0
-    //        }
-    //        colorButtonFrames[selectedButtonTag].layer.borderWidth = 1.0
-    //        // slider.layoutSubviews()
-    //    }
     
     func updateFieldBasedOnStyleButtons() {
         if boldButton.isSelected {
@@ -475,7 +526,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             }
         }
         fieldCollection.remove(at: selectedTextBlockIndex)
-        textBlocks.remove(at: selectedTextBlockIndex)
+        textBlocks.textBlocksArray.remove(at: selectedTextBlockIndex)
         if fieldCollection.count == 0 { // deleted the only row
             createNewField()
         } else if fieldCollection.count <= selectedTextBlockIndex {
@@ -485,7 +536,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     }
     
     @IBAction func alignmentSegmentSelected(_ sender: UISegmentedControl) {
-        textBlocks[selectedTextBlockIndex].alignment = sender.selectedSegmentIndex
+        textBlocks.textBlocksArray[selectedTextBlockIndex].alignment = sender.selectedSegmentIndex
         switch sender.selectedSegmentIndex {
         case 0: // left
             fieldCollection[selectedTextBlockIndex].textAlignment = NSTextAlignment.left
@@ -502,7 +553,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         sender.isSelected = !sender.isSelected
         switch sender.tag {
         case 0: // bold
-            textBlocks[selectedTextBlockIndex].isBold = sender.isSelected
+            textBlocks.textBlocksArray[selectedTextBlockIndex].isBold = sender.isSelected
             if sender.isSelected {
                 fieldCollection[selectedTextBlockIndex].font = fieldCollection[selectedTextBlockIndex].font?.setBoldFnc()
                 sender.configureButtonState(state: .selected)
@@ -511,7 +562,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
                 sender.configureButtonState(state: .normal)
             }
         case 1: // italics
-            textBlocks[selectedTextBlockIndex].isItalic = sender.isSelected
+            textBlocks.textBlocksArray[selectedTextBlockIndex].isItalic = sender.isSelected
             if sender.isSelected {
                 fieldCollection[selectedTextBlockIndex].font = fieldCollection[selectedTextBlockIndex].font?.setItalicFnc()
                 sender.configureButtonState(state: .selected)
@@ -520,7 +571,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
                 sender.configureButtonState(state: .normal)
             }
         case 2: // underline
-            textBlocks[selectedTextBlockIndex].isUnderlined = sender.isSelected
+            textBlocks.textBlocksArray[selectedTextBlockIndex].isUnderlined = sender.isSelected
             if sender.isSelected {
                 sender.configureButtonState(state: .selected)
                 let field = fieldCollection[selectedTextBlockIndex]
@@ -542,12 +593,12 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     
     @IBAction func stepperPressed(_ sender: UIStepper) {
         let newFontSize = Int(sender.value)
-        textBlocks[selectedTextBlockIndex].fontSize = CGFloat(newFontSize)
+        textBlocks.textBlocksArray[selectedTextBlockIndex].fontSize = CGFloat(newFontSize)
         fieldCollection[selectedTextBlockIndex].font = fieldCollection[selectedTextBlockIndex].font?.withSize(CGFloat(newFontSize))
         updateInterfaceForSelectedTextField()
     }
     
-    @IBAction func cancelButtonPressed(_ sender: UIBarButtonItem) {
+    func leaveViewController() {
         let isPresentingInAddMode = presentingViewController is UINavigationController
         if isPresentingInAddMode {
             dismiss(animated: true, completion: nil)
@@ -556,7 +607,50 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
+    @IBAction func cancelButtonPressed(_ sender: UIBarButtonItem) {
+        leaveViewController()
+    }
+    
     @IBAction func saveButtonPressed(_ sender: Any) {
+        for index in 0..<fieldCollection.count {
+            let field = fieldCollection[index]
+            let textBlock = textBlocks.textBlocksArray[index]
+            textBlock.font = field.font!
+            textBlock.fontSize = field.font!.pointSize
+            textBlock.text = field.text!
+            textBlock.textColor = field.textColor ?? UIColor.black
+            textBlock.backgroundColor = field.backgroundColor ?? UIColor.clear
+            textBlock.originPoint = field.frame.origin
+        }
+        textBlocks.saveData(element: element) { success in
+            if success {
+                self.leaveViewController()
+                //                switch self.backgroundImageStatus {
+                //                case .delete:
+                //                    // TODO: Something will go here, but for now, break
+                //                break // do nothing
+                //                case .save:
+                //                    self.element.backgroundImageUUID = UUID().uuidString
+                //                    self.element.saveData { (success) in
+                //                        if success {
+                //                            self.element.saveImage { (success) in
+                //                                self.leaveViewController()
+                //                                return
+                //                            }
+                //                        } else {
+                //                            print("😡 ERROR: Could not add backgroundImageUUID to elment \(self.element.elementName)")
+                //                            self.leaveViewController()
+                //                            return
+                //                        }
+                //                    }
+                //                case .unchanged:
+                //                    self.leaveViewController()
+                //                    break // do nothing
+                //                }
+            } else {
+                print("*** ERROR: Couldn't leave this view controller because data wasn't saved.")
+            }
+        }
     }
     
     @IBAction func allowTextBackgroundPressed(_ sender: UIButton) {
@@ -570,7 +664,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             hexTextField.text = ""
             colorButtonPressed(colorButtonCollection[1])
         } else {
-            textBlocks[selectedTextBlockIndex].backgroundColor = UIColor.clear
+            textBlocks.textBlocksArray[selectedTextBlockIndex].backgroundColor = UIColor.clear
             fieldCollection[selectedTextBlockIndex].backgroundColor = UIColor.clear
             colorButtonPressed(colorButtonCollection[0])
         }
@@ -581,8 +675,8 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
 extension ScreenDesignViewController: PassFontDelegate {
     func getSelectedFont(selectedFont: UIFont) {
         let pointSizeBeforeChange = fieldCollection[selectedTextBlockIndex].font?.pointSize ?? CGFloat(17.0)
-        textBlocks[selectedTextBlockIndex].font = selectedFont
-        textBlocks[selectedTextBlockIndex].fontSize = CGFloat(pointSizeBeforeChange)
+        textBlocks.textBlocksArray[selectedTextBlockIndex].font = selectedFont
+        textBlocks.textBlocksArray[selectedTextBlockIndex].fontSize = CGFloat(pointSizeBeforeChange)
         fieldCollection[selectedTextBlockIndex].font = selectedFont
         fieldCollection[selectedTextBlockIndex].font = fieldCollection[selectedTextBlockIndex].font?.withSize(CGFloat(pointSizeBeforeChange))
         updateInterfaceForSelectedTextField()

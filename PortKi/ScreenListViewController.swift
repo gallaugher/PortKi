@@ -36,7 +36,11 @@ class ScreenListViewController: UIViewController {
         elements.loadData {
             
             if self.elements.elementArray.isEmpty {
-                let homeElement = Element(elementName: "Home", elementType: "Home", parentID: "", hierarchyLevel: 0, childrenIDs: [String](), backgroundImageUUID: "", backgroundImage: UIImage(), documentID: "")
+                
+                let homeElement = Element()
+                homeElement.elementName = "Home"
+                homeElement.elementType = "Home"
+                homeElement.backgroundColor = UIColor.white
                 
                 homeElement.saveData(completed: { (success) in
                     if !success { // if failed
@@ -216,8 +220,8 @@ extension ScreenListViewController: PlusAndDisclosureDelegate {
     func addAButtonAndPage(buttonName: String, indexPath: IndexPath) {
         let newButtonID = UUID().uuidString
         let newPageID = UUID().uuidString
-        let newButton = Element(elementName: buttonName, elementType: "Button", parentID: elements.elementArray[indexPath.row].documentID, hierarchyLevel: elements.elementArray[indexPath.row].hierarchyLevel+1, childrenIDs: [newPageID], backgroundImageUUID: "", backgroundImage: UIImage(), documentID: newButtonID)
-        let newPage = Element(elementName: buttonName, elementType: "Page", parentID: newButtonID, hierarchyLevel: elements.elementArray[indexPath.row].hierarchyLevel+2, childrenIDs: [String](), backgroundImageUUID: "", backgroundImage: UIImage(),documentID: newPageID)
+        let newButton = Element(elementName: buttonName, elementType: "Button", parentID: elements.elementArray[indexPath.row].documentID, hierarchyLevel: elements.elementArray[indexPath.row].hierarchyLevel+1, childrenIDs: [newPageID], backgroundImageUUID: "", backgroundImage: UIImage(), backgroundColor: UIColor.white, documentID: newButtonID)
+        let newPage = Element(elementName: buttonName, elementType: "Page", parentID: newButtonID, hierarchyLevel: elements.elementArray[indexPath.row].hierarchyLevel+2, childrenIDs: [String](), backgroundImageUUID: "", backgroundImage: UIImage(), backgroundColor: UIColor.white, documentID: newPageID)
         let parent = elements.elementArray[indexPath.row]
         parent.childrenIDs.append(newButtonID)
         parent.saveData { (success) in
@@ -240,7 +244,7 @@ extension ScreenListViewController: PlusAndDisclosureDelegate {
     
     func addPage(indexPath: IndexPath) {
         let newPageID = UUID().uuidString
-        let newPage = Element(elementName: elements.elementArray[indexPath.row].elementName, elementType: "Page", parentID: elements.elementArray[indexPath.row].documentID, hierarchyLevel: elements.elementArray[indexPath.row].hierarchyLevel+1, childrenIDs: [String](), backgroundImageUUID: "", backgroundImage: UIImage(),documentID: newPageID)
+        let newPage = Element(elementName: elements.elementArray[indexPath.row].elementName, elementType: "Page", parentID: elements.elementArray[indexPath.row].documentID, hierarchyLevel: elements.elementArray[indexPath.row].hierarchyLevel+1, childrenIDs: [String](), backgroundImageUUID: "", backgroundImage: UIImage(), backgroundColor: UIColor.white, documentID: newPageID)
         let parent = elements.elementArray[indexPath.row]
         parent.childrenIDs.append(newPageID)
         parent.saveData { (success) in

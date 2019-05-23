@@ -17,10 +17,12 @@ class Element {
     var childrenIDs: [String]
     var backgroundImageUUID = "" // assume no image at first
     var backgroundImage = UIImage()
+    var backgroundColor = UIColor.white
     var documentID: String
     
     var dictionary: [String: Any] {
-        return ["elementName": elementName, "elementType": elementType, "parentID": parentID, "hierarchyLevel": hierarchyLevel, "childrenIDs": childrenIDs, "backgroundImageUUID": backgroundImageUUID, "bmpImage": bmpImage]
+        let backgroundColorHex = backgroundColor.hexString
+        return ["elementName": elementName, "elementType": elementType, "parentID": parentID, "hierarchyLevel": hierarchyLevel, "childrenIDs": childrenIDs, "backgroundImageUUID": backgroundImageUUID, "bmpImage": bmpImage, "backgroundColorHex": backgroundColorHex]
     }
     
     var bmpImage: Data {
@@ -33,7 +35,7 @@ class Element {
         return bmpData
     }
     
-    init(elementName: String, elementType: String, parentID: String, hierarchyLevel: Int, childrenIDs: [String], backgroundImageUUID: String, backgroundImage: UIImage, documentID: String) {
+    init(elementName: String, elementType: String, parentID: String, hierarchyLevel: Int, childrenIDs: [String], backgroundImageUUID: String, backgroundImage: UIImage, backgroundColor: UIColor, documentID: String) {
         self.elementName = elementName
         self.elementType = elementType
         self.parentID = parentID
@@ -41,11 +43,12 @@ class Element {
         self.childrenIDs = childrenIDs
         self.backgroundImageUUID = backgroundImageUUID
         self.backgroundImage = backgroundImage
+        self.backgroundColor = backgroundColor
         self.documentID = documentID
     }
     
     convenience init() {
-        self.init(elementName: "", elementType: "", parentID: "", hierarchyLevel: 0, childrenIDs: [String](), backgroundImageUUID: "", backgroundImage: UIImage(), documentID: "")
+        self.init(elementName: "", elementType: "", parentID: "", hierarchyLevel: 0, childrenIDs: [String](), backgroundImageUUID: "", backgroundImage: UIImage(), backgroundColor: UIColor.clear, documentID: "")
     }
     
     convenience init(dictionary: [String: Any]) {
@@ -57,7 +60,9 @@ class Element {
         let childrenIDs = dictionary["childrenIDs"] as! [String]? ?? [String]()
         let bmpImage = dictionary["bmpImage"] as! Data? ?? Data()
         let backgroundImage = UIImage(data: bmpImage) ?? UIImage()
-        self.init(elementName: elementName, elementType: elementType, parentID: parentID, hierarchyLevel: hierarchyLevel, childrenIDs: childrenIDs, backgroundImageUUID: backgroundImageUUID, backgroundImage: backgroundImage, documentID: "")
+        let backgroundColorHex = dictionary["backgroundColorHex"] as! String? ?? "00000000"
+        let backgroundColor = UIColor.init(hexString: backgroundColorHex)
+        self.init(elementName: elementName, elementType: elementType, parentID: parentID, hierarchyLevel: hierarchyLevel, childrenIDs: childrenIDs, backgroundImageUUID: backgroundImageUUID, backgroundImage: backgroundImage, backgroundColor: backgroundColor, documentID: "")
     }
     
     // NOTE: If you keep the same programming conventions (e.g. a calculated property .dictionary that converts class properties to String: Any pairs, the name of the document stored in the class as .documentID) then the only thing you'll need to change is the document path (i.e. the lines containing "elements" below.
@@ -84,7 +89,7 @@ class Element {
                     print("*** ERROR: creating new document \(error.localizedDescription)")
                     completed(false)
                 } else {
-                    print("^^^ new document created with ref ID \(ref?.documentID ?? "unknown")")
+                    print("^^^ new element document created with ref ID \(ref?.documentID ?? "unknown")")
                     self.documentID = ref!.documentID
                     completed(true)
                 }
@@ -99,7 +104,7 @@ class Element {
             print("*** ERROR: couuld not convert image to data format")
             return completed(false)
         }
-        let options: NSDictionary =     [:]
+        let options: NSDictionary = [:]
         let convertToBmp = self.backgroundImage.toData(options: options, type: .bmp)
         guard let bmpData = convertToBmp else {
             print("😡 ERROR: could not convert image to a bitmap bmpData var.")

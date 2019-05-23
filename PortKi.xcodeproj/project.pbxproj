@@ -16,28 +16,25 @@
 		3E279ACA229472BA000A20E0 /* ScreenDesignViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E279AC9229472BA000A20E0 /* ScreenDesignViewController.swift */; };
 		3E3CF42922949CF300ACD87B /* UITextField+adjustHeight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E3CF42822949CF300ACD87B /* UITextField+adjustHeight.swift */; };
 		3E3CF42B22949D4900ACD87B /* UIFont+helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E3CF42A22949D4900ACD87B /* UIFont+helpers.swift */; };
+		3E4DB79622961F2A00F73F2F /* PaddedTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4DB79522961F2A00F73F2F /* PaddedTextField.swift */; };
+		3E4DB79A2296205000F73F2F /* ButtonTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4DB7972296204F00F73F2F /* ButtonTableViewCell.swift */; };
+		3E4DB79B2296205000F73F2F /* PageTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4DB7982296205000F73F2F /* PageTableViewCell.swift */; };
+		3E4DB79C2296205000F73F2F /* HomeTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4DB7992296205000F73F2F /* HomeTableViewCell.swift */; };
 		3E4E3A81229342AE0078DB45 /* UITextField+Characters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4E3A80229342AE0078DB45 /* UITextField+Characters.swift */; };
 		3E4E3A83229345D60078DB45 /* UITextField+limitLength.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4E3A82229345D60078DB45 /* UITextField+limitLength.swift */; };
 		3E89CC7D228B86D40067B0F0 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3E89CC7C228B86D40067B0F0 /* GoogleService-Info.plist */; };
 		3E89CC7F228B88550067B0F0 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC7E228B88550067B0F0 /* Constants.swift */; };
 		3E89CC81228B889E0067B0F0 /* Element.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC80228B889E0067B0F0 /* Element.swift */; };
 		3E89CC83228B88CC0067B0F0 /* Elements.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC82228B88CC0067B0F0 /* Elements.swift */; };
-		3E89CC85228B995A0067B0F0 /* HomeTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC84228B995A0067B0F0 /* HomeTableViewCell.swift */; };
-		3E89CC87228B99740067B0F0 /* ButtonTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC86228B99740067B0F0 /* ButtonTableViewCell.swift */; };
-		3E89CC89228B99940067B0F0 /* PageTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC88228B99940067B0F0 /* PageTableViewCell.swift */; };
 		3E89CC8B228B99DA0067B0F0 /* PlusAndDisclosureDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC8A228B99DA0067B0F0 /* PlusAndDisclosureDelegate.swift */; };
 		3E89CC8D228B9DEB0067B0F0 /* UIImage+toData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC8C228B9DEB0067B0F0 /* UIImage+toData.swift */; };
-		3E89CC8F228B9F460067B0F0 /* ScreenTableDesignViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC8E228B9F460067B0F0 /* ScreenTableDesignViewController.swift */; };
 		3E89CC91228BA0D90067B0F0 /* UIViewController+DialogsAndAlerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC90228BA0D90067B0F0 /* UIViewController+DialogsAndAlerts.swift */; };
 		3E89CC93228C4BCD0067B0F0 /* ScreenDesignCellDelegates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC92228C4BCD0067B0F0 /* ScreenDesignCellDelegates.swift */; };
 		3E89CC95228C4C660067B0F0 /* ToggleButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC94228C4C660067B0F0 /* ToggleButton.swift */; };
-		3E89CC97228C4D210067B0F0 /* AlignmentTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC96228C4D210067B0F0 /* AlignmentTableViewCell.swift */; };
-		3E89CC99228C4D410067B0F0 /* FontTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC98228C4D410067B0F0 /* FontTableViewCell.swift */; };
-		3E89CC9B228C50B50067B0F0 /* SizeTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC9A228C50B50067B0F0 /* SizeTableViewCell.swift */; };
-		3E89CC9D228C50F30067B0F0 /* ColorTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC9C228C50F30067B0F0 /* ColorTableViewCell.swift */; };
 		3E89CC9F228C511A0067B0F0 /* CheckmarkTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC9E228C511A0067B0F0 /* CheckmarkTableViewCell.swift */; };
 		3EA68357228C622900990E61 /* TextBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EA68356228C622900990E61 /* TextBlock.swift */; };
 		3EA68359228C631900990E61 /* FontListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EA68358228C631900990E61 /* FontListViewController.swift */; };
+		3EC8046B2295E85F0007FDC6 /* TextBlocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EC8046A2295E85F0007FDC6 /* TextBlocks.swift */; };
 		60BE281345AEE43D446A6922 /* Pods_PortKi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4189CD19B3BBB2B4E9220FC /* Pods_PortKi.framework */; };
 /* End PBXBuildFile section */
 
@@ -53,28 +50,25 @@
 		3E279AC9229472BA000A20E0 /* ScreenDesignViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenDesignViewController.swift; sourceTree = "<group>"; };
 		3E3CF42822949CF300ACD87B /* UITextField+adjustHeight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITextField+adjustHeight.swift"; sourceTree = "<group>"; };
 		3E3CF42A22949D4900ACD87B /* UIFont+helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIFont+helpers.swift"; sourceTree = "<group>"; };
+		3E4DB79522961F2A00F73F2F /* PaddedTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaddedTextField.swift; sourceTree = "<group>"; };
+		3E4DB7972296204F00F73F2F /* ButtonTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ButtonTableViewCell.swift; sourceTree = "<group>"; };
+		3E4DB7982296205000F73F2F /* PageTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PageTableViewCell.swift; sourceTree = "<group>"; };
+		3E4DB7992296205000F73F2F /* HomeTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HomeTableViewCell.swift; sourceTree = "<group>"; };
 		3E4E3A80229342AE0078DB45 /* UITextField+Characters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITextField+Characters.swift"; sourceTree = "<group>"; };
 		3E4E3A82229345D60078DB45 /* UITextField+limitLength.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITextField+limitLength.swift"; sourceTree = "<group>"; };
 		3E89CC7C228B86D40067B0F0 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = SOURCE_ROOT; };
 		3E89CC7E228B88550067B0F0 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		3E89CC80228B889E0067B0F0 /* Element.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Element.swift; sourceTree = "<group>"; };
 		3E89CC82228B88CC0067B0F0 /* Elements.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Elements.swift; sourceTree = "<group>"; };
-		3E89CC84228B995A0067B0F0 /* HomeTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTableViewCell.swift; sourceTree = "<group>"; };
-		3E89CC86228B99740067B0F0 /* ButtonTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonTableViewCell.swift; sourceTree = "<group>"; };
-		3E89CC88228B99940067B0F0 /* PageTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageTableViewCell.swift; sourceTree = "<group>"; };
 		3E89CC8A228B99DA0067B0F0 /* PlusAndDisclosureDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlusAndDisclosureDelegate.swift; sourceTree = "<group>"; };
 		3E89CC8C228B9DEB0067B0F0 /* UIImage+toData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+toData.swift"; sourceTree = "<group>"; };
-		3E89CC8E228B9F460067B0F0 /* ScreenTableDesignViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenTableDesignViewController.swift; sourceTree = "<group>"; };
 		3E89CC90228BA0D90067B0F0 /* UIViewController+DialogsAndAlerts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+DialogsAndAlerts.swift"; sourceTree = "<group>"; };
 		3E89CC92228C4BCD0067B0F0 /* ScreenDesignCellDelegates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenDesignCellDelegates.swift; sourceTree = "<group>"; };
 		3E89CC94228C4C660067B0F0 /* ToggleButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToggleButton.swift; sourceTree = "<group>"; };
-		3E89CC96228C4D210067B0F0 /* AlignmentTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlignmentTableViewCell.swift; sourceTree = "<group>"; };
-		3E89CC98228C4D410067B0F0 /* FontTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontTableViewCell.swift; sourceTree = "<group>"; };
-		3E89CC9A228C50B50067B0F0 /* SizeTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SizeTableViewCell.swift; sourceTree = "<group>"; };
-		3E89CC9C228C50F30067B0F0 /* ColorTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorTableViewCell.swift; sourceTree = "<group>"; };
 		3E89CC9E228C511A0067B0F0 /* CheckmarkTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckmarkTableViewCell.swift; sourceTree = "<group>"; };
 		3EA68356228C622900990E61 /* TextBlock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextBlock.swift; sourceTree = "<group>"; };
 		3EA68358228C631900990E61 /* FontListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontListViewController.swift; sourceTree = "<group>"; };
+		3EC8046A2295E85F0007FDC6 /* TextBlocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextBlocks.swift; sourceTree = "<group>"; };
 		5A8498B4B9D682510E672921 /* Pods-PortKi.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PortKi.release.xcconfig"; path = "Pods/Target Support Files/Pods-PortKi/Pods-PortKi.release.xcconfig"; sourceTree = "<group>"; };
 		9040600BCE3DAF2A17503CB2 /* Pods-PortKi.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PortKi.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PortKi/Pods-PortKi.debug.xcconfig"; sourceTree = "<group>"; };
 		C4189CD19B3BBB2B4E9220FC /* Pods_PortKi.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PortKi.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -126,17 +120,14 @@
 				3E89CC80228B889E0067B0F0 /* Element.swift */,
 				3E89CC82228B88CC0067B0F0 /* Elements.swift */,
 				3EA68356228C622900990E61 /* TextBlock.swift */,
+				3EC8046A2295E85F0007FDC6 /* TextBlocks.swift */,
+				3E4DB79522961F2A00F73F2F /* PaddedTextField.swift */,
 				3E11E3B2228B8435001599ED /* ScreenListViewController.swift */,
+				3E4DB7972296204F00F73F2F /* ButtonTableViewCell.swift */,
+				3E4DB7992296205000F73F2F /* HomeTableViewCell.swift */,
+				3E4DB7982296205000F73F2F /* PageTableViewCell.swift */,
 				3E279AC9229472BA000A20E0 /* ScreenDesignViewController.swift */,
-				3E89CC8E228B9F460067B0F0 /* ScreenTableDesignViewController.swift */,
 				3E89CC92228C4BCD0067B0F0 /* ScreenDesignCellDelegates.swift */,
-				3E89CC84228B995A0067B0F0 /* HomeTableViewCell.swift */,
-				3E89CC86228B99740067B0F0 /* ButtonTableViewCell.swift */,
-				3E89CC88228B99940067B0F0 /* PageTableViewCell.swift */,
-				3E89CC96228C4D210067B0F0 /* AlignmentTableViewCell.swift */,
-				3E89CC98228C4D410067B0F0 /* FontTableViewCell.swift */,
-				3E89CC9A228C50B50067B0F0 /* SizeTableViewCell.swift */,
-				3E89CC9C228C50F30067B0F0 /* ColorTableViewCell.swift */,
 				3EA68358228C631900990E61 /* FontListViewController.swift */,
 				3E89CC9E228C511A0067B0F0 /* CheckmarkTableViewCell.swift */,
 				3E89CC8A228B99DA0067B0F0 /* PlusAndDisclosureDelegate.swift */,
@@ -337,27 +328,24 @@
 			buildActionMask = 2147483647;
 			files = (
 				3E89CC9F228C511A0067B0F0 /* CheckmarkTableViewCell.swift in Sources */,
-				3E89CC85228B995A0067B0F0 /* HomeTableViewCell.swift in Sources */,
+				3E4DB79A2296205000F73F2F /* ButtonTableViewCell.swift in Sources */,
 				3E279ACA229472BA000A20E0 /* ScreenDesignViewController.swift in Sources */,
 				3EA68357228C622900990E61 /* TextBlock.swift in Sources */,
 				3E11E3B3228B8435001599ED /* ScreenListViewController.swift in Sources */,
-				3E89CC89228B99940067B0F0 /* PageTableViewCell.swift in Sources */,
 				3E4E3A81229342AE0078DB45 /* UITextField+Characters.swift in Sources */,
+				3E4DB79C2296205000F73F2F /* HomeTableViewCell.swift in Sources */,
 				3E11E3B1228B8435001599ED /* AppDelegate.swift in Sources */,
 				3E89CC81228B889E0067B0F0 /* Element.swift in Sources */,
 				3E3CF42B22949D4900ACD87B /* UIFont+helpers.swift in Sources */,
+				3E4DB79B2296205000F73F2F /* PageTableViewCell.swift in Sources */,
+				3EC8046B2295E85F0007FDC6 /* TextBlocks.swift in Sources */,
 				3E4E3A83229345D60078DB45 /* UITextField+limitLength.swift in Sources */,
-				3E89CC9D228C50F30067B0F0 /* ColorTableViewCell.swift in Sources */,
 				3E185C682293533800A5FB7E /* UIColor+toHex+initHex.swift in Sources */,
 				3E89CC7F228B88550067B0F0 /* Constants.swift in Sources */,
-				3E89CC97228C4D210067B0F0 /* AlignmentTableViewCell.swift in Sources */,
 				3E89CC93228C4BCD0067B0F0 /* ScreenDesignCellDelegates.swift in Sources */,
+				3E4DB79622961F2A00F73F2F /* PaddedTextField.swift in Sources */,
 				3E89CC95228C4C660067B0F0 /* ToggleButton.swift in Sources */,
-				3E89CC9B228C50B50067B0F0 /* SizeTableViewCell.swift in Sources */,
 				3E89CC8B228B99DA0067B0F0 /* PlusAndDisclosureDelegate.swift in Sources */,
-				3E89CC87228B99740067B0F0 /* ButtonTableViewCell.swift in Sources */,
-				3E89CC8F228B9F460067B0F0 /* ScreenTableDesignViewController.swift in Sources */,
-				3E89CC99228C4D410067B0F0 /* FontTableViewCell.swift in Sources */,
 				3E89CC8D228B9DEB0067B0F0 /* UIImage+toData.swift in Sources */,
 				3E89CC83228B88CC0067B0F0 /* Elements.swift in Sources */,
 				3E3CF42922949CF300ACD87B /* UITextField+adjustHeight.swift in Sources */,
