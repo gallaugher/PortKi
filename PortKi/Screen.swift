@@ -53,6 +53,9 @@ class Screen {
     }
     
     func saveData(completed: @escaping (Bool) -> ()) {
+        if imageUUID == "" {
+            imageUUID = UUID().uuidString
+        }
         let db = Firestore.firestore()
         // Create the dictionary representing the data we want to save
         let dataToSave = self.dictionary
@@ -84,44 +87,39 @@ class Screen {
         }
     }
     
-    
-    
-    
-    func saveImage(completed: @escaping (Bool) -> ()) {
+    func saveImage(complete: @escaping (Bool) -> ()) {
         let storage = Storage.storage()
         // convert screen.image to a Data type so it can be saved by Firebase Storage
         guard let imageToStore = self.screenImage.jpegData(compressionQuality: 1) else {
             print("*** ERROR: couuld not convert image to data format")
-            return completed(false)
+            return complete(false)
         }
-        let options: NSDictionary = [:]
-        let convertToBmp = self.screenImage.toData(options: options, type: .bmp)
-        guard let bmpData = convertToBmp else {
-            print("😡 ERROR: could not convert image to a bitmap bmpData var.")
-            return
-        }
+
         let uploadMetadata = StorageMetadata()
-        // uploadMetadata.contentType = "image/jpeg"
-        uploadMetadata.contentType = "image/bmp"
+        uploadMetadata.contentType = "image/jpeg"
         // create a ref to upload storage to with the imageUUID that we created.
+        if imageUUID == "" {
+            imageUUID = UUID().uuidString
+        }
         let storageRef = storage.reference().child(self.imageUUID)
-        let uploadTask = storageRef.putData(bmpData, metadata: uploadMetadata) {metadata, error in
+        let uploadTask = storageRef.putData(imageToStore, metadata: uploadMetadata) {metadata, error in
             guard error == nil else {
                 print("😡 ERROR during .putData storage upload for screen reference \(storageRef). Error: \(error!.localizedDescription)")
-                return
+                return complete(false)
             }
             print("😎 Upload worked! Screen etadata is \(metadata!)")
         }
         
         uploadTask.observe(.success) { (snapshot) in
             print("😎 successfully saved screen image to Firebase Storage")
+            return complete(true)
         }
         
         uploadTask.observe(.failure) { (snapshot) in
             if let error = snapshot.error {
                 print("*** ERROR: upload task for file \(self.imageUUID) failed, in screen \(self.documentID), error \(error)")
             }
-            return completed(false)
+            return complete(false)
         }
     }
     

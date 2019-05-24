@@ -794,8 +794,17 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         // backgroundImageView.image = grabbedImage
         screen.screenImage = grabbedImage
         screen.saveData { (success) in
-            if !success {
-                print("*** DANG! didn't screen.saveData!")
+            if success {
+                self.screen.saveImage{ (success) in
+                    if success {
+                        print("!!! JUST FINISHED .saveImage")
+                    } else {
+                        print(" *** WHOA! didn't .saveImage ***")
+                        
+                    }
+                }
+            } else {
+                print("*** DANG! no success at screen.saveData!")
             }
         }
         
@@ -809,18 +818,17 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         
         textBlocks.saveData(element: element) { success in
             if success {
-                self.leaveViewController()
+                // self.leaveViewController()
                 switch self.backgroundImageStatus {
                 case .delete:
                     // TODO: Something will go here, but for now, break
-                break // do nothing for now
+                    self.leaveViewController()
                 case .save:
                     self.element.backgroundImageUUID = UUID().uuidString
                     self.element.saveData { (success) in
                         if success {
                             self.element.saveImage { (success) in
                                 self.leaveViewController()
-                                return
                             }
                         } else {
                             print("😡 ERROR: Could not add backgroundImageUUID to elment \(self.element.elementName)")
@@ -889,12 +897,11 @@ extension ScreenDesignViewController: UINavigationControllerDelegate, UIImagePic
         let scaleFactor = UIScreen.main.scale
         let scale = CGAffineTransform(scaleX: scaleFactor, y: scaleFactor)
         let size = backgroundImageView.bounds.size.applying(scale)
-        // calculateImageSize(image: (info[UIImagePickerController.InfoKey.originalImage] as! UIImage).jpegData(compressionQuality: 1))
         backgroundImageView.image = (info[UIImagePickerController.InfoKey.originalImage] as! UIImage)
         calculateImageSize(image: backgroundImageView.image!)
         
         // scale & show the selected image in the app's backgroundImageView
-       //  backgroundImageView.image = (info[UIImagePickerController.InfoKey.originalImage] as! UIImage)
+        //  backgroundImageView.image = (info[UIImagePickerController.InfoKey.originalImage] as! UIImage)
         backgroundImageView.image = resizedImage(image: backgroundImageView.image!, for: size)
         element.backgroundImage = backgroundImageView.image! // and store image in element
         print("** BEFORE COMPRESSION")
