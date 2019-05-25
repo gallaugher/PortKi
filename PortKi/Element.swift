@@ -26,20 +26,15 @@ class Element {
     }
     
     var bmpImage: Data {
-        let options: NSDictionary =     [:]
-        var convertToBmp = self.backgroundImage.toData(options: options, type: .bmp)
-        
-        // TODO: Get rid of this, below. Just experimenting with sizes since bmp conversion is too big.
-        let imgData = NSData(data: (backgroundImage).jpegData(compressionQuality: 1)!)
-        convertToBmp = imgData as? Data
-//        var imageSize: Int = imgData.count
-//        print(">>> backgroundImage.count = \(imageSize), convertToBmp = \(convertToBmp) ")
+        return Data() // return empty data for now. Was breaking b/c image was too big for cloud firestore & needed to be stored in firebase storage, which we do.
+//        let options: NSDictionary =     [:]
+//        var convertToBmp = self.backgroundImage.toData(options: options, type: .bmp)
+//        guard let bmpData = convertToBmp else {
+//            print("😡 ERROR: could not convert image to a bitmap bmpData var.")
+//            return Data()
+//        }
 //
-        guard let bmpData = convertToBmp else {
-            print("😡 ERROR: could not convert image to a bitmap bmpData var.")
-            return Data()
-        }
-        return bmpData
+//        return bmpData
     }
     
     init(elementName: String, elementType: String, parentID: String, hierarchyLevel: Int, childrenIDs: [String], backgroundImageUUID: String, backgroundImage: UIImage, backgroundColor: UIColor, documentID: String) {
@@ -116,23 +111,24 @@ class Element {
         let convertToBmp = self.backgroundImage.toData(options: options, type: .bmp)
         guard let bmpData = convertToBmp else {
             print("😡 ERROR: could not convert image to a bitmap bmpData var.")
-            return
+            return completed(false)
         }
         let uploadMetadata = StorageMetadata()
         // uploadMetadata.contentType = "image/jpeg"
-        uploadMetadata.contentType = "image/bmp"
+        uploadMetadata.contentType = "image/jpeg"
         // create a ref to upload storage to with the backgroundImageUUID that we created.
-        let storageRef = storage.reference().child(self.backgroundImageUUID)
+        let storageRef = storage.reference().child("backgroundImages").child(self.backgroundImageUUID)
         let uploadTask = storageRef.putData(bmpData, metadata: uploadMetadata) {metadata, error in
             guard error == nil else {
                 print("😡 ERROR during .putData storage upload for reference \(storageRef). Error: \(error!.localizedDescription)")
-                return
+                return completed(false)
             }
             print("😎 Upload worked! Metadata is \(metadata!)")
         }
         
         uploadTask.observe(.success) { (snapshot) in
             print("😎 successfully saved image to Firebase Storage")
+            return completed(true)
 //            // Create the dictionary representing the data we want to save
 //            let dataToSave = self.dictionary
 //            // This will either create a new doc at documentUUID or update the existing doc with that name
@@ -158,7 +154,7 @@ class Element {
     
     func loadBackgroundImage (completed: @escaping () -> ()) {
         let storage = Storage.storage()
-        let backgroundImageRef = storage.reference().child(self.backgroundImageUUID)
+        let backgroundImageRef = storage.reference().child("backgroundImages").child(self.backgroundImageUUID)
         backgroundImageRef.getData(maxSize: 25 * 1025 * 1025) { data, error in
             if let error = error {
                 print("*** ERROR: An error occurred while reading data from file ref: \(backgroundImageRef) \(error.localizedDescription)")

@@ -52,14 +52,22 @@ class Screen {
         self.init(screenImage: screenImage, imageUUID: imageUUID, buttonIdArray: buttonIdArray, documentID: "")
     }
     
-    func saveData(completed: @escaping (Bool) -> ()) {
-        if imageUUID == "" {
-            imageUUID = UUID().uuidString
-        }
+    func saveData(element: Element, completed: @escaping (Bool) -> ()) {
         let db = Firestore.firestore()
         // Create the dictionary representing the data we want to save
         let dataToSave = self.dictionary
-        // if we HAVE saved a record, we'll have a documentID
+        if element.documentID != "" && self.documentID == "" {
+            self.documentID = element.documentID
+        }
+        if element.documentID == "" {
+            print("😡 ERROR: for some reason element.documentID is blank in screen.saveData")
+        }
+        if element.documentID != self.documentID {
+            self.documentID = element.documentID
+            print("😡 ERROR: for some reason element.documentID != self.documentID in screen.saveData")
+        }
+        imageUUID = self.documentID // we'll use the same documentID for documents: element & screen and storge image that are children of screenImages.
+        // if we HAVE saved a record, we'll have a documentID - note, we may never use the first if clause below if we already use a document ID. Firestore should be able to create a new doc with a doc ID passed.
         if self.documentID != "" {
             let ref = db.collection("screens").document(self.documentID)
             ref.setData(dataToSave) { (error) in
@@ -73,14 +81,18 @@ class Screen {
                 }
             }
         } else {
-            var ref: DocumentReference? = nil // Let firestore create the new documentID
-            ref = db.collection("screens").addDocument(data: dataToSave) { error in
+            // var ref: DocumentReference? = nil // Let firestore create the new documentID
+            documentID = UUID().uuidString // needs to be generated if we are to use the same UUID for the background image. Will change back if we end up allowing multiple, resizeable background images.
+            imageUUID = documentID
+            let ref = db.collection("screens").document(self.documentID)
+            ref.setData(dataToSave) { (error) in
+//            ref = db.collection("screens").addDocument(data: dataToSave) { error in
                 if let error = error {
                     print("*** ERROR: creating new screens document \(error.localizedDescription)")
                     completed(false)
                 } else {
-                    print("^^^ new screens document created with ref ID \(ref?.documentID ?? "unknown")")
-                    self.documentID = ref!.documentID
+                    print("^^^ new screens document created with ref ID \(ref.documentID)")
+                    self.documentID = ref.documentID
                     completed(true)
                 }
             }
@@ -101,7 +113,8 @@ class Screen {
         if imageUUID == "" {
             imageUUID = UUID().uuidString
         }
-        let storageRef = storage.reference().child(self.imageUUID)
+        
+        let storageRef = storage.reference().child("screenImages").child(self.imageUUID)
         let uploadTask = storageRef.putData(imageToStore, metadata: uploadMetadata) {metadata, error in
             guard error == nil else {
                 print("😡 ERROR during .putData storage upload for screen reference \(storageRef). Error: \(error!.localizedDescription)")
@@ -135,6 +148,23 @@ class Screen {
                 self.screenImage = image!
                 return completed()
             }
+        }
+    }
+    
+    func loadData (element: Element, completed: @escaping () -> ()) {
+        let db = Firestore.firestore()
+        db.collection("screens").document(element.documentID).getDocument() { (document, error) in
+            guard let document = document, document.exists else {
+                print("*** Loading data for screens. Screens document matching \(element.documentID) does not yet exist. Not an error if this screen is being created. Should not occur if editing an existing screen.")
+                return completed()
+            }
+            let newScreen = Screen(dictionary: document.data()!)
+            
+            self.screenImage = newScreen.screenImage
+            self.imageUUID = newScreen.imageUUID
+            self.buttonIdArray = newScreen.buttonIdArray
+            self.documentID = document.documentID
+            completed()
         }
     }
 }

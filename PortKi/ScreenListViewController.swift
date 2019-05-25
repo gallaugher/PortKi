@@ -40,6 +40,7 @@ class ScreenListViewController: UIViewController {
                 let homeElement = Element()
                 homeElement.elementName = "Home"
                 homeElement.elementType = "Home"
+                homeElement.documentID = "Home"
                 homeElement.backgroundColor = UIColor.white
                 
                 homeElement.saveData(completed: { (success) in
@@ -95,10 +96,18 @@ class ScreenListViewController: UIViewController {
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        
         // click to edit an exiseting screen
         if segue.identifier == "ShowScreen" {
             let destination = segue.destination as! ScreenDesignViewController
             let selectedIndexPath = tableView.indexPathForSelectedRow!
+            let selectedElement = elements.elementArray[selectedIndexPath.row]
+            if selectedElement.elementName != "Home" {
+                let parentIndex = elements.elementArray.firstIndex(where: {$0.documentID == elements.elementArray[selectedIndexPath.row].parentID})
+                if let parentIndex = parentIndex {
+                    destination.siblingButtonIDArray = elements.elementArray[parentIndex].childrenIDs
+                }
+            }
             destination.element = elements.elementArray[selectedIndexPath.row]
             destination.elements = elements
         } else { // adding a screen pass the last element - we'll sort them when they're back. No need to worry about deselecting
@@ -289,8 +298,9 @@ extension ScreenListViewController: PlusAndDisclosureDelegate {
     
     func didTapDisclosure(at indexPath: IndexPath) {
         print("*** You Tapped the Disclosure Button at \(indexPath.row)")
-        let selectedIndexPath = IndexPath(row: indexPath.row, section: indexPath.section)
-        self.tableView.selectRow(at: selectedIndexPath, animated: true, scrollPosition: .none)
+//        let selectedIndexPath = IndexPath(row: indexPath.row, section: indexPath.section)
+//        self.tableView.selectRow(at: selectedIndexPath, animated: true, scrollPosition: .none)
+        self.tableView.selectRow(at: indexPath, animated: true, scrollPosition: .none)
         self.performSegue(withIdentifier: "ShowScreen", sender: nil)
     }
 }

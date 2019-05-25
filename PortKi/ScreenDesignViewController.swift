@@ -134,6 +134,9 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
                 self.backgroundImageView.image = self.element.backgroundImage
             }
         }
+        screen.loadData (element: element) {
+            
+        }
     }
     
     func configurePreviousNextButtons(){
@@ -711,8 +714,6 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     }
     
     func buildButtonArray() -> [ButtonInfo] {
-        
-        
         if element.elementName != "Home" { // if it's not the Home screen, then it must have a parent, so find this so it can be used to find prev, next (if needed) and back buttons.
             let parentID = element.parentID
             let foundParent = elements.elementArray.first(where: {$0.documentID == parentID})
@@ -728,22 +729,41 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
                 let newButton = ButtonInfo()
                 newButton.buttonName = "xPrevious"
                 newButton.buttonRect = previousButton.frame
-                let indexOfCurrentScreen = siblingButtonIDArray.firstIndex(of: element.documentID)
-                var prevButtonIndex = indexOfCurrentScreen! - 1
-                if indexOfCurrentScreen! < 0 {
+                var indexOfCurrentScreen = siblingButtonIDArray.firstIndex(of: element.documentID)
+                var prevButtonIndex = 0 // this 0 is a placeholder - the 0 may change.
+                if indexOfCurrentScreen == nil {
+                    // This happens when screen is a new screen & there's not yet a record for it
+                    prevButtonIndex = siblingIDs!.count-1
+                    indexOfCurrentScreen = siblingIDs!.count
+                } else {
+                    prevButtonIndex = indexOfCurrentScreen! - 1
+                }
+                // I can likely delete if code below
+//                if indexOfCurrentScreen! < 0 {
+//                    prevButtonIndex = siblingButtonIDArray.count-1
+//                }
+                if prevButtonIndex < 0 {
                     prevButtonIndex = siblingButtonIDArray.count-1
                 }
-                newButton.idToLoad = siblingButtonIDArray[prevButtonIndex] // two previous
+                newButton.idToLoad = siblingButtonIDArray[prevButtonIndex] // prev button will be at the current index minus one.
+                // TODO: at this point I don't have an .idToLoad or documentID
                 buttonInfoArray.append(newButton)
             }
             
-            if nextButton.isHidden == false { // add a previousButton
+            if nextButton.isHidden == false { // add a nextButton
                 let newButton = ButtonInfo()
                 newButton.buttonName = "xNext"
                 newButton.buttonRect = nextButton.frame
-                let indexOfCurrentScreen = siblingButtonIDArray.firstIndex(of: element.documentID)
-                var nextButtonIndex = indexOfCurrentScreen! + 1
-                if indexOfCurrentScreen! >= siblingButtonIDArray.count {
+                var indexOfCurrentScreen = siblingButtonIDArray.firstIndex(of: element.documentID)
+                
+                var nextButtonIndex = 0 // this 0 is a placeholder - the 0 may change.
+                if indexOfCurrentScreen == nil {
+                    // This happens when screen is a new screen & there's not yet a record for it
+                    indexOfCurrentScreen = siblingIDs!.count
+                } else {
+                    nextButtonIndex = indexOfCurrentScreen! + 1
+                }
+                if indexOfCurrentScreen! >= siblingButtonIDArray.count-1 { // already at end, so "next" should restart at index 0
                     nextButtonIndex = 0
                 }
                 newButton.idToLoad = siblingButtonIDArray[nextButtonIndex] // two previous
@@ -774,6 +794,15 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         return buttonInfoArray
     }
     
+    func deselectAllFields() {
+        // deselect any selected field to get rid of the rounded-rect box around it, so this doesn't save as part of the screen image.
+        for field in fieldCollection {
+            if field.isSelected {
+                field.isSelected = false
+            }
+        }
+    }
+    
     @IBAction func saveButtonPressed(_ sender: Any) {
         for index in 0..<fieldCollection.count {
             let field = fieldCollection[index]
@@ -785,22 +814,21 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             textBlock.backgroundColor = field.backgroundColor ?? UIColor.clear
             textBlock.originPoint = field.frame.origin
         }
-        
         buttonInfoArray = buildButtonArray()
+        deselectAllFields()
         let renderer = UIGraphicsImageRenderer(size: screenView.bounds.size)
         let grabbedImage = renderer.image { ctx in
             screenView.drawHierarchy(in: screenView.bounds, afterScreenUpdates: true)
         }
         // backgroundImageView.image = grabbedImage
         screen.screenImage = grabbedImage
-        screen.saveData { (success) in
+        screen.saveData(element: element) { (success) in
             if success {
                 self.screen.saveImage{ (success) in
                     if success {
                         print("!!! JUST FINISHED .saveImage")
                     } else {
                         print(" *** WHOA! didn't .saveImage ***")
-                        
                     }
                 }
             } else {
@@ -812,6 +840,8 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             buttonInfo.saveData { (success) in
                 if !success {
                     print("*** DANG! didn't buttonInfo.saveData!")
+                } else {
+                    print(" ^^ Successfully buttonInfo.saveData")
                 }
             }
         }
@@ -824,10 +854,14 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
                     // TODO: Something will go here, but for now, break
                     self.leaveViewController()
                 case .save:
-                    self.element.backgroundImageUUID = UUID().uuidString
+                    // self.element.backgroundImageUUID = UUID().uuidString
+                    // if this works, you can delete above. Allow only one backgroundImage, and
+                    // give it the same name as the element and screen documents.
+                    self.element.backgroundImageUUID = self.element.documentID
                     self.element.saveData { (success) in
                         if success {
                             self.element.saveImage { (success) in
+                                print(" ^^ Successfully element.saveImage")
                                 self.leaveViewController()
                             }
                         } else {
@@ -875,7 +909,6 @@ extension ScreenDesignViewController: PassFontDelegate {
 }
 
 extension ScreenDesignViewController: UINavigationControllerDelegate, UIImagePickerControllerDelegate {
-    
     func resizedImage(image: UIImage, for size: CGSize) -> UIImage? {
         let renderer = UIGraphicsImageRenderer(size: size)
         return renderer.image { (context) in
@@ -904,18 +937,19 @@ extension ScreenDesignViewController: UINavigationControllerDelegate, UIImagePic
         //  backgroundImageView.image = (info[UIImagePickerController.InfoKey.originalImage] as! UIImage)
         backgroundImageView.image = resizedImage(image: backgroundImageView.image!, for: size)
         element.backgroundImage = backgroundImageView.image! // and store image in element
-        print("** BEFORE COMPRESSION")
-        calculateImageSize(image: element.backgroundImage)
+//        print("** BEFORE COMPRESSION")
+//        calculateImageSize(image: element.backgroundImage)
         
         backgroundImageView.image = (info[UIImagePickerController.InfoKey.originalImage] as! UIImage)
-        let renderer = UIGraphicsImageRenderer(size: screenView.bounds.size)
-        let grabbedImage = renderer.image { ctx in
-            screenView.drawHierarchy(in: screenView.bounds, afterScreenUpdates: true)
-        }
-        backgroundImageView.image = grabbedImage
+        deselectAllFields()
+//        let renderer = UIGraphicsImageRenderer(size: screenView.bounds.size)
+//        let grabbedImage = renderer.image { ctx in
+//            screenView.drawHierarchy(in: screenView.bounds, afterScreenUpdates: true)
+//        }
+//        backgroundImageView.image = grabbedImage
         element.backgroundImage = backgroundImageView.image! // and store image in element
-        print("** AFTER COMPRESSION")
-        calculateImageSize(image: element.backgroundImage)
+//        print("** AFTER COMPRESSION")
+//        calculateImageSize(image: element.backgroundImage)
         backgroundImageStatus = .save
         dismiss(animated: true) {
             // TODO: image saving here

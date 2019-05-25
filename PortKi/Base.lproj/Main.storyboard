@@ -598,7 +598,7 @@
                                                 </constraints>
                                             </stackView>
                                             <stackView opaque="NO" contentMode="scaleToFill" spacing="3" translatesAutoresizingMaskIntoConstraints="NO" id="hg9-C0-VeQ">
-                                                <rect key="frame" x="8" y="476" width="100" height="20"/>
+                                                <rect key="frame" x="8" y="476" width="105" height="20"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Hex:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="z99-2k-SEf">
                                                         <rect key="frame" x="0.0" y="0.0" width="30" height="20"/>
@@ -611,9 +611,9 @@
                                                         <nil key="highlightedColor"/>
                                                     </label>
                                                     <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" text="000000" borderStyle="roundedRect" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="zSd-NZ-50h" customClass="AllowedCharsTextField" customModule="PortKi" customModuleProvider="target">
-                                                        <rect key="frame" x="33" y="0.0" width="67" height="20"/>
+                                                        <rect key="frame" x="33" y="0.0" width="72" height="20"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="width" constant="67" id="9hs-Tr-NOO"/>
+                                                            <constraint firstAttribute="width" constant="72" id="9hs-Tr-NOO"/>
                                                             <constraint firstAttribute="height" constant="20" id="hN4-hM-8JG"/>
                                                         </constraints>
                                                         <nil key="textColor"/>
@@ -629,7 +629,7 @@
                                                 </subviews>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="20" id="LhY-9l-Udd"/>
-                                                    <constraint firstAttribute="width" constant="100" id="XDI-UG-Kq6"/>
+                                                    <constraint firstAttribute="width" constant="105" id="XDI-UG-Kq6"/>
                                                 </constraints>
                                             </stackView>
                                             <stackView opaque="NO" contentMode="scaleToFill" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="Pm0-w6-Hh3">
