@@ -713,6 +713,8 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         leaveViewController()
     }
     
+    // upload Lily's physical form to CampMinder. Questions: 617-680-3389 Nurse: Andrea
+    
     func buildButtonArray() -> [ButtonInfo] {
         if element.elementName != "Home" { // if it's not the Home screen, then it must have a parent, so find this so it can be used to find prev, next (if needed) and back buttons.
             let parentID = element.parentID

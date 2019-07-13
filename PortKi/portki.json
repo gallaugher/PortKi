@@ -1,0 +1,139 @@
+{
+    "screens": [
+        {
+            "pageID": "Home",
+            "buttons": [
+                {
+                    "text": "Courses",
+                    "buttonCoordinates": {
+                        "x": 55,
+                        "y": 199,
+                        "width": 69,
+                        "height": 28
+                    },
+                    "buttonDestination": "E1DEAD26-1737-4711-A1F9-9EC4591F6C17"
+                },
+                {
+                    "text": "Contact",
+                    "buttonCoordinates": {
+                        "x": 135,
+                        "y": 199,
+                        "width": 67,
+                        "height": 28
+                    },
+                    "buttonDestination": "3385972A-90DB-4A1F-A9C4-A1D83E26CE19"
+                },
+                {
+                    "text": "News",
+                    "buttonCoordinates": {
+                        "x": 214,
+                        "y": 199,
+                        "width": 51,
+                        "height": 28
+                    },
+                    "buttonDestination": "773BA8A8-7AD3-413E-B2FF-4676C2E35B8A"
+                }
+            ]
+        },
+        {
+            "pageID": "E1DEAD26-1737-4711-A1F9-9EC4591F6C17",
+            "buttons": [
+                {
+                    "text": "xBack",
+                    "buttonCoordinates": {
+                        "x": 269,
+                        "y": 188,
+                        "width": 44,
+                        "height": 44
+                    },
+                    "buttonDestination": "Home"
+                }
+            ]
+        },
+        {
+            "pageID": "3385972A-90DB-4A1F-A9C4-A1D83E26CE19",
+            "buttons": [
+                {
+                    "text": "xBack",
+                    "buttonCoordinates": {
+                        "x": 269,
+                        "y": 188,
+                        "width": 44,
+                        "height": 44
+                    },
+                    "buttonDestination": "Home"
+                }
+            ]
+        },
+        {
+            "pageID": "773BA8A8-7AD3-413E-B2FF-4676C2E35B8A",
+            "buttons": [
+                {
+                    "text": "xBack",
+                    "buttonCoordinates": {
+                        "x": 269,
+                        "y": 188,
+                        "width": 44,
+                        "height": 44
+                    },
+                    "buttonDestination": "Home"
+                },
+                {
+                    "text": "xLeft",
+                    "buttonCoordinates": {
+                        "x": 0,
+                        "y": 88,
+                        "width": 30,
+                        "height": 44
+                    },
+                    "buttonDestination": "C9EA0335-3354-4801-B968-BC54AAA57B96"
+                },
+                {
+                    "text": "xRight",
+                    "buttonCoordinates": {
+                        "x": 290,
+                        "y": 88,
+                        "width": 30,
+                        "height": 44
+                    },
+                    "buttonDestination": "C9EA0335-3354-4801-B968-BC54AAA57B96"
+                }
+            ]
+        },
+        {
+            "pageID": "C9EA0335-3354-4801-B968-BC54AAA57B96",
+            "buttons": [
+                {
+                    "text": "xBack",
+                    "buttonCoordinates": {
+                        "x": 269,
+                        "y": 188,
+                        "width": 44,
+                        "height": 44
+                    },
+                    "buttonDestination": "Home"
+                },
+                {
+                    "text": "xLeft",
+                    "buttonCoordinates": {
+                        "x": 0,
+                        "y": 88,
+                        "width": 30,
+                        "height": 44
+                    },
+                    "buttonDestination": "773BA8A8-7AD3-413E-B2FF-4676C2E35B8A"
+                },
+                {
+                    "text": "xRight",
+                    "buttonCoordinates": {
+                        "x": 290,
+                        "y": 88,
+                        "width": 30,
+                        "height": 44
+                    },
+                    "buttonDestination": "773BA8A8-7AD3-413E-B2FF-4676C2E35B8A"
+                }
+            ]
+        }
+    ]
+}
