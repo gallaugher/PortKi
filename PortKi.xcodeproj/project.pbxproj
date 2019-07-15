@@ -25,6 +25,7 @@
 		3E4E3A83229345D60078DB45 /* UITextField+limitLength.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4E3A82229345D60078DB45 /* UITextField+limitLength.swift */; };
 		3E850D462297169800F4B739 /* Screen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E850D452297169800F4B739 /* Screen.swift */; };
 		3E850D482297176300F4B739 /* ButtonInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E850D472297176300F4B739 /* ButtonInfo.swift */; };
+		3E85BF9322DCD09A00943D81 /* code.py in Resources */ = {isa = PBXBuildFile; fileRef = 3E85BF9222DCD09A00943D81 /* code.py */; };
 		3E89CC7D228B86D40067B0F0 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3E89CC7C228B86D40067B0F0 /* GoogleService-Info.plist */; };
 		3E89CC7F228B88550067B0F0 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC7E228B88550067B0F0 /* Constants.swift */; };
 		3E89CC81228B889E0067B0F0 /* Element.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC80228B889E0067B0F0 /* Element.swift */; };
@@ -62,6 +63,7 @@
 		3E4E3A82229345D60078DB45 /* UITextField+limitLength.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITextField+limitLength.swift"; sourceTree = "<group>"; };
 		3E850D452297169800F4B739 /* Screen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screen.swift; sourceTree = "<group>"; };
 		3E850D472297176300F4B739 /* ButtonInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonInfo.swift; sourceTree = "<group>"; };
+		3E85BF9222DCD09A00943D81 /* code.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = code.py; sourceTree = "<group>"; };
 		3E89CC7C228B86D40067B0F0 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = SOURCE_ROOT; };
 		3E89CC7E228B88550067B0F0 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		3E89CC80228B889E0067B0F0 /* Element.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Element.swift; sourceTree = "<group>"; };
@@ -153,6 +155,7 @@
 				3E11E3BC228B8436001599ED /* Info.plist */,
 				3E89CC7C228B86D40067B0F0 /* GoogleService-Info.plist */,
 				3E480CE522D6C0510084AF63 /* portki.json */,
+				3E85BF9222DCD09A00943D81 /* code.py */,
 			);
 			path = PortKi;
 			sourceTree = "<group>";
@@ -230,6 +233,7 @@
 				3E11E3BB228B8436001599ED /* LaunchScreen.storyboard in Resources */,
 				3E89CC7D228B86D40067B0F0 /* GoogleService-Info.plist in Resources */,
 				3E11E3B8228B8436001599ED /* Assets.xcassets in Resources */,
+				3E85BF9322DCD09A00943D81 /* code.py in Resources */,
 				3E11E3B6228B8435001599ED /* Main.storyboard in Resources */,
 				3E480CE622D6C0510084AF63 /* portki.json in Resources */,
 			);

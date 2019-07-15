@@ -195,6 +195,11 @@
                                 <action selector="signOutPressed:" destination="BYZ-38-t0r" id="c36-9J-ZJB"/>
                             </connections>
                         </barButtonItem>
+                        <barButtonItem key="rightBarButtonItem" title="Update PyPortal" id="Wfx-Nw-ciT">
+                            <connections>
+                                <action selector="updatePyPortalPressed:" destination="BYZ-38-t0r" id="YNX-fR-44H"/>
+                            </connections>
+                        </barButtonItem>
                     </navigationItem>
                     <connections>
                         <outlet property="tableView" destination="SoN-6c-qB6" id="HaJ-Ti-sn6"/>

@@ -129,6 +129,35 @@ class ScreenListViewController: UIViewController {
             print("*** ERROR: Couldn't sign out")
         }
     }
+    
+    
+    @IBAction func updatePyPortalPressed(_ sender: UIBarButtonItem) {
+        var screens_json = """
+        {
+            "screens": [\n
+        """
+        // TODO: Loop through the screens & build the JSON.
+        
+        for index in 0..<elements.elementArray.count {
+            if elements.elementArray[index].elementType != "button" {
+                screens_json += """
+                        {
+                            "pageID": "\(elements.elementArray[index].elementName)"\n
+                """
+                screens_json += """
+                        },\n
+                """
+            }
+        }
+        _ = screens_json.popLast()
+        _ = screens_json.popLast()
+        
+        screens_json += """
+        \n    ]
+        }
+        """
+        print(screens_json)
+    }
 }
 
 extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
