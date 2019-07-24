@@ -19,7 +19,7 @@
 		3E480CE622D6C0510084AF63 /* portki.json in Resources */ = {isa = PBXBuildFile; fileRef = 3E480CE522D6C0510084AF63 /* portki.json */; };
 		3E4DB79622961F2A00F73F2F /* PaddedTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4DB79522961F2A00F73F2F /* PaddedTextField.swift */; };
 		3E4DB79A2296205000F73F2F /* ButtonTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4DB7972296204F00F73F2F /* ButtonTableViewCell.swift */; };
-		3E4DB79B2296205000F73F2F /* PageTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4DB7982296205000F73F2F /* PageTableViewCell.swift */; };
+		3E4DB79B2296205000F73F2F /* ScreenTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4DB7982296205000F73F2F /* ScreenTableViewCell.swift */; };
 		3E4DB79C2296205000F73F2F /* HomeTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4DB7992296205000F73F2F /* HomeTableViewCell.swift */; };
 		3E4E3A81229342AE0078DB45 /* UITextField+Characters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4E3A80229342AE0078DB45 /* UITextField+Characters.swift */; };
 		3E4E3A83229345D60078DB45 /* UITextField+limitLength.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4E3A82229345D60078DB45 /* UITextField+limitLength.swift */; };
@@ -36,9 +36,11 @@
 		3E89CC93228C4BCD0067B0F0 /* ScreenDesignCellDelegates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC92228C4BCD0067B0F0 /* ScreenDesignCellDelegates.swift */; };
 		3E89CC95228C4C660067B0F0 /* ToggleButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC94228C4C660067B0F0 /* ToggleButton.swift */; };
 		3E89CC9F228C511A0067B0F0 /* CheckmarkTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC9E228C511A0067B0F0 /* CheckmarkTableViewCell.swift */; };
+		3EA66A2F22E77F14003F8B2B /* PortkiNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EA66A2E22E77F14003F8B2B /* PortkiNode.swift */; };
 		3EA68357228C622900990E61 /* TextBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EA68356228C622900990E61 /* TextBlock.swift */; };
 		3EA68359228C631900990E61 /* FontListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EA68358228C631900990E61 /* FontListViewController.swift */; };
 		3EC8046B2295E85F0007FDC6 /* TextBlocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EC8046A2295E85F0007FDC6 /* TextBlocks.swift */; };
+		3EFF14EC22E681A5000476CD /* PortkiScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EFF14EB22E681A5000476CD /* PortkiScreen.swift */; };
 		60BE281345AEE43D446A6922 /* Pods_PortKi.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4189CD19B3BBB2B4E9220FC /* Pods_PortKi.framework */; };
 /* End PBXBuildFile section */
 
@@ -57,7 +59,7 @@
 		3E480CE522D6C0510084AF63 /* portki.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = portki.json; sourceTree = "<group>"; };
 		3E4DB79522961F2A00F73F2F /* PaddedTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaddedTextField.swift; sourceTree = "<group>"; };
 		3E4DB7972296204F00F73F2F /* ButtonTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ButtonTableViewCell.swift; sourceTree = "<group>"; };
-		3E4DB7982296205000F73F2F /* PageTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PageTableViewCell.swift; sourceTree = "<group>"; };
+		3E4DB7982296205000F73F2F /* ScreenTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScreenTableViewCell.swift; sourceTree = "<group>"; };
 		3E4DB7992296205000F73F2F /* HomeTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HomeTableViewCell.swift; sourceTree = "<group>"; };
 		3E4E3A80229342AE0078DB45 /* UITextField+Characters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITextField+Characters.swift"; sourceTree = "<group>"; };
 		3E4E3A82229345D60078DB45 /* UITextField+limitLength.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITextField+limitLength.swift"; sourceTree = "<group>"; };
@@ -74,9 +76,11 @@
 		3E89CC92228C4BCD0067B0F0 /* ScreenDesignCellDelegates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenDesignCellDelegates.swift; sourceTree = "<group>"; };
 		3E89CC94228C4C660067B0F0 /* ToggleButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToggleButton.swift; sourceTree = "<group>"; };
 		3E89CC9E228C511A0067B0F0 /* CheckmarkTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckmarkTableViewCell.swift; sourceTree = "<group>"; };
+		3EA66A2E22E77F14003F8B2B /* PortkiNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortkiNode.swift; sourceTree = "<group>"; };
 		3EA68356228C622900990E61 /* TextBlock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextBlock.swift; sourceTree = "<group>"; };
 		3EA68358228C631900990E61 /* FontListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontListViewController.swift; sourceTree = "<group>"; };
 		3EC8046A2295E85F0007FDC6 /* TextBlocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextBlocks.swift; sourceTree = "<group>"; };
+		3EFF14EB22E681A5000476CD /* PortkiScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortkiScreen.swift; sourceTree = "<group>"; };
 		5A8498B4B9D682510E672921 /* Pods-PortKi.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PortKi.release.xcconfig"; path = "Pods/Target Support Files/Pods-PortKi/Pods-PortKi.release.xcconfig"; sourceTree = "<group>"; };
 		9040600BCE3DAF2A17503CB2 /* Pods-PortKi.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PortKi.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PortKi/Pods-PortKi.debug.xcconfig"; sourceTree = "<group>"; };
 		C4189CD19B3BBB2B4E9220FC /* Pods_PortKi.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PortKi.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -127,6 +131,8 @@
 				3E89CC7E228B88550067B0F0 /* Constants.swift */,
 				3E850D452297169800F4B739 /* Screen.swift */,
 				3E850D472297176300F4B739 /* ButtonInfo.swift */,
+				3EFF14EB22E681A5000476CD /* PortkiScreen.swift */,
+				3EA66A2E22E77F14003F8B2B /* PortkiNode.swift */,
 				3E89CC80228B889E0067B0F0 /* Element.swift */,
 				3E89CC82228B88CC0067B0F0 /* Elements.swift */,
 				3EA68356228C622900990E61 /* TextBlock.swift */,
@@ -135,7 +141,7 @@
 				3E11E3B2228B8435001599ED /* ScreenListViewController.swift */,
 				3E4DB7972296204F00F73F2F /* ButtonTableViewCell.swift */,
 				3E4DB7992296205000F73F2F /* HomeTableViewCell.swift */,
-				3E4DB7982296205000F73F2F /* PageTableViewCell.swift */,
+				3E4DB7982296205000F73F2F /* ScreenTableViewCell.swift */,
 				3E279AC9229472BA000A20E0 /* ScreenDesignViewController.swift */,
 				3E89CC92228C4BCD0067B0F0 /* ScreenDesignCellDelegates.swift */,
 				3EA68358228C631900990E61 /* FontListViewController.swift */,
@@ -251,6 +257,7 @@
 			);
 			inputPaths = (
 				"${SRCROOT}/Pods/Target Support Files/Pods-PortKi/Pods-PortKi-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/Alamofire/Alamofire.framework",
 				"${BUILT_PRODUCTS_DIR}/BoringSSL-GRPC/openssl_grpc.framework",
 				"${BUILT_PRODUCTS_DIR}/ColorSlider/ColorSlider.framework",
 				"${BUILT_PRODUCTS_DIR}/CropViewController/CropViewController.framework",
@@ -259,6 +266,7 @@
 				"${BUILT_PRODUCTS_DIR}/GoogleUtilities/GoogleUtilities.framework",
 				"${BUILT_PRODUCTS_DIR}/Protobuf/Protobuf.framework",
 				"${BUILT_PRODUCTS_DIR}/SDWebImage/SDWebImage.framework",
+				"${BUILT_PRODUCTS_DIR}/SwiftyJSON/SwiftyJSON.framework",
 				"${BUILT_PRODUCTS_DIR}/gRPC-C++/grpcpp.framework",
 				"${BUILT_PRODUCTS_DIR}/gRPC-Core/grpc.framework",
 				"${BUILT_PRODUCTS_DIR}/leveldb-library/leveldb.framework",
@@ -268,6 +276,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Alamofire.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/openssl_grpc.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ColorSlider.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CropViewController.framework",
@@ -276,6 +285,7 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleUtilities.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Protobuf.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDWebImage.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SwiftyJSON.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/grpcpp.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/grpc.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/leveldb.framework",
@@ -343,6 +353,7 @@
 			files = (
 				3E89CC9F228C511A0067B0F0 /* CheckmarkTableViewCell.swift in Sources */,
 				3E4DB79A2296205000F73F2F /* ButtonTableViewCell.swift in Sources */,
+				3EA66A2F22E77F14003F8B2B /* PortkiNode.swift in Sources */,
 				3E279ACA229472BA000A20E0 /* ScreenDesignViewController.swift in Sources */,
 				3EA68357228C622900990E61 /* TextBlock.swift in Sources */,
 				3E11E3B3228B8435001599ED /* ScreenListViewController.swift in Sources */,
@@ -351,7 +362,7 @@
 				3E11E3B1228B8435001599ED /* AppDelegate.swift in Sources */,
 				3E89CC81228B889E0067B0F0 /* Element.swift in Sources */,
 				3E3CF42B22949D4900ACD87B /* UIFont+helpers.swift in Sources */,
-				3E4DB79B2296205000F73F2F /* PageTableViewCell.swift in Sources */,
+				3E4DB79B2296205000F73F2F /* ScreenTableViewCell.swift in Sources */,
 				3E850D482297176300F4B739 /* ButtonInfo.swift in Sources */,
 				3EC8046B2295E85F0007FDC6 /* TextBlocks.swift in Sources */,
 				3E4E3A83229345D60078DB45 /* UITextField+limitLength.swift in Sources */,
@@ -359,6 +370,7 @@
 				3E89CC7F228B88550067B0F0 /* Constants.swift in Sources */,
 				3E89CC93228C4BCD0067B0F0 /* ScreenDesignCellDelegates.swift in Sources */,
 				3E4DB79622961F2A00F73F2F /* PaddedTextField.swift in Sources */,
+				3EFF14EC22E681A5000476CD /* PortkiScreen.swift in Sources */,
 				3E89CC95228C4C660067B0F0 /* ToggleButton.swift in Sources */,
 				3E89CC8B228B99DA0067B0F0 /* PlusAndDisclosureDelegate.swift in Sources */,
 				3E89CC8D228B9DEB0067B0F0 /* UIImage+toData.swift in Sources */,

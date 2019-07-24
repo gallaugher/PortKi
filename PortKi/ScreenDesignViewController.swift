@@ -24,7 +24,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     }
     
     @IBOutlet weak var screenView: UIView! // a view with fixed dimensions, same size as the PyPortal's screen
-    // The content view is inside the screenView, all interface elements are configured to the contentView, so any shifting of contentView will shift all elements by the same amount.
+    // The content view is inside the screenView, all interface portkiNodes are configured to the contentView, so any shifting of contentView will shift all portkiNodes by the same amount.
     @IBOutlet weak var contentView: UIView!
     @IBOutlet weak var grayBackgroundView: UIView!
     @IBOutlet var fieldCollection: [UITextField]! // Not connected, fields created programmatically
@@ -59,8 +59,9 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet var actionButtons: [UIButton]! = []
     @IBOutlet weak var backgroundImageView: UIImageView!
     
-    var element: Element!
-    var elements: Elements!
+    var portkiNode: PortkiNode!
+    var portkiNodes: [PortkiNode]!
+    var portkiScreen: PortkiScreen!
     var textBlocks = TextBlocks()
     var originalScrollViewFrame: CGRect!
     var selectedColorButtonTag = 0 // 0 = text, 1 = text background, 2 = screen background
@@ -96,7 +97,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     func configureUserInterface() {
         // TODO: eventually will update this to whatever is saved
         configurePreviousNextButtons()
-        screenView.backgroundColor = element.backgroundColor
+        // screenView.backgroundColor = portkiNode.backgroundColor
         grayBackgroundView.sendSubviewToBack(backgroundImageView)
         grayBackgroundView.sendSubviewToBack(screenView)
         configureColorSlider()
@@ -119,39 +120,59 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     
     func loadTextBlocks() {
         // get all the text blocks that make up the selected screen
-        textBlocks.loadData(element: element) {
-            if self.textBlocks.textBlocksArray.count == 0 {
-                self.createNewField()
-                self.configureUserInterface()
-            } else {
-                self.createFieldCollectionFromTextBlocks()
-                self.configureUserInterface()
-            }
+        
+        // TODO I'll need to get all of the textblocks here. Not sure how to save them. Maybe an array of dictionary String: Any key value pair types. Unsure.
+        
+        if self.textBlocks.textBlocksArray.count == 0 {
+            self.createNewField()
+            self.configureUserInterface()
+        } else {
+            self.createFieldCollectionFromTextBlocks()
+            self.configureUserInterface()
         }
+        
         backgroundImageView.image = UIImage()
-        if element.backgroundImageUUID != "" {
-            element.loadBackgroundImage {
-                self.backgroundImageView.image = self.element.backgroundImage
-            }
+        if portkiNode.backgroundImageUUID != "" {
+            // TODO: Handle loading background image, here
+//            element.loadBackgroundImage {
+//                self.backgroundImageView.image = self.element.backgroundImage
+//            }
         }
-        screen.loadData (element: element) {
-            
-        }
+
+        
+        //        textBlocks.loadData(element: element) {
+        //            if self.textBlocks.textBlocksArray.count == 0 {
+        //                self.createNewField()
+        //                self.configureUserInterface()
+        //            } else {
+        //                self.createFieldCollectionFromTextBlocks()
+        //                self.configureUserInterface()
+        //            }
+        //        }
+        //        backgroundImageView.image = UIImage()
+        //        if element.backgroundImageUUID != "" {
+        //            element.loadBackgroundImage {
+        //                self.backgroundImageView.image = self.element.backgroundImage
+        //            }
+        //        }
+        //        screen.loadData (element: element) {
+        //
+        //        }
     }
     
     func configurePreviousNextButtons(){
         // Hide the back button if you're looking at the "Home" screen (because there's no way to go back if you're at home, the root of the tree hierarchy.
-        if element.elementType == "Home" {
+        if portkiNode.nodeType == "Home" {
             backButton.isHidden = true
             previousButton.isHidden = true
             nextButton.isHidden = true
         }
         
-        let parentID = element.parentID
-        let foundParent = elements.elementArray.first(where: {$0.documentID == parentID})
+        let parentID = portkiNode.parentID
+        let foundParent = portkiNodes.first(where: {$0.documentID == parentID})
         guard let parent = foundParent else { // unwrap found parent
-            if element.elementType != "Home" {
-                print("😡 ERROR: could not get the element's parent")
+            if portkiNode.nodeType != "Home" {
+                print("😡 ERROR: could not get the node's parent")
             }
             return
         }
@@ -300,17 +321,19 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             return
         }
         
-        let clickedButtonID = element.childrenIDs[clickedButtonIndex]
-        let clickedButtonElement = elements.elementArray.first(where: {$0.documentID == clickedButtonID})
-        clickedButtonElement?.elementName = sender.titleLabel?.text ?? "<ERROR CHANGING BUTTON TITLE>"
+        let clickedButtonID = portkiNode.childrenIDs[clickedButtonIndex]
+        var clickedButtonNode = portkiNodes.first(where: {$0.documentID == clickedButtonID})
+        clickedButtonNode?.nodeName = sender.titleLabel?.text ?? "<ERROR CHANGING BUTTON TITLE>"
         
-        clickedButtonElement?.saveData() {success in
-            if !success { // if not successful
-                print("😡 ERROR: couldn't save change to clicked button at documentID = \(clickedButtonElement!.documentID)")
-            } else {
-                print("-> Yeah, properly updated button title!")
-            }
-        }
+        // TODO: You'll need to save the updated button title
+        
+        //        clickedButtonNode?.saveData() {success in
+        //            if !success { // if not successful
+        //                print("😡 ERROR: couldn't save change to clicked button at documentID = \(clickedButtonNode!.documentID)")
+        //            } else {
+        //                print("-> Yeah, properly updated button title!")
+        //            }
+        //        }
     }
     
     func createButton(buttonName: String) -> UIButton {
@@ -326,14 +349,14 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     
     func createButtons() {
         // no buttons to create if there aren't any children
-        guard element.childrenIDs.count > 0 else {
+        guard portkiNode.childrenIDs.count > 0 else {
             return
         }
         
         var buttonNames = [String]() // clear out button names
-        for childID in element.childrenIDs { // loop through all childIDs
-            if let buttonElement = elements.elementArray.first(where: {$0.documentID == childID}) { // if you can find an element with that childID
-                buttonNames.append(buttonElement.elementName) // add it's name to buttonNames
+        for childID in portkiNode.childrenIDs { // loop through all childIDs
+            if let buttonNode = portkiNodes.first(where: {$0.documentID == childID}) { // if you can find an node with that childID
+                buttonNames.append(buttonNode.nodeName) // add it's name to buttonNames
             }
         }
         
@@ -358,7 +381,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             screenView.addSubview(button)
             buttonX = buttonX + button.frame.width // move start portion of next button rect to the end of the current button rect
         }
-        if element.elementType == "Home" {
+        if portkiNode.nodeType == "Home" {
             var widthOfAllButtons = actionButtons.reduce(0.0,{$0 + $1.frame.width})
             widthOfAllButtons = widthOfAllButtons + (CGFloat(actionButtons.count-1)*indent)
             var shiftedX = (screenView.frame.width-widthOfAllButtons)/2
@@ -562,12 +585,15 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "ShowFonts" { // then tableView cell was clicked
+        switch segue.identifier {
+        case "ShowFonts":
             let destination = segue.destination as! FontListViewController
             destination.delegate = self
             destination.selectedFont = fieldCollection[selectedTextBlockIndex].font
-        } else {
-            print("😡 ERROR: Should not have arrived in the else in prepareForSegue")
+        case "UwindFromScreenDesign":
+            print("just lettin' you know I'm unwinding from screen design")
+        default:
+         print("😡 ERROR: unexpectedly hit the default case in ScreenDesignViewController's prepareForSegue")
         }
     }
     
@@ -716,12 +742,12 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     // upload Lily's physical form to CampMinder. Questions: 617-680-3389 Nurse: Andrea
     
     func buildButtonArray() -> [ButtonInfo] {
-        if element.elementName != "Home" { // if it's not the Home screen, then it must have a parent, so find this so it can be used to find prev, next (if needed) and back buttons.
-            let parentID = element.parentID
-            let foundParent = elements.elementArray.first(where: {$0.documentID == parentID})
+        if portkiNode.nodeType != "Home" { // if it's not the Home screen, then it must have a parent, so find this so it can be used to find prev, next (if needed) and back buttons.
+            let parentID = portkiNode.parentID
+            let foundParent = portkiNodes.first(where: {$0.documentID == parentID})
             guard let parent = foundParent else { // unwrap found parent
-                if element.elementType != "Home" {
-                    print("😡 ERROR: could not get the element's parent")
+                if portkiNode.nodeType != "Home" {
+                    print("😡 ERROR: could not get the node's parent")
                 }
                 return [ButtonInfo]()
             }
@@ -731,7 +757,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
                 let newButton = ButtonInfo()
                 newButton.buttonName = "xPrevious"
                 newButton.buttonRect = previousButton.frame
-                var indexOfCurrentScreen = siblingButtonIDArray.firstIndex(of: element.documentID)
+                var indexOfCurrentScreen = siblingButtonIDArray.firstIndex(of: portkiNode.documentID)
                 var prevButtonIndex = 0 // this 0 is a placeholder - the 0 may change.
                 if indexOfCurrentScreen == nil {
                     // This happens when screen is a new screen & there's not yet a record for it
@@ -741,9 +767,9 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
                     prevButtonIndex = indexOfCurrentScreen! - 1
                 }
                 // I can likely delete if code below
-//                if indexOfCurrentScreen! < 0 {
-//                    prevButtonIndex = siblingButtonIDArray.count-1
-//                }
+                //                if indexOfCurrentScreen! < 0 {
+                //                    prevButtonIndex = siblingButtonIDArray.count-1
+                //                }
                 if prevButtonIndex < 0 {
                     prevButtonIndex = siblingButtonIDArray.count-1
                 }
@@ -756,7 +782,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
                 let newButton = ButtonInfo()
                 newButton.buttonName = "xNext"
                 newButton.buttonRect = nextButton.frame
-                var indexOfCurrentScreen = siblingButtonIDArray.firstIndex(of: element.documentID)
+                var indexOfCurrentScreen = siblingButtonIDArray.firstIndex(of: portkiNode.documentID)
                 
                 var nextButtonIndex = 0 // this 0 is a placeholder - the 0 may change.
                 if indexOfCurrentScreen == nil {
@@ -775,23 +801,23 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         }
         
         // add action buttons to buttonInfoArray
-        if element.childrenIDs.count == actionButtons.count {
-            for childIndex in 0..<element.childrenIDs.count { // loop through all childIDs
+        if portkiNode.childrenIDs.count == actionButtons.count {
+            for childIndex in 0..<portkiNode.childrenIDs.count { // loop through all childIDs
                 let newButton = ButtonInfo()
                 newButton.buttonName = actionButtons[childIndex].titleLabel!.text!
                 newButton.buttonRect = actionButtons[childIndex].frame
-                let buttonDocumentID = element.childrenIDs[childIndex]
+                let buttonDocumentID = portkiNode.childrenIDs[childIndex]
                 print(">> Looking for buttonDocumentID: \(buttonDocumentID)")
-                if let foundButtonElement = elements.elementArray.first(where: {$0.documentID == buttonDocumentID}) {
-                    newButton.idToLoad = foundButtonElement.childrenIDs[0] // load the first child page. There's often only one, but if you have a bunch at the same level, load the first
+                if let foundButtonNode = portkiNodes.first(where: {$0.documentID == buttonDocumentID}) {
+                    newButton.idToLoad = foundButtonNode.childrenIDs[0] // load the first child page. There's often only one, but if you have a bunch at the same level, load the first
                     print(">> FOUND buttonDocumentID: \(buttonDocumentID) and it's first childrenIDs is \(newButton.idToLoad)")
                 } else {
-                    print("😡 ERROR: for some reason foundButtonElement couldn't be found!")
+                    print("😡 ERROR: for some reason foundButtonNode couldn't be found!")
                 }
                 buttonInfoArray.append(newButton)
             }
         } else {
-            print("ERROR: For some reason element.childrenIDs.count \(element.childrenIDs.count) does not equal actionButtons.count \(actionButtons.count)")
+            print("ERROR: For some reason portkiNode.childrenIDs.count \(portkiNode.childrenIDs.count) does not equal actionButtons.count \(actionButtons.count)")
         }
         return buttonInfoArray
     }
@@ -805,7 +831,50 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
+    func saveNodesAsJson() {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        if let encoded = try? encoder.encode(portkiNodes) {
+            if let jsonString = String(data: encoded, encoding: .utf8) {
+                print(jsonString)
+                
+                let parameters = ["value": jsonString]
+                guard let json = try? JSONSerialization.data(withJSONObject: parameters, options: []) else {
+                    print("😡 Grr. json conversion didn't work")
+                    return
+                }
+                print("** JSON Conversion Worked !!!")
+                print(json)
+                
+                let filename = getDocumentsDirectory().appendingPathComponent("portkiNodes.json")
+                do {
+                    try json.write(to: filename, options: .atomic)
+//                    try json.write(to: filename, atomically: true, encoding: String.Encoding.utf8)
+                } catch {
+                    print("😡 Grr. json wasn't writte to file \(error.localizedDescription)")
+                }
+            }
+        } else {
+            print("encoding didn't work")
+        }
+    }
+    
+    func getDocumentsDirectory() -> URL {
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        return paths[0]
+    }
+    
     @IBAction func saveButtonPressed(_ sender: Any) {
+        
+        if let currentScreenIndex = self.portkiNodes.firstIndex(where: {$0.nodeType == portkiNode.documentID}) {
+            // update currentScreen
+            portkiNodes[currentScreenIndex] = portkiNode
+        } else {
+            portkiNodes.append(portkiNode)
+        }
+        
+        saveNodesAsJson()
+        
         for index in 0..<fieldCollection.count {
             let field = fieldCollection[index]
             let textBlock = textBlocks.textBlocksArray[index]
@@ -817,67 +886,80 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             textBlock.originPoint = field.frame.origin
         }
         buttonInfoArray = buildButtonArray()
-        deselectAllFields()
-        let renderer = UIGraphicsImageRenderer(size: screenView.bounds.size)
-        let grabbedImage = renderer.image { ctx in
-            screenView.drawHierarchy(in: screenView.bounds, afterScreenUpdates: true)
-        }
-        // backgroundImageView.image = grabbedImage
-        screen.screenImage = grabbedImage
-        screen.saveData(element: element) { (success) in
-            if success {
-                self.screen.saveImage{ (success) in
-                    if success {
-                        print("!!! JUST FINISHED .saveImage")
-                    } else {
-                        print(" *** WHOA! didn't .saveImage ***")
-                    }
-                }
-            } else {
-                print("*** DANG! no success at screen.saveData!")
-            }
-        }
         
+        var buttons: [Button] = []
         for buttonInfo in buttonInfoArray {
-            buttonInfo.saveData { (success) in
-                if !success {
-                    print("*** DANG! didn't buttonInfo.saveData!")
-                } else {
-                    print(" ^^ Successfully buttonInfo.saveData")
-                }
-            }
+            let buttonCoordinates = ButtonCoordinates(x: buttonInfo.buttonRect.origin.x, y: buttonInfo.buttonRect.origin.y, width: buttonInfo.buttonRect.width, height: buttonInfo.buttonRect.height)
+            let button = Button(text: buttonInfo.buttonName, buttonCoordinates: buttonCoordinates, buttonDestination: buttonInfo.idToLoad)
+            buttons.append(button)
         }
         
-        textBlocks.saveData(element: element) { success in
-            if success {
-                // self.leaveViewController()
-                switch self.backgroundImageStatus {
-                case .delete:
-                    // TODO: Something will go here, but for now, break
-                    self.leaveViewController()
-                case .save:
-                    // self.element.backgroundImageUUID = UUID().uuidString
-                    // if this works, you can delete above. Allow only one backgroundImage, and
-                    // give it the same name as the element and screen documents.
-                    self.element.backgroundImageUUID = self.element.documentID
-                    self.element.saveData { (success) in
-                        if success {
-                            self.element.saveImage { (success) in
-                                print(" ^^ Successfully element.saveImage")
-                                self.leaveViewController()
-                            }
-                        } else {
-                            print("😡 ERROR: Could not add backgroundImageUUID to elment \(self.element.elementName)")
-                            self.leaveViewController()
-                        }
-                    }
-                case .unchanged:
-                    self.leaveViewController()
-                }
-            } else {
-                print("*** ERROR: Couldn't leave this view controller because data wasn't saved.")
-            }
-        }
+        portkiScreen = PortkiScreen(pageID: portkiNode.documentID, buttons: buttons)
+        performSegue(withIdentifier: "UwindFromScreenDesign", sender: nil)
+        
+//        deselectAllFields()
+//        let renderer = UIGraphicsImageRenderer(size: screenView.bounds.size)
+//        let grabbedImage = renderer.image { ctx in
+//            screenView.drawHierarchy(in: screenView.bounds, afterScreenUpdates: true)
+//        }
+        // backgroundImageView.image = grabbedImage
+        //screen.screenImage = grabbedImage
+        // TODO: Save your nodes here!
+        //        screen.saveData(element: element) { (success) in
+        //            if success {
+        //                self.screen.saveImage{ (success) in
+        //                    if success {
+        //                        print("!!! JUST FINISHED .saveImage")
+        //                    } else {
+        //                        print(" *** WHOA! didn't .saveImage ***")
+        //                    }
+        //                }
+        //            } else {
+        //                print("*** DANG! no success at screen.saveData!")
+        //            }
+        //        }
+        
+//        for buttonInfo in buttonInfoArray {
+//            buttonInfo.saveData { (success) in
+//                if !success {
+//                    print("*** DANG! didn't buttonInfo.saveData!")
+//                } else {
+//                    print(" ^^ Successfully buttonInfo.saveData")
+//                }
+//            }
+//        }
+        
+        // TODO: Save your TextBlocks here!!
+        //        textBlocks.saveData(element: element) { success in
+        //            if success {
+        //                // self.leaveViewController()
+        //                switch self.backgroundImageStatus {
+        //                case .delete:
+        //                    // TODO: Something will go here, but for now, break
+        //                    self.leaveViewController()
+        //                case .save:
+        //                    // self.element.backgroundImageUUID = UUID().uuidString
+        //                    // if this works, you can delete above. Allow only one backgroundImage, and
+        //                    // give it the same name as the element and screen documents.
+        //                    self.element.backgroundImageUUID = self.element.documentID
+        //                    self.element.saveData { (success) in
+        //                        if success {
+        //                            self.element.saveImage { (success) in
+        //                                print(" ^^ Successfully element.saveImage")
+        //                                self.leaveViewController()
+        //                            }
+        //                        } else {
+        //                            print("😡 ERROR: Could not add backgroundImageUUID to elment \(self.element.elementName)")
+        //                            self.leaveViewController()
+        //                        }
+        //                    }
+        //                case .unchanged:
+        //                    self.leaveViewController()
+        //                }
+        //            } else {
+        //                print("*** ERROR: Couldn't leave this view controller because data wasn't saved.")
+        //            }
+        //        }
     }
     
     @IBAction func allowTextBackgroundPressed(_ sender: UIButton) {
@@ -938,20 +1020,20 @@ extension ScreenDesignViewController: UINavigationControllerDelegate, UIImagePic
         // scale & show the selected image in the app's backgroundImageView
         //  backgroundImageView.image = (info[UIImagePickerController.InfoKey.originalImage] as! UIImage)
         backgroundImageView.image = resizedImage(image: backgroundImageView.image!, for: size)
-        element.backgroundImage = backgroundImageView.image! // and store image in element
-//        print("** BEFORE COMPRESSION")
-//        calculateImageSize(image: element.backgroundImage)
+        //        portkiNode.backgroundImage = backgroundImageView.image! // and store image in portkiNode
+        //        print("** BEFORE COMPRESSION")
+        //        calculateImageSize(image: element.backgroundImage)
         
         backgroundImageView.image = (info[UIImagePickerController.InfoKey.originalImage] as! UIImage)
         deselectAllFields()
-//        let renderer = UIGraphicsImageRenderer(size: screenView.bounds.size)
-//        let grabbedImage = renderer.image { ctx in
-//            screenView.drawHierarchy(in: screenView.bounds, afterScreenUpdates: true)
-//        }
-//        backgroundImageView.image = grabbedImage
-        element.backgroundImage = backgroundImageView.image! // and store image in element
-//        print("** AFTER COMPRESSION")
-//        calculateImageSize(image: element.backgroundImage)
+        //        let renderer = UIGraphicsImageRenderer(size: screenView.bounds.size)
+        //        let grabbedImage = renderer.image { ctx in
+        //            screenView.drawHierarchy(in: screenView.bounds, afterScreenUpdates: true)
+        //        }
+        //        backgroundImageView.image = grabbedImage
+        //        portkiNode.backgroundImage = backgroundImageView.image! // and store image in portkiNode
+        //        print("** AFTER COMPRESSION")
+        //        calculateImageSize(image: element.backgroundImage)
         backgroundImageStatus = .save
         dismiss(animated: true) {
             // TODO: image saving here

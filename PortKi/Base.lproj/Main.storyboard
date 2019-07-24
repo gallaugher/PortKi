@@ -85,7 +85,7 @@
                                             <rect key="frame" x="0.0" y="0.0" width="320" height="43.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="gTg-aH-9I1">
+                                                <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="gTg-aH-9I1" customClass="ButtonTableViewCell" customModule="PortKi" customModuleProvider="target">
                                                     <rect key="frame" x="0.0" y="0.0" width="244" height="44"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                     <subviews>
@@ -119,7 +119,7 @@
                                             <outlet property="indentView" destination="gTg-aH-9I1" id="xam-kD-9vm"/>
                                         </connections>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="PageCell" id="bGc-eZ-CN0" customClass="PageTableViewCell" customModule="PortKi" customModuleProvider="target">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="ScreenCell" id="bGc-eZ-CN0" customClass="ScreenTableViewCell" customModule="PortKi" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="116" width="320" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="bGc-eZ-CN0" id="CHY-29-ggX">
@@ -173,8 +173,8 @@
                                         <connections>
                                             <outlet property="disclosureButton" destination="kDR-0g-ova" id="plj-5V-6vD"/>
                                             <outlet property="indentView" destination="Hmn-2d-67m" id="kwC-jc-eOm"/>
-                                            <outlet property="pageIcon" destination="AEM-GJ-Yb6" id="Bi0-Ga-SEE"/>
                                             <outlet property="plusButton" destination="H9x-WX-pn4" id="r48-rk-zMr"/>
+                                            <outlet property="screenIcon" destination="AEM-GJ-Yb6" id="Jmp-eU-50V"/>
                                         </connections>
                                     </tableViewCell>
                                 </prototypes>
@@ -197,7 +197,7 @@
                         </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" title="Update PyPortal" id="Wfx-Nw-ciT">
                             <connections>
-                                <action selector="updatePyPortalPressed:" destination="BYZ-38-t0r" id="YNX-fR-44H"/>
+                                <action selector="updatePyPortalPressed:" destination="BYZ-38-t0r" id="WED-P6-bHr"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
@@ -794,9 +794,11 @@
                         <outletCollection property="colorFrameViewCollection" destination="j3z-N9-vkW" collectionClass="NSMutableArray" id="mST-S3-RZe"/>
                         <outletCollection property="colorFrameViewCollection" destination="3sE-a8-mXU" collectionClass="NSMutableArray" id="rZe-ba-cLj"/>
                         <outletCollection property="colorFrameViewCollection" destination="1eY-jf-GOi" collectionClass="NSMutableArray" id="S6R-3R-lyw"/>
+                        <segue destination="swE-jL-NL0" kind="unwind" identifier="UwindFromScreenDesign" unwindAction="unwindFromScreenDesignViewControllerWithSegue:" id="eNX-LW-GNG"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="JpH-oC-PAE" userLabel="First Responder" sceneMemberID="firstResponder"/>
+                <exit id="swE-jL-NL0" userLabel="Exit" sceneMemberID="exit"/>
             </objects>
             <point key="canvasLocation" x="2824" y="26"/>
         </scene>

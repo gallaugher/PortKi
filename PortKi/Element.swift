@@ -11,7 +11,7 @@ import Firebase
 
 class Element {
     var elementName: String
-    var elementType: String
+    var elementType: String // "home", "button", "screen" I think
     var parentID: String
     var hierarchyLevel: Int // level indented, 0 for home, 1 for first buttons + pages, etc...
     var childrenIDs: [String]
@@ -51,6 +51,15 @@ class Element {
     
     convenience init() {
         self.init(elementName: "", elementType: "", parentID: "", hierarchyLevel: 0, childrenIDs: [String](), backgroundImageUUID: "", backgroundImage: UIImage(), backgroundColor: UIColor.clear, documentID: "")
+    }
+    
+    convenience init(portkiScreen: PortkiScreen) {
+        let elementName = portkiScreen.pageID
+        var elementType = "Screen"
+        if elementName == "Home" {
+            elementType == "Home"
+        }
+        self.init(elementName: elementName, elementType: elementType, parentID: "", hierarchyLevel: 0, childrenIDs: [String](), backgroundImageUUID: "", backgroundImage: UIImage(), backgroundColor: UIColor.clear, documentID: "")
     }
     
     convenience init(dictionary: [String: Any]) {
