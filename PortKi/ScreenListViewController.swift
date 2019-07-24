@@ -19,6 +19,7 @@ class ScreenListViewController: UIViewController {
     
     var portkiScreens: [PortkiScreen] = []
     var portkiNodes: [PortkiNode] = []
+    var newNodes: [PortkiNode] = []
     var newElements: [Element] = []
     var elements: Elements!
     let indentBase = 26 // how far to indent button/screen levels
@@ -37,6 +38,24 @@ class ScreenListViewController: UIViewController {
         
         loadPortkiScreens()
         loadPortkiNodes()
+        setUpFirstNodesIfNoNodesExist()
+    }
+    
+    func setUpFirstNodesIfNoNodesExist(){
+        if portkiNodes.isEmpty {
+            // if there are no portkiNodes then there must not be any portkiScreens, either
+            // If there are no portkiScreens, then create new "Home" screen and new "Home" node.
+            portkiScreens.append(PortkiScreen(pageID: "Home", buttons: [Button]()))
+            portkiNodes.append(PortkiNode(nodeName: "Home", nodeType: "Home", parentID: "", hierarchyLevel: 0, childrenIDs: [String](), backgroundImageUUID: "", documentID: "Home"))
+            tableView.reloadData()
+            let indexPathForSelectedRow = IndexPath(row: 0, section: 0) // "Home" should always be row zero.
+            tableView.selectRow(at: indexPathForSelectedRow, animated: true, scrollPosition: .top)
+            // segue to next screen since you've just created a new tree with blank "Home" screen & nodes.
+            performSegue(withIdentifier: "AddScreen", sender: nil)
+        } else {
+            // TODO: Read in json for nodes from some location where you store it - either locally or at adafruit.io
+            print(" >>> There are \(portkiNodes.count) portkiNodes")
+        }
     }
     
     func getDocumentsDirectory() -> URL {
@@ -124,84 +143,35 @@ class ScreenListViewController: UIViewController {
         }
     }
     
+    func sortNodes(node: PortkiNode) {
+        newNodes.append(node)
+        if !node.childrenIDs.isEmpty { // if there is at least one child for this element
+            for childID in node.childrenIDs { // loop through all children
+                if let child = portkiNodes.first(where: {$0.documentID == childID}) {
+                    sortNodes(node: child ) // and sort its children, if any
+                }
+            }
+        }
+    }
+    
     override func viewWillAppear(_ animated: Bool) {
+        
+        print("VWA VWA viewWillAppear HAPPENING NOW VWA VWA")
+        guard let home = portkiNodes.first(where: {$0.nodeType == "Home"}) else {
+            print("ERROR: There was a problem finding the 'Home' node")
+            return
+        }
+        newNodes = []
+        if portkiNodes.count > 1 { // more than just home, so sort
+            sortNodes(node: home)
+            portkiNodes = self.newNodes
+        }
+        self.tableView.reloadData()
         
         // NOTE: eventually read what's stored, but we're starting from scratch for now
         // loadPortkiScreens()
         
-        if portkiNodes.isEmpty {
-            // If there are no portkiScreens, then create new "Home" screen and new "Home" node.
-            portkiScreens.append(PortkiScreen(pageID: "Home", buttons: [Button]()))
-            portkiNodes.append(PortkiNode(nodeName: "Home", nodeType: "Home", parentID: "", hierarchyLevel: 0, childrenIDs: [String](), backgroundImageUUID: "", documentID: "Home"))
-            
-            // segue to next screen since you've just created a new tree with blank "Home" screen & nodes.
-        } else {
-            // TODO: Read in json for nodes from some location where you store it - either locally or at adafruit.io
-            print(" >>> There are \(portkiNodes.count) portkiNodes")
-        }
-        
-        //        if self.elements.elementArray.isEmpty {
-        //            // TODO: deal with a first-time use setup where there is no home screen
-        //
-        //        } else {
-        //            for screen in portkiScreens {
-        //                if screen.pageID == "Home" {
-        //                    var childrenIDs: [String] = []
-        //                    for button in screen.buttons {
-        //                        childrenIDs.append(button.buttonDestination)
-        //                    }
-        //                    portkiNodes.append(PortkiNode(nodeName: "Home", nodeType: "Home", parentID: "", hierarchyLevel: 0, childrenIDs: childrenIDs, backgroundImageUUID: "", backgroundImage: UIImage(), backgroundColor: UIColor.white, documentID: ""))
-        //                    loadNextNode(portkiScreen: screen, hierarchyLevel: 0)
-        //                    break
-        //                }
-        //            }
-        //        }
-        
-        
-        
-        //        elements.loadData {
-        //
-        //            if self.elements.elementArray.isEmpty {
-        //
-        //                let homeElement = Element()
-        //                homeElement.elementName = "Home"
-        //                homeElement.elementType = "Home"
-        //                homeElement.documentID = "Home"
-        //                homeElement.backgroundColor = UIColor.white
-        //
-        //                homeElement.saveData(completed: { (success) in
-        //                    if !success { // if failed
-        //                        print("😡 ERROR: could not save a Home element.")
-        //                        return
-        //                    }
-        //                    self.performSegue(withIdentifier: "AddScreen", sender: nil)
-        //                })
-        //            } else {
-        //                self.elements.loadData {
-        //                    self.newElements = []
-        //                    guard let home = self.elements.elementArray.first(where: {$0.elementType == "Home"}) else {
-        //                        print("ERROR: There was a problem finding the 'Home' element")
-        //                        return
-        //                    }
-        //                    self.sortElements(element: home)
-        //                    self.elements.elementArray = self.newElements
-        //                    self.tableView.reloadData()
-        //                }
-        //            }
-        //        }
     }
-    
-    //    func sortElements(element: Element) {
-    //        newElements.append(element)
-    //
-    //        if !element.childrenIDs.isEmpty { // if there is at least one child for this element
-    //            for childID in element.childrenIDs { // loop through all children
-    //                if let child = elements.elementArray.first(where: {$0.documentID == childID}) {
-    //                    sortElements(element: child ) // and sort its children, if any
-    //                }
-    //            }
-    //        }
-    //    }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -242,26 +212,6 @@ class ScreenListViewController: UIViewController {
             destination.portkiNode = portkiNodes.last
             destination.portkiNodes = portkiNodes
         }
-        
-        
-        //        if segue.identifier == "ShowScreen" {
-        //            let destination = segue.destination as! ScreenDesignViewController
-        //            let selectedIndexPath = tableView.indexPathForSelectedRow!
-        //            let selectedElement = elements.elementArray[selectedIndexPath.row]
-        //            if selectedElement.elementName != "Home" {
-        //                let parentIndex = elements.elementArray.firstIndex(where: {$0.documentID == elements.elementArray[selectedIndexPath.row].parentID})
-        //                if let parentIndex = parentIndex {
-        //                    destination.siblingButtonIDArray = elements.elementArray[parentIndex].childrenIDs
-        //                }
-        //            }
-        //            destination.element = elements.elementArray[selectedIndexPath.row]
-        //            destination.elements = elements
-        //        } else { // adding a screen pass the last element - we'll sort them when they're back. No need to worry about deselecting
-        //            let navigationController = segue.destination as! UINavigationController
-        //            let destination = navigationController.viewControllers.first as! ScreenDesignViewController
-        //            destination.element = elements.elementArray.last
-        //            destination.elements = elements
-        //        }
     }
     
     @IBAction func signOutPressed(_ sender: UIBarButtonItem) {
@@ -277,27 +227,21 @@ class ScreenListViewController: UIViewController {
     }
     
     @IBAction func unwindFromScreenDesignViewController(segue: UIStoryboardSegue) {
+        print("UUUUU UNWIND HAPPENING NOW UUUU")
         let sourceViewController = segue.source as! ScreenDesignViewController
-        if let indexPath = tableView.indexPathForSelectedRow {
-            portkiNodes[indexPath.row] = sourceViewController.portkiNode!
-            tableView.reloadRows(at: [indexPath], with: .automatic)
-            
-            let portkiScreen = sourceViewController.portkiScreen!
-            let portkiScreenIndex = portkiScreens.firstIndex(where: {$0.pageID == portkiScreen.pageID})
-            if let portkiScreenIndex = portkiScreenIndex {
-                portkiScreens[portkiScreenIndex] = portkiScreen
-                print(">> Must have UPDATED a screen in unwindFromScreenDesignVC")
-            } else {
-                portkiScreens.append(portkiScreen)
-                print(">> Must have just added a screen in unwindFromScreenDesignVC")
-            }
-            
+        // Unwind only happens on "Save" press, not cancel, so you should always need to update the portkiNode
+        
+        // First update portkiScreens - the data structure used to create JSON for the PyPortal:
+        let portkiScreen = sourceViewController.portkiScreen!
+        let portkiScreenIndex = portkiScreens.firstIndex(where: {$0.pageID == portkiScreen.pageID})
+        
+        // TODO: return to this to check if I should be creating the screen when I create the node. I think I should. And if I do, then I may be able to get rid of the if else below.
+        if let portkiScreenIndex = portkiScreenIndex {
+            portkiScreens[portkiScreenIndex] = portkiScreen
+            print(">> Must have UPDATED a screen in unwindFromScreenDesignVC")
         } else {
-            let newIndexPath = IndexPath(row: portkiNodes.count, section: 0)
-            portkiNodes.append(sourceViewController.portkiNode!)
-            tableView.insertRows(at: [newIndexPath], with: .automatic)
-            
-            portkiScreens.append(sourceViewController.portkiScreen!)
+            portkiScreens.append(portkiScreen)
+            print(">> Must have just added a new screen in unwindFromScreenDesignVC")
         }
     }
     
@@ -381,46 +325,6 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
             print("*** ERROR: cellForRowAt had incorrect case.")
             return UITableViewCell()
         }
-        
-        //        switch elements.elementArray[indexPath.row].elementType {
-        //        case "Home":
-        //            let cell = tableView.dequeueReusableCell(withIdentifier: "HomeCell", for: indexPath) as! HomeTableViewCell
-        //            cell.delegate = self
-        //            cell.indexPath = indexPath
-        //            return cell
-        //        case "Button":
-        //            let cell = tableView.dequeueReusableCell(withIdentifier: "ButtonCell", for: indexPath) as! ButtonTableViewCell
-        //            cell.delegate = self
-        //            cell.indexPath = indexPath
-        //            var newRect = cell.indentView.frame
-        //            // now change x value & reassign to indentview
-        //            let indentAmount = CGFloat(elements.elementArray[indexPath.row].hierarchyLevel*indentBase)
-        //            newRect = CGRect(x: indentAmount, y: newRect.origin.y, width: newRect.width, height: newRect.height)
-        //            UIView.animate(withDuration: 0.5, animations: {cell.indentView.frame = newRect})
-        //            cell.button.setTitle(elements.elementArray[indexPath.row].elementName, for: .normal)
-        //            return cell
-        //        case "Screen":
-        //            let cell = tableView.dequeueReusableCell(withIdentifier: "ScreenCell", for: indexPath) as! ScreenTableViewCell
-        //            cell.delegate = self
-        //            cell.indexPath = indexPath
-        //            var newRect = cell.indentView.frame
-        //            // now change x value & reassign to indentview
-        //            let indentAmount = CGFloat(elements.elementArray[indexPath.row].hierarchyLevel*indentBase)
-        //            newRect = CGRect(x: indentAmount, y: newRect.origin.y, width: newRect.width, height: newRect.height)
-        //            UIView.animate(withDuration: 0.5, animations: {cell.indentView.frame = newRect})
-        //            let parentIndex = elements.elementArray.firstIndex(where: {$0.documentID == elements.elementArray[indexPath.row].parentID})
-        //            if let parentIndex = parentIndex {
-        //                if elements.elementArray[parentIndex].childrenIDs.count > 1 {
-        //                    cell.screenIcon.image = UIImage(named:  "screenGroup")
-        //                } else {
-        //                    cell.screenIcon.image = UIImage(named:  "singleScreen")
-        //                }
-        //            }
-        //            return cell
-        //        default:
-        //            print("*** ERROR: cellForRowAt had incorrect case.")
-        //            return UITableViewCell()
-        //        }
     }
 }
 
@@ -476,7 +380,6 @@ extension ScreenListViewController: PlusAndDisclosureDelegate {
             if let lastChildIndex = portkiNodes.firstIndex(where: {$0.documentID == portkiNodes[lastChild].childrenIDs.last!}) {
                 findInsertionIndex(lastChild: lastChildIndex)
             }
-//            findInsertionIndex(lastChild: lastChild+(portkiNodes[lastChild].childrenIDs.count))
         }
         return lastChild
     }
@@ -487,170 +390,29 @@ extension ScreenListViewController: PlusAndDisclosureDelegate {
         let newButton = PortkiNode(nodeName: buttonName, nodeType: "Button", parentID: portkiNodes[indexPath.row].documentID, hierarchyLevel: portkiNodes[indexPath.row].hierarchyLevel+1, childrenIDs: [newPageID], backgroundImageUUID: "", documentID: newButtonID)
         let newScreen = PortkiNode(nodeName: buttonName, nodeType: "Screen", parentID: newButtonID, hierarchyLevel: portkiNodes[indexPath.row].hierarchyLevel+2, childrenIDs: [String](), backgroundImageUUID: "", documentID: newPageID)
         
-        // let newScreen = Element(elementName: buttonName, elementType: "Screen", parentID: newButtonID, hierarchyLevel: elements.elementArray[indexPath.row].hierarchyLevel+2, childrenIDs: [String](), backgroundImageUUID: "", backgroundImage: UIImage(), backgroundColor: UIColor.white, documentID: newPageID)
-
-        // Add the button you just added as a child of the screen in the row that you clicked + on
-        // var parent = portkiNodes[indexPath.row]
-        // parent.childrenIDs.append(newButtonID)
+        portkiNodes[indexPath.row].childrenIDs.append(newButtonID)
+        portkiNodes.append(newButton)
+        portkiNodes.append(newScreen)
         
-        // Now add the new nodes + indexPaths and reload data
-        // var newIndexPath = IndexPath(row: indexPath.row+1, section: 0)
-        
-        // portkiNodes.append(newButton)
-        
-        var selectedIndexPathRow: Int!
-        if portkiNodes[indexPath.row].childrenIDs.isEmpty {
-            portkiNodes[indexPath.row].childrenIDs.append(newButtonID)
-            // portkiNodes.append(newButton)
-            // portkiNodes.append(newScreen)
-            
-            var insertionIndex: Int
-            
-            if indexPath.row == portkiNodes.count-1 {
-                insertionIndex = portkiNodes.endIndex
-            } else {
-                insertionIndex = indexPath.row + 1
-            }
-            portkiNodes.insert(newButton, at: insertionIndex)
-            portkiNodes.insert(newScreen, at: insertionIndex+1)
-            selectedIndexPathRow = insertionIndex+1
-        } else {
-            var insertionIndex: Int
-            insertionIndex = portkiNodes[indexPath.row].childrenIDs.count
-            // find index of last child
-            if let lastChildIndex = portkiNodes.firstIndex(where: {$0.documentID == portkiNodes[insertionIndex].childrenIDs.last!}) {
-                insertionIndex = findInsertionIndex(lastChild: lastChildIndex)
-            }
-            portkiNodes[indexPath.row].childrenIDs.append(newButtonID)
-            if insertionIndex == portkiNodes.count-1 {
-                insertionIndex = portkiNodes.endIndex
-            } else {
-                insertionIndex = insertionIndex + 1
-            }
-            portkiNodes.insert(newButton, at: insertionIndex)
-            portkiNodes.insert(newScreen, at: insertionIndex+1)
-            selectedIndexPathRow = insertionIndex+1
-        }
         tableView.reloadData()
-        let selectedIndexPath = IndexPath(row: selectedIndexPathRow, section: 0)
+        let selectedIndexPath = IndexPath(row: portkiNodes.count-1, section: indexPath.section)
         self.tableView.selectRow(at: selectedIndexPath, animated: true, scrollPosition: .none)
         self.performSegue(withIdentifier: "AddScreen", sender: nil)
-        
-//        var insertionIndex: Int
-//        if portkiNodes[indexPath.row].childrenIDs.count > 0 {
-//            insertionIndex = portkiNodes[indexPath.row].childrenIDs.count
-//            // find index of last child
-//            if let lastChildIndex = portkiNodes.firstIndex(where: {$0.documentID == portkiNodes[insertionIndex].childrenIDs.last!}) {
-//                insertionIndex = findInsertionIndex(lastChild: lastChildIndex)
-//            }
-//        }
-
-        // portkiNodes.insert(newButton, at: indexPath.row+parent.childrenIDs.count)
-        
-        // tableView.insertRows(at: [newIndexPath], with: .automatic)
-        // newIndexPath = IndexPath(row: indexPath.row+2, section: 0)
-        
-        // portkiNodes.append(newScreen)
-        // portkiNodes.insert(newScreen, at: indexPath.row+parent.childrenIDs.count+1)
-        
-        
-        // tableView.insertRows(at: [newIndexPath], with: .automatic)
-
-        // let selectedIndexPath = IndexPath(row: insertionIndex+1, section: indexPath.section)
-//        let selectedIndexPath = IndexPath(row: indexPath.row+parent.childrenIDs.count, section: indexPath.section)
-        
-        // tableView.reloadData()
-       
-        
-//        parent.saveData { (success) in
-//            newButton.saveData { (success) in
-//                guard success else {
-//                    print("😡 ERROR: saving a newButton named \(buttonName)")
-//                    return
-//                }
-//                newScreen.saveData { (success) in
-//                    self.elements.elementArray[indexPath.row].childrenIDs.append(newButtonID)
-//                    self.elements.elementArray.append(newButton)
-//                    self.elements.elementArray.append(newScreen)
-//                    let selectedIndexPath = IndexPath(row: indexPath.row, section: indexPath.section)
-//                    self.tableView.selectRow(at: selectedIndexPath, animated: true, scrollPosition: .none)
-//                    self.performSegue(withIdentifier: "AddScreen", sender: nil)
-//                }
-//            }
-//        }
     }
     
     func addScreen(indexPath: IndexPath) {
         let newPageID = UUID().uuidString
         let newScreen = PortkiNode(nodeName: portkiNodes[indexPath.row].nodeName, nodeType: "Screen", parentID: portkiNodes[indexPath.row].documentID, hierarchyLevel: portkiNodes[indexPath.row].hierarchyLevel+1, childrenIDs: [String](), backgroundImageUUID: "", documentID: newPageID)
-        // let newScreen = Element(elementName: elements.elementArray[indexPath.row].elementName, elementType: "Screen", parentID: elements.elementArray[indexPath.row].documentID, hierarchyLevel: elements.elementArray[indexPath.row].hierarchyLevel+1, childrenIDs: [String](), backgroundImageUUID: "", backgroundImage: UIImage(), backgroundColor: UIColor.white, documentID: newPageID)
-        
         
         // Now add the new nodes + indexPaths and reload data
-        
-        // portkiNodes.append(newScreen)
-        // portkiNodes.insert(newScreen, at: indexPath.row+portkiNodes[indexPath.row].childrenIDs.count-1)
-        
-        
-        var selectedIndexPathRow: Int!
-        var insertionIndex: Int
-        insertionIndex = portkiNodes[indexPath.row].childrenIDs.count
-        // find index of last child
-        if portkiNodes[insertionIndex].childrenIDs.isEmpty {
-            portkiNodes[indexPath.row].childrenIDs.append(newPageID)
 
-            var insertionIndex: Int
-            
-            if indexPath.row == portkiNodes.count-1 {
-                insertionIndex = portkiNodes.endIndex
-            } else {
-                insertionIndex = indexPath.row + 1
-            }
-            portkiNodes.insert(newScreen, at: insertionIndex)
-            selectedIndexPathRow = insertionIndex
-        } else {
-            var insertionIndex: Int
-            insertionIndex = portkiNodes[indexPath.row].childrenIDs.count
-            // find index of last child
-            if let lastChildIndex = portkiNodes.firstIndex(where: {$0.documentID == portkiNodes[insertionIndex].childrenIDs.last!}) {
-                insertionIndex = findInsertionIndex(lastChild: lastChildIndex)
-            }
-            portkiNodes[indexPath.row].childrenIDs.append(newPageID)
-            if insertionIndex == portkiNodes.count-1 {
-                insertionIndex = portkiNodes.endIndex
-            } else {
-                insertionIndex = insertionIndex + 1
-            }
-            portkiNodes.insert(newScreen, at: insertionIndex)
-            selectedIndexPathRow = insertionIndex
-        }
+        portkiNodes[indexPath.row].childrenIDs.append(newPageID)
+        portkiNodes.append(newScreen)
         
         tableView.reloadData()
-        let selectedIndexPath = IndexPath(row: selectedIndexPathRow, section: 0)
+        let selectedIndexPath = IndexPath(row: portkiNodes.count-1, section: indexPath.section)
         self.tableView.selectRow(at: selectedIndexPath, animated: true, scrollPosition: .none)
         self.performSegue(withIdentifier: "AddScreen", sender: nil)
-        
-//        selectedIndexPathRow = insertionIndex+1
-//
-//
-        tableView.reloadData()
-        // let selectedIndexPath = IndexPath(row: indexPath.row+portkiNodes[indexPath.row].childrenIDs.count-1, section: indexPath.section)
-//        self.tableView.selectRow(at: selectedIndexPathRow, animated: true, scrollPosition: .none)
-//        let selectedIndexPath = IndexPath(row: indexPath.row, section: indexPath.section)
-//        self.tableView.selectRow(at: selectedIndexPath, animated: true, scrollPosition: .none)
-        self.performSegue(withIdentifier: "AddScreen", sender: nil)
-
-        
-//        parent.saveData { (success) in
-//            newScreen.saveData { (success) in
-//                self.elements.elementArray[indexPath.row].childrenIDs.append(newPageID)
-//                self.elements.elementArray.append(newScreen)
-//
-//                let selectedIndexPath = IndexPath(row: indexPath.row, section: indexPath.section)
-//                self.tableView.selectRow(at: selectedIndexPath, animated: true, scrollPosition: .none)
-//                self.performSegue(withIdentifier: "AddScreen", sender: nil)
-//            }
-//        }
     }
     
     

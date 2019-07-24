@@ -751,7 +751,8 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
                 }
                 return [ButtonInfo]()
             }
-            var siblingIDs = foundParent?.childrenIDs
+            // var siblingIDs = foundParent?.childrenIDs
+            siblingButtonIDArray = parent.childrenIDs
             
             if previousButton.isHidden == false { // add a previousButton
                 let newButton = ButtonInfo()
@@ -761,8 +762,12 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
                 var prevButtonIndex = 0 // this 0 is a placeholder - the 0 may change.
                 if indexOfCurrentScreen == nil {
                     // This happens when screen is a new screen & there's not yet a record for it
-                    prevButtonIndex = siblingIDs!.count-1
-                    indexOfCurrentScreen = siblingIDs!.count
+                    print("😡 I don't think this should have happened. Look for the comment: This happens when screen is a new screen & there's not yet a record for it")
+//                    prevButtonIndex = siblingIDs!.count-1
+//                    indexOfCurrentScreen = siblingIDs!.count
+                    prevButtonIndex = siblingButtonIDArray.count-1
+                    indexOfCurrentScreen = siblingButtonIDArray.count
+
                 } else {
                     prevButtonIndex = indexOfCurrentScreen! - 1
                 }
@@ -787,7 +792,13 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
                 var nextButtonIndex = 0 // this 0 is a placeholder - the 0 may change.
                 if indexOfCurrentScreen == nil {
                     // This happens when screen is a new screen & there's not yet a record for it
-                    indexOfCurrentScreen = siblingIDs!.count
+                    // indexOfCurrentScreen = siblingIDs!.count
+                    
+                    print("😡 I don't think this should have happened. Look for the comment near nextButton.isHidden labeled: This happens when screen is a new screen & there's not yet a record for it")
+                    //                    prevButtonIndex = siblingIDs!.count-1
+                    //                    indexOfCurrentScreen = siblingIDs!.count
+                    nextButtonIndex = siblingButtonIDArray.count+1
+                    indexOfCurrentScreen = siblingButtonIDArray.count
                 } else {
                     nextButtonIndex = indexOfCurrentScreen! + 1
                 }
@@ -866,13 +877,20 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     
     @IBAction func saveButtonPressed(_ sender: Any) {
         
-        if let currentScreenIndex = self.portkiNodes.firstIndex(where: {$0.nodeType == portkiNode.documentID}) {
+//        if let currentScreenIndex = self.portkiNodes.firstIndex(where: {$0.nodeType == portkiNode.documentID}) {
+//            // update currentScreen
+//            portkiNodes[currentScreenIndex] = portkiNode
+//        } else {
+//            portkiNodes.append(portkiNode)
+//        }
+        
+        if let currentScreenIndex = self.portkiNodes.firstIndex(where: {$0.documentID == portkiNode.documentID}) {
             // update currentScreen
             portkiNodes[currentScreenIndex] = portkiNode
         } else {
+            print("😡 just before saveNodeAsJson - should never have arrived here. Used to append the node")
             portkiNodes.append(portkiNode)
         }
-        
         saveNodesAsJson()
         
         for index in 0..<fieldCollection.count {
