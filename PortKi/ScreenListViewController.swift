@@ -17,6 +17,9 @@ import SwiftyJSON
 class ScreenListViewController: UIViewController {
     @IBOutlet weak var tableView: UITableView!
     
+    // used simply to calculate button properties to be used in PyPortal via portkiScreens converted to JSON
+    @IBOutlet var screenView: UIView!
+    
     var portkiScreens: [PortkiScreen] = []
     var portkiNodes: [PortkiNode] = []
     var newNodes: [PortkiNode] = []
@@ -206,11 +209,32 @@ class ScreenListViewController: UIViewController {
             }
             destination.portkiNode = portkiNodes[selectedIndexPath.row]
             destination.portkiNodes = portkiNodes
+            
+            // Now find portkiScreen that cooresponds to the portkiNode you're passing, and pass in that portkiScreen, too.
+            let foundPortkiScreenIndex = portkiScreens.firstIndex(where: {$0.pageID == portkiNodes[selectedIndexPath.row].documentID})
+            
+            if let portkiScreenIndex = foundPortkiScreenIndex {
+                destination.portkiScreen = portkiScreens[portkiScreenIndex]
+                print("Just properly passed in a portkiScreen")
+            } else {
+                print("😡 ERROR: Couldn't find a portkiScreenIndex to pass in with the portkiNode")
+            }
+            
         } else { // adding a screen pass the last element - we'll sort them when they're back. No need to worry about deselecting
             let navigationController = segue.destination as! UINavigationController
             let destination = navigationController.viewControllers.first as! ScreenDesignViewController
             destination.portkiNode = portkiNodes.last
             destination.portkiNodes = portkiNodes
+            
+            // Now find portkiScreen that cooresponds to the portkiNode you're passing, and pass in that portkiScreen, too.
+            let foundPortkiScreenIndex = portkiScreens.firstIndex(where: {$0.pageID == portkiNodes.last!.documentID})
+            
+            if let portkiScreenIndex = foundPortkiScreenIndex {
+                destination.portkiScreen = portkiScreens[portkiScreenIndex]
+                print("Just properly passed in a portkiScreen")
+            } else {
+                print("😡 ERROR: Couldn't find a portkiScreenIndex to pass in with the portkiNode")
+            }
         }
     }
     
@@ -236,10 +260,12 @@ class ScreenListViewController: UIViewController {
         let portkiScreenIndex = portkiScreens.firstIndex(where: {$0.pageID == portkiScreen.pageID})
         
         // TODO: return to this to check if I should be creating the screen when I create the node. I think I should. And if I do, then I may be able to get rid of the if else below.
+        // While I created the screen up front, I kept the info below since I'd need to update a screen if the name of the buttons changed [wait - do I do that on the detail screen? Need to check this]
         if let portkiScreenIndex = portkiScreenIndex {
             portkiScreens[portkiScreenIndex] = portkiScreen
             print(">> Must have UPDATED a screen in unwindFromScreenDesignVC")
         } else {
+            print("😡😡 ERROR IN unwindFromScreenDesignVC - since portKiScreens were created before transfer, then there should be on already and you shouldn't have to create a new one.")
             portkiScreens.append(portkiScreen)
             print(">> Must have just added a new screen in unwindFromScreenDesignVC")
         }
@@ -247,6 +273,20 @@ class ScreenListViewController: UIViewController {
     
     
     @IBAction func updatePyPortalPressed(_ sender: UIBarButtonItem) {
+        let oldPortkiScreens = portkiScreens
+        
+        for index in 0..<portkiScreens.count {
+            let foundNodeIndexForScreen = portkiNodes.firstIndex(where: {$0.documentID == portkiScreens[index].pageID})
+            guard let nodeIndexForScreen = foundNodeIndexForScreen else {
+                print("😡 For some reason there wasn't a portkiNode with documentID \(portkiScreens[index].pageID)")
+                continue // No
+            }
+            var buttons = createLeftRightBackButtons(portkiNode: portkiNodes[nodeIndexForScreen])
+            let leafButtons = createLeafButtons(portkiNode: portkiNodes[nodeIndexForScreen])
+            buttons += getButtonsFromUIButtons(leafButtons: leafButtons, portkiNode: portkiNodes[nodeIndexForScreen])
+            portkiScreens[index].buttons = buttons
+        }
+        
         let encoder = JSONEncoder()
         encoder.outputFormatting = .prettyPrinted
         if let encoded = try? encoder.encode(portkiScreens) {
@@ -390,9 +430,53 @@ extension ScreenListViewController: PlusAndDisclosureDelegate {
         let newButton = PortkiNode(nodeName: buttonName, nodeType: "Button", parentID: portkiNodes[indexPath.row].documentID, hierarchyLevel: portkiNodes[indexPath.row].hierarchyLevel+1, childrenIDs: [newPageID], backgroundImageUUID: "", documentID: newButtonID)
         let newScreen = PortkiNode(nodeName: buttonName, nodeType: "Screen", parentID: newButtonID, hierarchyLevel: portkiNodes[indexPath.row].hierarchyLevel+2, childrenIDs: [String](), backgroundImageUUID: "", documentID: newPageID)
         
+        // trying to add nodes first before creating buttons to see if this helps.
         portkiNodes[indexPath.row].childrenIDs.append(newButtonID)
         portkiNodes.append(newButton)
         portkiNodes.append(newScreen)
+        
+        
+        // Also setup new PortkiScreen and add it to PortkiScreens, this is what will be saved to json for use on PyPortal
+
+        // var buttonInfoArray = buildButtonArray(portkiNode: newScreen)
+        // Also setup new PortkiScreen and add it to PortkiScreens, this is what will be saved to json for use on PyPortal
+        var buttons = createLeftRightBackButtons(portkiNode: newScreen)
+        let leafButtons = createLeafButtons(portkiNode: newScreen)
+        buttons += getButtonsFromUIButtons(leafButtons: leafButtons, portkiNode: newScreen)
+        
+        portkiScreens.append(PortkiScreen(pageID: newPageID, buttons: buttons))
+        
+        
+//        // convert buttonInfoArray to our custom Button type used in portkiScreen
+//        var buttons: [Button] = []
+//        for buttonInfo in buttonInfoArray {
+//            let buttonCoordinates = ButtonCoordinates(x: buttonInfo.buttonRect.origin.x, y: buttonInfo.buttonRect.origin.y, width: buttonInfo.buttonRect.width, height: buttonInfo.buttonRect.height)
+//            let button = Button(text: buttonInfo.buttonName, buttonCoordinates: buttonCoordinates, buttonDestination: buttonInfo.idToLoad)
+//            buttons.append(button)
+//        }
+
+        
+        
+//        // Also setup new PortkiScreen and add it to PortkiScreens, this is what will be saved to json for use on PyPortal
+//        var leafButtons = createLeafButtons(portkiNode: newScreen)
+//
+//        let buttonInfoArray = buildButtonArray(portkiNode: newScreen)
+//
+//        // convert buttonInfoArray to our custom Button type used in portkiScreen
+//        var buttons: [Button] = []
+//        for buttonInfo in buttonInfoArray {
+//            let buttonCoordinates = ButtonCoordinates(x: buttonInfo.buttonRect.origin.x, y: buttonInfo.buttonRect.origin.y, width: buttonInfo.buttonRect.width, height: buttonInfo.buttonRect.height)
+//            let button = Button(text: buttonInfo.buttonName, buttonCoordinates: buttonCoordinates, buttonDestination: buttonInfo.idToLoad)
+//            buttons.append(button)
+//        }
+        
+//        portkiScreens.append(PortkiScreen(pageID: newPageID, buttons: [Button]()))
+        // Now calculate and add buttons
+        
+        
+//        portkiNodes[indexPath.row].childrenIDs.append(newButtonID)
+//        portkiNodes.append(newButton)
+//        portkiNodes.append(newScreen)
         
         tableView.reloadData()
         let selectedIndexPath = IndexPath(row: portkiNodes.count-1, section: indexPath.section)
@@ -408,6 +492,15 @@ extension ScreenListViewController: PlusAndDisclosureDelegate {
 
         portkiNodes[indexPath.row].childrenIDs.append(newPageID)
         portkiNodes.append(newScreen)
+        
+        // Also setup new PortkiScreen and add it to PortkiScreens, this is what will be saved to json for use on PyPortal
+        
+        // var buttonInfoArray = buildButtonArray(portkiNode: newScreen)
+        // Also setup new PortkiScreen and add it to PortkiScreens, this is what will be saved to json for use on PyPortal
+        var buttons = createLeftRightBackButtons(portkiNode: newScreen)
+        let leafButtons = createLeafButtons(portkiNode: newScreen)
+        buttons += getButtonsFromUIButtons(leafButtons: leafButtons, portkiNode: newScreen)
+        portkiScreens.append(PortkiScreen(pageID: newPageID, buttons: buttons))
         
         tableView.reloadData()
         let selectedIndexPath = IndexPath(row: portkiNodes.count-1, section: indexPath.section)
@@ -452,3 +545,155 @@ extension ScreenListViewController: PlusAndDisclosureDelegate {
     }
 }
 
+extension ScreenListViewController {
+    // Organizing all of the code to generate buttons
+    func createButton(buttonName: String) -> UIButton {
+        let screenViewRect = CGRect(x: 0, y: 0, width: 320, height: 240)
+        screenView = UIView(frame: screenViewRect)
+        let newButton = UIButton(frame: screenView.frame)
+        newButton.setTitle(buttonName, for: .normal)
+        newButton.titleLabel?.font = .boldSystemFont(ofSize: 13.0)
+        newButton.sizeToFit()
+        newButton.frame = CGRect(x: newButton.frame.origin.x, y: newButton.frame.origin.y, width: newButton.frame.width + (ButtonPadding.paddingAroundText*2), height: newButton.frame.height)
+        newButton.backgroundColor = UIColor.init(hexString: "923125")
+        //        newButton.addTarget(self, action: #selector(changeButtonTitle), for: .touchUpInside)
+        return newButton
+    }
+    
+    func createLeafButtons(portkiNode: PortkiNode) -> [UIButton] {
+        var leafButtons: [UIButton] = []
+        var buttons: [Button] = []
+        
+        // These are the buttons along the bottom of a screen that transition to a new outward "leaf" screen. They are not the xPrev, xNext, or xBack buttons.
+        // no buttons to create if there aren't any children
+        guard portkiNode.childrenIDs.count > 0 else {
+            return leafButtons
+        }
+        
+        var buttonNames = [String]() // clear out button names
+        for childID in portkiNode.childrenIDs { // loop through all childIDs
+            if let buttonNode = portkiNodes.first(where: {$0.documentID == childID}) { // if you can find an node with that childID
+                buttonNames.append(buttonNode.nodeName) // add it's name to buttonNames
+            }
+        }
+        
+        // create a button (in actionButtons) for each buttonName
+        for buttonName in buttonNames {
+            leafButtons.append(createButton(buttonName: buttonName))
+        }
+        
+        // position action buttons
+        // 12 & 12 from lower right-hand corner
+        let indent: CGFloat = 12.0
+        // start in lower-left of screenView
+        var buttonX: CGFloat = 0.0
+        // var buttonX = screenView.frame.origin.x
+        let buttonY = screenView.frame.height-indent-leafButtons[0].frame.height
+        
+        for button in leafButtons {
+            var buttonFrame = button.frame
+            buttonX = buttonX + indent
+            buttonFrame = CGRect(x: buttonX, y: buttonY, width: buttonFrame.width, height: buttonFrame.height)
+            button.frame = buttonFrame
+            // screenView.addSubview(button)
+            buttonX = buttonX + button.frame.width // move start portion of next button rect to the end of the current button rect
+        }
+        
+        if portkiNode.nodeType == "Home" {
+            var widthOfAllButtons = leafButtons.reduce(0.0,{$0 + $1.frame.width})
+            widthOfAllButtons = widthOfAllButtons + (CGFloat(leafButtons.count-1)*indent)
+            var shiftedX = (screenView.frame.width-widthOfAllButtons)/2
+            
+            for button in leafButtons {
+                button.frame.origin.x = shiftedX
+                shiftedX = shiftedX + button.frame.width + indent
+            }
+        }
+        
+        return leafButtons
+    }
+    
+    func getButtonsFromUIButtons(leafButtons: [UIButton], portkiNode: PortkiNode) -> [Button] {
+        var buttons: [Button] = []
+        for index in 0..<leafButtons.count {
+            let buttonCoordinates = ButtonCoordinates(x: leafButtons[index].frame.origin.x, y: leafButtons[index].frame.origin.y, width: leafButtons[index].frame.width, height: leafButtons[index].frame.height)
+            let buttonName = leafButtons[index].titleLabel?.text ?? "NO TITLE"
+            
+            // let buttonDestination = portkiNode.childrenIDs[index]
+            let childButtonID = portkiNode.childrenIDs[index]
+            // find node for child button ID. find out which page this button points to.
+            let foundButtonDestinationIndex = portkiNodes.firstIndex(where: {$0.documentID == childButtonID})
+            guard let buttonDestinationIndex = foundButtonDestinationIndex else {
+                print("😡 Unexpected: unable to find buttonDestinationIndex \(childButtonID) in portkiNodes")
+                continue
+            }
+            let foundFirstChildID = portkiNodes[buttonDestinationIndex].childrenIDs.first
+            guard let buttonDestination = foundFirstChildID else {
+                print("😡 Unexpected: could not find a first child that buttonID \(portkiNodes[buttonDestinationIndex].documentID) points to")
+                continue
+            }
+            let button = Button(text: buttonName, buttonCoordinates: buttonCoordinates, buttonDestination: buttonDestination)
+            buttons.append(button)
+        }
+        return buttons
+    }
+    
+    func createLeftRightBackButtons(portkiNode: PortkiNode) -> [Button] {
+        var buttons: [Button] = []
+        guard portkiNode.nodeType != "Home" else {
+            return buttons // Home has no xLeft, xRight, xBack
+        }
+        
+        let foundParentButton = portkiNodes.first(where: {$0.documentID == portkiNode.parentID})
+        guard let parentButton = foundParentButton else { // unwrap found parent
+            if portkiNode.nodeType != "Home" {
+                print("😡 ERROR: could not get the node's parentButton")
+            }
+            return buttons
+        }
+        
+        // Make a back button - all screens other than home have a Back button.
+        let foundBackButtonDestination = portkiNodes.first(where: {$0.documentID == parentButton.parentID})
+        guard let backButtonDestination = foundBackButtonDestination else { // unwrap found parent
+            if portkiNode.nodeType != "Home" {
+                print("😡 ERROR: could not get the node's backButtonDestination")
+            }
+            return buttons
+        }
+        var buttonCoordinates = ButtonCoordinates(x: 269, y: 188, width: 44, height: 44)
+        var button = Button(text: "xBack", buttonCoordinates: buttonCoordinates, buttonDestination: backButtonDestination.documentID)
+        buttons.append(button)
+        
+        // If this button has no siblings, then you're done
+        if parentButton.childrenIDs.count < 2 {
+            return buttons
+        }
+        
+        // since there are siblings, then make "xLeft" and "xRight" buttons
+        let foundButtonIndexInChildID = parentButton.childrenIDs.firstIndex(of: portkiNode.documentID)
+        guard let buttonIndexInChildID = foundButtonIndexInChildID else {
+            print("😡 ERROR: Couldn't find buttonIndexInChildID even though parentButton.childrenIDs.count >= 2")
+            return buttons
+        }
+        var destinationIndex = buttonIndexInChildID - 1 // destination for xLeft is previous
+        if destinationIndex < 0 { // if already at beginning, go to the end
+            destinationIndex = parentButton.childrenIDs.count-1
+        }
+        // make the xLeft button
+        buttonCoordinates = ButtonCoordinates(x: 0, y: 88, width: 30, height: 44)
+        button = Button(text: "xLeft", buttonCoordinates: buttonCoordinates, buttonDestination: parentButton.childrenIDs[destinationIndex] )
+        buttons.append(button)
+        
+        // now for xRight, which should be one index value greater
+        destinationIndex = buttonIndexInChildID + 1 // destination for xLeft is previous
+        if destinationIndex >= parentButton.childrenIDs.count { // if already at end, go to the beginning
+            destinationIndex = 0
+        }
+        // since there are siblings, then make "xPrev" and "xNext" buttons
+        buttonCoordinates = ButtonCoordinates(x: 290, y: 88, width: 30, height: 44)
+        button = Button(text: "xRight", buttonCoordinates: buttonCoordinates, buttonDestination: parentButton.childrenIDs[destinationIndex] )
+        buttons.append(button)
+        
+        return buttons
+    }
+}

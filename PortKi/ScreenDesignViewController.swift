@@ -751,12 +751,13 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
                 }
                 return [ButtonInfo]()
             }
+            
             // var siblingIDs = foundParent?.childrenIDs
             siblingButtonIDArray = parent.childrenIDs
             
             if previousButton.isHidden == false { // add a previousButton
                 let newButton = ButtonInfo()
-                newButton.buttonName = "xPrevious"
+                newButton.buttonName = "xLeft"
                 newButton.buttonRect = previousButton.frame
                 var indexOfCurrentScreen = siblingButtonIDArray.firstIndex(of: portkiNode.documentID)
                 var prevButtonIndex = 0 // this 0 is a placeholder - the 0 may change.
@@ -785,7 +786,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             
             if nextButton.isHidden == false { // add a nextButton
                 let newButton = ButtonInfo()
-                newButton.buttonName = "xNext"
+                newButton.buttonName = "xRight"
                 newButton.buttonRect = nextButton.frame
                 var indexOfCurrentScreen = siblingButtonIDArray.firstIndex(of: portkiNode.documentID)
                 
@@ -905,14 +906,21 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         }
         buttonInfoArray = buildButtonArray()
         
-        var buttons: [Button] = []
-        for buttonInfo in buttonInfoArray {
-            let buttonCoordinates = ButtonCoordinates(x: buttonInfo.buttonRect.origin.x, y: buttonInfo.buttonRect.origin.y, width: buttonInfo.buttonRect.width, height: buttonInfo.buttonRect.height)
-            let button = Button(text: buttonInfo.buttonName, buttonCoordinates: buttonCoordinates, buttonDestination: buttonInfo.idToLoad)
-            buttons.append(button)
-        }
+        // TODO: Might be able to get rid of stuff below if I use the arrays I've created already.
+//        var buttons: [Button] = []
+//        for buttonInfo in buttonInfoArray {
+//            let buttonCoordinates = ButtonCoordinates(x: buttonInfo.buttonRect.origin.x, y: buttonInfo.buttonRect.origin.y, width: buttonInfo.buttonRect.width, height: buttonInfo.buttonRect.height)
+//            let button = Button(text: buttonInfo.buttonName, buttonCoordinates: buttonCoordinates, buttonDestination: buttonInfo.idToLoad)
+//            buttons.append(button)
+//        }
+//        
+//        if portkiScreen == nil {
+//            print("😡 WARNING: portkiScreen shouldn't be nil in save")
+//            portkiScreen = PortkiScreen(pageID: portkiNode.documentID, buttons: buttons)
+//        } else {
+//            portkiScreen.buttons = buttons
+//        }
         
-        portkiScreen = PortkiScreen(pageID: portkiNode.documentID, buttons: buttons)
         performSegue(withIdentifier: "UwindFromScreenDesign", sender: nil)
         
 //        deselectAllFields()
