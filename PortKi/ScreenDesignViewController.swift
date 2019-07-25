@@ -62,6 +62,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     var portkiNode: PortkiNode!
     var portkiNodes: [PortkiNode]!
     var portkiScreen: PortkiScreen!
+    var screenImage: UIImage!
     var textBlocks = TextBlocks()
     var originalScrollViewFrame: CGRect!
     var selectedColorButtonTag = 0 // 0 = text, 1 = text background, 2 = screen background
@@ -871,19 +872,50 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
+    func saveImageToFile(bmpImage: Data) {
+        var portkiImage = PortkiImage(imageFileName: portkiNode.documentID, imageData: bmpImage)
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        if let encoded = try? encoder.encode(portkiImage) {
+            if let jsonString = String(data: encoded, encoding: .utf8) {
+                // print(jsonString)
+                
+                let parameters = ["value": jsonString]
+                guard let json = try? JSONSerialization.data(withJSONObject: parameters, options: []) else {
+                    print("😡 Drat! json conversion for bmpImage didn't work")
+                    return
+                }
+                print("** JSON bmpImage Conversion Worked !!!")
+                // print(json)
+                
+                let filename = getDocumentsDirectory().appendingPathComponent("\(portkiNode.documentID).json")
+                do {
+                    try json.write(to: filename, options: .atomic)
+                } catch {
+                    print("😡 Drat! json for bmpImage couldn't be written to file \(error.localizedDescription)")
+                }
+            }
+        } else {
+            print("😡 bmpImage encoding before json save didn't work")
+        }
+    }
+    
     func getDocumentsDirectory() -> URL {
         let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
         return paths[0]
     }
     
+    func convertToBmp(image: UIImage) -> Data {
+        let options: NSDictionary = [:]
+        let convertToBmp = image.toData(options: options, type: .bmp)
+        guard let screenBmpData = convertToBmp else {
+            print("😡 ERROR: could not convert image to a bitmap bmpData var.")
+            return Data()
+        }
+        return screenBmpData
+    }
+    
     @IBAction func saveButtonPressed(_ sender: Any) {
-        
-//        if let currentScreenIndex = self.portkiNodes.firstIndex(where: {$0.nodeType == portkiNode.documentID}) {
-//            // update currentScreen
-//            portkiNodes[currentScreenIndex] = portkiNode
-//        } else {
-//            portkiNodes.append(portkiNode)
-//        }
         
         if let currentScreenIndex = self.portkiNodes.firstIndex(where: {$0.documentID == portkiNode.documentID}) {
             // update currentScreen
@@ -905,55 +937,40 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             textBlock.originPoint = field.frame.origin
         }
         buttonInfoArray = buildButtonArray()
+    
         
-        // TODO: Might be able to get rid of stuff below if I use the arrays I've created already.
-//        var buttons: [Button] = []
-//        for buttonInfo in buttonInfoArray {
-//            let buttonCoordinates = ButtonCoordinates(x: buttonInfo.buttonRect.origin.x, y: buttonInfo.buttonRect.origin.y, width: buttonInfo.buttonRect.width, height: buttonInfo.buttonRect.height)
-//            let button = Button(text: buttonInfo.buttonName, buttonCoordinates: buttonCoordinates, buttonDestination: buttonInfo.idToLoad)
-//            buttons.append(button)
-//        }
+        // Now create a bmp of whatever's on screen.
+        deselectAllFields()
+        
+        let renderer = UIGraphicsImageRenderer(size: screenView.bounds.size)
+        let grabbedImage = renderer.image { ctx in
+            screenView.drawHierarchy(in: screenView.bounds, afterScreenUpdates: true)
+        }
+        //let bmpData = convertToBmp(image: grabbedImage)
+        // you'll need to scale the image down since Retina displays show points at 2x or 3x the pixel size.
+        // if you don't do this, your bmp will be scale times larger than you'd like.
+        let scale = UIScreen.main.scale
+        let newSize = CGSize(width: screenView.bounds.width * (1/scale), height: screenView.bounds.height * (1/scale))
+        let resizedImage = grabbedImage.resized(to: newSize)
+        let bmpData = convertToBmp(image: resizedImage)
+
+        saveImageToFile(bmpImage: bmpData)
+        
+//        let scaleFactor = UIScreen.main.scale // This shows the scaleFactor, e.g. 3.0 for Retina iPhone X
+//        let scale = CGAffineTransform(scaleX: 1/scaleFactor, y: 1/scaleFactor)
 //        
-//        if portkiScreen == nil {
-//            print("😡 WARNING: portkiScreen shouldn't be nil in save")
-//            portkiScreen = PortkiScreen(pageID: portkiNode.documentID, buttons: buttons)
-//        } else {
-//            portkiScreen.buttons = buttons
-//        }
-        
+//        let size = grabbedImage.bounds.size.applying(scale)
+//        
+//        let screenBounds = UIScreen.main.bounds
+//        let screenScale = UIScreen.main.scale
+//        let screenSize = CGSize(width: screenBounds.size.width * screenScale, height: screenBounds.size.height * screenScale)
+
+
         performSegue(withIdentifier: "UwindFromScreenDesign", sender: nil)
         
-//        deselectAllFields()
-//        let renderer = UIGraphicsImageRenderer(size: screenView.bounds.size)
-//        let grabbedImage = renderer.image { ctx in
-//            screenView.drawHierarchy(in: screenView.bounds, afterScreenUpdates: true)
-//        }
-        // backgroundImageView.image = grabbedImage
-        //screen.screenImage = grabbedImage
-        // TODO: Save your nodes here!
-        //        screen.saveData(element: element) { (success) in
-        //            if success {
-        //                self.screen.saveImage{ (success) in
-        //                    if success {
-        //                        print("!!! JUST FINISHED .saveImage")
-        //                    } else {
-        //                        print(" *** WHOA! didn't .saveImage ***")
-        //                    }
-        //                }
-        //            } else {
-        //                print("*** DANG! no success at screen.saveData!")
-        //            }
-        //        }
+
         
-//        for buttonInfo in buttonInfoArray {
-//            buttonInfo.saveData { (success) in
-//                if !success {
-//                    print("*** DANG! didn't buttonInfo.saveData!")
-//                } else {
-//                    print(" ^^ Successfully buttonInfo.saveData")
-//                }
-//            }
-//        }
+
         
         // TODO: Save your TextBlocks here!!
         //        textBlocks.saveData(element: element) { success in
@@ -1083,6 +1100,14 @@ extension ScreenDesignViewController: UINavigationControllerDelegate, UIImagePic
             present(imagePicker, animated: true, completion: nil)
         } else {
             self.showAlert(title: "Camera Not Available", message: "There is no camera available on this device.")
+        }
+    }
+}
+
+extension UIImage {
+    func resized(to size: CGSize) -> UIImage {
+        return UIGraphicsImageRenderer(size: size).image { _ in
+            draw(in: CGRect(origin: .zero, size: size))
         }
     }
 }

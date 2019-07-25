@@ -25,3 +25,8 @@ struct PortkiScreen: Codable {
     var pageID: String
     var buttons: [Button]
 }
+
+struct PortkiImage: Codable {
+    var imageFileName: String
+    var imageData: Data
+}
