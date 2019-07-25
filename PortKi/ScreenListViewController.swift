@@ -7,10 +7,6 @@
 //
 
 import UIKit
-import CoreLocation
-import Firebase
-import FirebaseUI
-import GoogleSignIn  // used to be called FirebaseGoogleAuthUI
 import Alamofire
 import SwiftyJSON
 
@@ -23,32 +19,36 @@ class ScreenListViewController: UIViewController {
     var portkiScreens: [PortkiScreen] = []
     var portkiNodes: [PortkiNode] = []
     var newNodes: [PortkiNode] = []
-    var newElements: [Element] = []
-    var elements: Elements!
     let indentBase = 26 // how far to indent button/screen levels
-    var authUI: FUIAuth!
+    var imageURL = "https://gallaugher.com/wp-content/uploads/2009/08/John-White-Border-Beard-Crossed-Arms-Photo.jpg"
     
     override func viewDidLoad() {
-        
-        // initializing the authUI var and setting the delegate are step [3]
-        authUI = FUIAuth.defaultAuthUI()
-        authUI?.delegate = self
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.isHidden = true
-        
-        elements = Elements()
         
         loadPortkiScreens()
         loadPortkiNodes()
         setUpFirstNodesIfNoNodesExist()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        guard let home = portkiNodes.first(where: {$0.nodeType == "Home"}) else {
+            print("ERROR: There was a problem finding the 'Home' node")
+            return
+        }
+        newNodes = []
+        if portkiNodes.count > 1 { // more than just home, so sort
+            sortNodes(node: home)
+            portkiNodes = self.newNodes
+        }
+        self.tableView.reloadData()
+    }
+    
     func setUpFirstNodesIfNoNodesExist(){
         if portkiNodes.isEmpty {
             // if there are no portkiNodes then there must not be any portkiScreens, either
             // If there are no portkiScreens, then create new "Home" screen and new "Home" node.
-            portkiScreens.append(PortkiScreen(pageID: "Home", buttons: [Button]()))
+            portkiScreens.append(PortkiScreen(pageID: "Home", buttons: [Button](), imageURL: imageURL))
             portkiNodes.append(PortkiNode(nodeName: "Home", nodeType: "Home", parentID: "", hierarchyLevel: 0, childrenIDs: [String](), backgroundImageUUID: "", documentID: "Home"))
             tableView.reloadData()
             let indexPathForSelectedRow = IndexPath(row: 0, section: 0) // "Home" should always be row zero.
@@ -64,32 +64,6 @@ class ScreenListViewController: UIViewController {
     func getDocumentsDirectory() -> URL {
         let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
         return paths[0]
-    }
-    
-    func loadPortkiScreens() {
-        let filename = getDocumentsDirectory().appendingPathComponent("portkiScreens.json")
-        do {
-            let data = try Data(contentsOf: filename)
-            print(data)
-            let json = JSON(data)
-            print(json["value"])
-            
-            print("now decoding")
-            let decoder = JSONDecoder()
-            let jsonString = json["value"].stringValue
-            let convertedJsonData = Data(jsonString.utf8)
-            do {
-                portkiScreens = try decoder.decode([PortkiScreen].self, from: convertedJsonData)
-                for node in portkiNodes {
-                    print(node.nodeName)
-                    print("   This screen has \(node.childrenIDs.count) children")
-                }
-            } catch {
-                print(error.localizedDescription)
-            }
-        } catch {
-            print("😡 Couldn't get json from file: error:\(error)")
-        }
     }
     
     func loadPortkiNodes() {
@@ -118,6 +92,32 @@ class ScreenListViewController: UIViewController {
         }
     }
     
+    // Note that I might not need to load portki screens if everything goes one way - out to Adafruit & not back. This would be the case if I store only on the app. So I'm not calling this yet.
+    func loadPortkiScreens() {
+        let filename = getDocumentsDirectory().appendingPathComponent("portkiScreens.json")
+        do {
+            let data = try Data(contentsOf: filename)
+            print(data)
+            let json = JSON(data)
+            print(json["value"])
+            
+            print("now decoding")
+            let decoder = JSONDecoder()
+            let jsonString = json["value"].stringValue
+            let convertedJsonData = Data(jsonString.utf8)
+            do {
+                portkiScreens = try decoder.decode([PortkiScreen].self, from: convertedJsonData)
+                for node in portkiNodes {
+                    print(node.nodeName)
+                    print("   This screen has \(node.childrenIDs.count) children")
+                }
+            } catch {
+                print(error.localizedDescription)
+            }
+        } catch {
+            print("😡 Couldn't get json from file: error:\(error)")
+        }
+    }
     
     func loadPortkiScreensFromAdafruitIo() {
         let apiURL = "https://io.adafruit.com/api/v2/gallaugher/feeds/portki"
@@ -156,46 +156,8 @@ class ScreenListViewController: UIViewController {
             }
         }
     }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        
-        print("VWA VWA viewWillAppear HAPPENING NOW VWA VWA")
-        guard let home = portkiNodes.first(where: {$0.nodeType == "Home"}) else {
-            print("ERROR: There was a problem finding the 'Home' node")
-            return
-        }
-        newNodes = []
-        if portkiNodes.count > 1 { // more than just home, so sort
-            sortNodes(node: home)
-            portkiNodes = self.newNodes
-        }
-        self.tableView.reloadData()
-        
-        // NOTE: eventually read what's stored, but we're starting from scratch for now
-        // loadPortkiScreens()
-        
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        signIn()
-    }
-    
-    // Nothing should change unless you add different kinds of authentication.
-    func signIn() {
-        let providers: [FUIAuthProvider] = [
-            FUIGoogleAuth(),
-        ]
-        if authUI.auth?.currentUser == nil {
-            self.authUI?.providers = providers
-            present(authUI.authViewController(), animated: true, completion: nil)
-        } else {
-            tableView.isHidden = false
-        }
-    }
-    
+
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        
         // click to edit an exiseting screen
         if segue.identifier == "ShowScreen" {
             let destination = segue.destination as! ScreenDesignViewController
@@ -238,20 +200,7 @@ class ScreenListViewController: UIViewController {
         }
     }
     
-    @IBAction func signOutPressed(_ sender: UIBarButtonItem) {
-        do {
-            try authUI!.signOut()
-            print("^^^ Successfully signed out!")
-            tableView.isHidden = true
-            signIn()
-        } catch {
-            tableView.isHidden = true
-            print("*** ERROR: Couldn't sign out")
-        }
-    }
-    
     @IBAction func unwindFromScreenDesignViewController(segue: UIStoryboardSegue) {
-        print("UUUUU UNWIND HAPPENING NOW UUUU")
         let sourceViewController = segue.source as! ScreenDesignViewController
         // Unwind only happens on "Save" press, not cancel, so you should always need to update the portkiNode
         
@@ -259,8 +208,7 @@ class ScreenListViewController: UIViewController {
         let portkiScreen = sourceViewController.portkiScreen!
         let portkiScreenIndex = portkiScreens.firstIndex(where: {$0.pageID == portkiScreen.pageID})
         
-        // TODO: return to this to check if I should be creating the screen when I create the node. I think I should. And if I do, then I may be able to get rid of the if else below.
-        // While I created the screen up front, I kept the info below since I'd need to update a screen if the name of the buttons changed [wait - do I do that on the detail screen? Need to check this]
+        // TODO: Unsure if I'm doing anything on the design screen that requires passing back a modified portkiScreen. Need to think about whether info below is even necessary.
         if let portkiScreenIndex = portkiScreenIndex {
             portkiScreens[portkiScreenIndex] = portkiScreen
             print(">> Must have UPDATED a screen in unwindFromScreenDesignVC")
@@ -271,10 +219,34 @@ class ScreenListViewController: UIViewController {
         }
     }
     
+    func sendJsonToAdafruitIo(jsonString: String) {
+        let parameters = ["value": jsonString]
+        guard let url = URL(string: "https://io.adafruit.com/api/feeds/portki/data.json?X-AIO-Key=073cd97c69db42dab2b411062bf15f23") else { return }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        guard let httpBody = try? JSONSerialization.data(withJSONObject: parameters, options: []) else { return }
+        request.httpBody = httpBody
+        let session = URLSession.shared
+        session.dataTask(with: request) { (data, response, error) in
+            if let response = response {
+                print(response)
+            }
+            if let data = data {
+                do {
+                    let json = try JSONSerialization.jsonObject(with: data, options: [])
+                    print(json)
+                    print("😀 JSON for portKiScreens POSTED to Adafruit.io - HURRAY!!!")
+                } catch {
+                    print(error)
+                    print("😡 Grr. json for portkiScreens wasn't posted to Adafruit.io")
+                }
+            }
+            }.resume()
+    }
     
     @IBAction func updatePyPortalPressed(_ sender: UIBarButtonItem) {
-        let oldPortkiScreens = portkiScreens
-        
         for index in 0..<portkiScreens.count {
             let foundNodeIndexForScreen = portkiNodes.firstIndex(where: {$0.documentID == portkiScreens[index].pageID})
             guard let nodeIndexForScreen = foundNodeIndexForScreen else {
@@ -304,6 +276,7 @@ class ScreenListViewController: UIViewController {
                 let filename = getDocumentsDirectory().appendingPathComponent("portkiScreens.json")
                 do {
                     try json.write(to: filename, options: .atomic)
+                    sendJsonToAdafruitIo(jsonString: jsonString)
                 } catch {
                     print("😡 Grr. json wasn't writte to file \(error.localizedDescription)")
                 }
@@ -368,49 +341,6 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
     }
 }
 
-// Name of the extension is likely the only thing that needs to change in new projects
-extension ScreenListViewController: FUIAuthDelegate {
-    func application(_ app: UIApplication, open url: URL,
-                     options: [UIApplication.OpenURLOptionsKey : Any]) -> Bool {
-        let sourceApplication = options[UIApplication.OpenURLOptionsKey.sourceApplication] as! String?
-        if FUIAuth.defaultAuthUI()?.handleOpen(url, sourceApplication: sourceApplication) ?? false {
-            return true
-        }
-        // other URL handling goes here.
-        return false
-    }
-    
-    func authUI(_ authUI: FUIAuth, didSignInWith user: User?, error: Error?) {
-        if let user = user {
-            // Assumes data will be isplayed in a tableView that was hidden until login was verified so unauthorized users can't see data.
-            tableView.isHidden = false
-            print("^^^ We signed in with the user \(user.email ?? "unknown e-mail")")
-        }
-    }
-    
-    func authPickerViewController(forAuthUI authUI: FUIAuth) -> FUIAuthPickerViewController {
-        
-        // Create an instance of the FirebaseAuth login view controller
-        let loginViewController = FUIAuthPickerViewController(authUI: authUI)
-        
-        // Set background color to white
-        loginViewController.view.backgroundColor = UIColor.white
-        
-        // Create a frame for a UIImageView to hold our logo
-        let marginInsets: CGFloat = 16 // logo will be 16 points from L and R margins
-        let imageHeight: CGFloat = 225 // the height of our logo
-        let imageY = self.view.center.y - imageHeight // places bottom of UIImageView in the center of the login screen
-        let logoFrame = CGRect(x: self.view.frame.origin.x + marginInsets, y: imageY, width: self.view.frame.width - (marginInsets*2), height: imageHeight)
-        
-        // Create the UIImageView using the frame created above & add the "logo" image
-        let logoImageView = UIImageView(frame: logoFrame)
-        logoImageView.image = UIImage(named: "logo")
-        logoImageView.contentMode = .scaleAspectFit // Set imageView to Aspect Fit
-        loginViewController.view.addSubview(logoImageView) // Add ImageView to the login controller's main view
-        return loginViewController
-    }
-}
-
 // Created protocol to handle clicks within custom cells
 extension ScreenListViewController: PlusAndDisclosureDelegate {
     
@@ -444,39 +374,7 @@ extension ScreenListViewController: PlusAndDisclosureDelegate {
         let leafButtons = createLeafButtons(portkiNode: newScreen)
         buttons += getButtonsFromUIButtons(leafButtons: leafButtons, portkiNode: newScreen)
         
-        portkiScreens.append(PortkiScreen(pageID: newPageID, buttons: buttons))
-        
-        
-//        // convert buttonInfoArray to our custom Button type used in portkiScreen
-//        var buttons: [Button] = []
-//        for buttonInfo in buttonInfoArray {
-//            let buttonCoordinates = ButtonCoordinates(x: buttonInfo.buttonRect.origin.x, y: buttonInfo.buttonRect.origin.y, width: buttonInfo.buttonRect.width, height: buttonInfo.buttonRect.height)
-//            let button = Button(text: buttonInfo.buttonName, buttonCoordinates: buttonCoordinates, buttonDestination: buttonInfo.idToLoad)
-//            buttons.append(button)
-//        }
-
-        
-        
-//        // Also setup new PortkiScreen and add it to PortkiScreens, this is what will be saved to json for use on PyPortal
-//        var leafButtons = createLeafButtons(portkiNode: newScreen)
-//
-//        let buttonInfoArray = buildButtonArray(portkiNode: newScreen)
-//
-//        // convert buttonInfoArray to our custom Button type used in portkiScreen
-//        var buttons: [Button] = []
-//        for buttonInfo in buttonInfoArray {
-//            let buttonCoordinates = ButtonCoordinates(x: buttonInfo.buttonRect.origin.x, y: buttonInfo.buttonRect.origin.y, width: buttonInfo.buttonRect.width, height: buttonInfo.buttonRect.height)
-//            let button = Button(text: buttonInfo.buttonName, buttonCoordinates: buttonCoordinates, buttonDestination: buttonInfo.idToLoad)
-//            buttons.append(button)
-//        }
-        
-//        portkiScreens.append(PortkiScreen(pageID: newPageID, buttons: [Button]()))
-        // Now calculate and add buttons
-        
-        
-//        portkiNodes[indexPath.row].childrenIDs.append(newButtonID)
-//        portkiNodes.append(newButton)
-//        portkiNodes.append(newScreen)
+        portkiScreens.append(PortkiScreen(pageID: newPageID, buttons: buttons, imageURL: imageURL))
         
         tableView.reloadData()
         let selectedIndexPath = IndexPath(row: portkiNodes.count-1, section: indexPath.section)
@@ -500,7 +398,7 @@ extension ScreenListViewController: PlusAndDisclosureDelegate {
         var buttons = createLeftRightBackButtons(portkiNode: newScreen)
         let leafButtons = createLeafButtons(portkiNode: newScreen)
         buttons += getButtonsFromUIButtons(leafButtons: leafButtons, portkiNode: newScreen)
-        portkiScreens.append(PortkiScreen(pageID: newPageID, buttons: buttons))
+        portkiScreens.append(PortkiScreen(pageID: newPageID, buttons: buttons, imageURL: imageURL))
         
         tableView.reloadData()
         let selectedIndexPath = IndexPath(row: portkiNodes.count-1, section: indexPath.section)
@@ -538,8 +436,6 @@ extension ScreenListViewController: PlusAndDisclosureDelegate {
     
     func didTapDisclosure(at indexPath: IndexPath) {
         print("*** You Tapped the Disclosure Button at \(indexPath.row)")
-        //        let selectedIndexPath = IndexPath(row: indexPath.row, section: indexPath.section)
-        //        self.tableView.selectRow(at: selectedIndexPath, animated: true, scrollPosition: .none)
         self.tableView.selectRow(at: indexPath, animated: true, scrollPosition: .none)
         self.performSegue(withIdentifier: "ShowScreen", sender: nil)
     }
@@ -556,7 +452,6 @@ extension ScreenListViewController {
         newButton.sizeToFit()
         newButton.frame = CGRect(x: newButton.frame.origin.x, y: newButton.frame.origin.y, width: newButton.frame.width + (ButtonPadding.paddingAroundText*2), height: newButton.frame.height)
         newButton.backgroundColor = UIColor.init(hexString: "923125")
-        //        newButton.addTarget(self, action: #selector(changeButtonTitle), for: .touchUpInside)
         return newButton
     }
     
@@ -619,7 +514,6 @@ extension ScreenListViewController {
             let buttonCoordinates = ButtonCoordinates(x: leafButtons[index].frame.origin.x, y: leafButtons[index].frame.origin.y, width: leafButtons[index].frame.width, height: leafButtons[index].frame.height)
             let buttonName = leafButtons[index].titleLabel?.text ?? "NO TITLE"
             
-            // let buttonDestination = portkiNode.childrenIDs[index]
             let childButtonID = portkiNode.childrenIDs[index]
             // find node for child button ID. find out which page this button points to.
             let foundButtonDestinationIndex = portkiNodes.firstIndex(where: {$0.documentID == childButtonID})
