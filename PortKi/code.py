@@ -1,3 +1,4 @@
+# NOTE: This version temporarily broken as I test wget. Will post working v. soon.
 import time
 import json
 import board
@@ -17,10 +18,54 @@ import busio
     storage.mount(vfs, "/sd")
     print(os.listdir('/sd'))
     """
+
+"""
+    # See if a card is present
+    card_detect_pin = digitalio.DigitalInOut(board.SD_CARD_DETECT)
+    card_detect_pin.direction = digitalio.Direction.INPUT
+    card_detect_pin.pull = digitalio.Pull.UP
+    print('SD card present: %s' % card_detect_pin.value)
+    
+    # Try to connect to the SD card
+    sdcard = adafruit_sdcard.SDCard(
+    busio.SPI(board.SCK, board.MOSI, board.MISO),
+    digitalio.DigitalInOut(board.SD_CS)
+    )
+    # Mount the card to a directory
+    virtual_file_system = storage.VfsFat(sdcard)
+    storage.mount(virtual_file_system, '/sd')
+    """
+
 # pyportal = PyPortal(default_bg="Home.bmp",)
 
-DATA_SOURCE = "https://io.adafruit.com/api/v2/gallaugher/feeds/portki/data/"
+DATA_SOURCE = "https://io.adafruit.com/api/v2/gallaugher/feeds/portkijsondemo/data/"
 num = 0
+
+DATA_LOCATION = [0, "value"]
+URL_PATH = "https://cdn-shop.adafruit.com/310x233/4116-00.jpeg"
+
+pyportal = PyPortal(url=DATA_SOURCE,
+                    json_path=DATA_LOCATION,
+                    default_bg="Home.bmp",)
+
+# to get direct, usable link to a jpeg publically accessible on a google drive
+# first get the sharable link, then copy the long ID from this link &
+# paste it into the URL string following: https://drive.google.com/uc?
+
+# below is direct image to a jpeg
+image_url = "https://drive.google.com/uc?id=1Ixv3QGuc8Yk8WhxRyjY0RP39huszKvCY"
+
+# below is a direct image to a bmp, there doesn't seem to be any speed adv.
+# to using a .bmp over a .jpeg
+# image_url = "https://drive.google.com/uc?id=1UllzeBmeRMw-Tb6dHX3OoAC54f2rP1lY"
+
+pyportal.image_url_path = URL_PATH
+
+pyportal.wget(pyportal.image_converter_url(image_url,320, 240,color_depth=16),
+              "imageFromWeb.bmp",
+              chunk_size=12000)
+
+pyportal.set_background("imageFromWeb.bmp")
 
 p_list = [] # holds points indicating where a press occurred
 # These pins are used as both analog and digital! XL, XR and YU must be analog
@@ -29,149 +74,6 @@ ts = adafruit_touchscreen.Touchscreen(board.TOUCH_XL, board.TOUCH_XR,
                                       board.TOUCH_YD, board.TOUCH_YU,
                                       calibration=((5200, 59000), (5800, 57000)),
                                       size=(320, 240))
-
-"""
-    screens_json = {
-    "screens": [
-    {
-    "pageID": "Home",
-    "buttons": [
-    {
-    "text": "Courses",
-    "buttonCoordinates": {
-    "x": 55,
-    "y": 199,
-    "width": 69,
-    "height": 28
-    },
-    "buttonDestination": "E1DEAD26-1737-4711-A1F9-9EC4591F6C17"
-    },
-    {
-    "text": "Contact",
-    "buttonCoordinates": {
-    "x": 135,
-    "y": 199,
-    "width": 67,
-    "height": 28
-    },
-    "buttonDestination": "3385972A-90DB-4A1F-A9C4-A1D83E26CE19"
-    },
-    {
-    "text": "News",
-    "buttonCoordinates": {
-    "x": 214,
-    "y": 199,
-    "width": 51,
-    "height": 28
-    },
-    "buttonDestination": "773BA8A8-7AD3-413E-B2FF-4676C2E35B8A"
-    }
-    ]
-    },
-    {
-    "pageID": "E1DEAD26-1737-4711-A1F9-9EC4591F6C17",
-    "buttons": [
-    {
-    "text": "xBack",
-    "buttonCoordinates": {
-    "x": 269,
-    "y": 188,
-    "width": 44,
-    "height": 44
-    },
-    "buttonDestination": "Home"
-    }
-    ]
-    },
-    {
-    "pageID": "3385972A-90DB-4A1F-A9C4-A1D83E26CE19",
-    "buttons": [
-    {
-    "text": "xBack",
-    "buttonCoordinates": {
-    "x": 269,
-    "y": 188,
-    "width": 44,
-    "height": 44
-    },
-    "buttonDestination": "Home"
-    }
-    ]
-    },
-    {
-    "pageID": "773BA8A8-7AD3-413E-B2FF-4676C2E35B8A",
-    "buttons": [
-    {
-    "text": "xBack",
-    "buttonCoordinates": {
-    "x": 269,
-    "y": 188,
-    "width": 44,
-    "height": 44
-    },
-    "buttonDestination": "Home"
-    },
-    {
-    "text": "xLeft",
-    "buttonCoordinates": {
-    "x": 1,
-    "y": 88,
-    "width": 30,
-    "height": 44
-    },
-    "buttonDestination": "C9EA0335-3354-4801-B968-BC54AAA57B96"
-    },
-    {
-    "text": "xRight",
-    "buttonCoordinates": {
-    "x": 290,
-    "y": 88,
-    "width": 30,
-    "height": 44
-    },
-    "buttonDestination": "C9EA0335-3354-4801-B968-BC54AAA57B96"
-    }
-    ]
-    },
-    {
-    "pageID": "C9EA0335-3354-4801-B968-BC54AAA57B96",
-    "buttons": [
-    {
-    "text": "xBack",
-    "buttonCoordinates": {
-    "x": 269,
-    "y": 188,
-    "width": 44,
-    "height": 44
-    },
-    "buttonDestination": "Home"
-    },
-    {
-    "text": "xLeft",
-    "buttonCoordinates": {
-    "x": 1,
-    "y": 88,
-    "width": 30,
-    "height": 44
-    },
-    "buttonDestination": "773BA8A8-7AD3-413E-B2FF-4676C2E35B8A"
-    },
-    {
-    "text": "xRight",
-    "buttonCoordinates": {
-    "x": 290,
-    "y": 88,
-    "width": 30,
-    "height": 44
-    },
-    "buttonDestination": "773BA8A8-7AD3-413E-B2FF-4676C2E35B8A"
-    }
-    ]
-    }
-    ]
-    }
-    """
-
 class Button:
     def __init__(self, buttonText, buttonDestination, x, y, width, height):
         self.buttonText = buttonText
@@ -212,11 +114,6 @@ def read_json_into_screens():
             print("  Button", index, "buttonDestination =", screen.buttons[index].buttonDestination)
             print("  Button", index, "has coordinates:", screen.buttons[index].x, screen.buttons[index].y, screen.buttons[index].width, screen.buttons[index].height)
 
-DATA_LOCATION = [0, "value"]
-
-pyportal = PyPortal(url=DATA_SOURCE,
-                    json_path=DATA_LOCATION,
-                    default_bg="Home.bmp",)
 try:
     response = pyportal.fetch()
     print("%%%% JSON RETRIEVED %%%%")
@@ -284,4 +181,3 @@ while True:
 time.sleep(.5)
 # clear p
     p_list = []
-
