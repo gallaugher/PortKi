@@ -7,6 +7,9 @@
 //
 
 import UIKit
+import GoogleSignIn
+import GoogleAPIClientForREST
+import GTMSessionFetcher
 import Alamofire
 import SwiftyJSON
 
@@ -16,6 +19,11 @@ class ScreenListViewController: UIViewController {
     // used simply to calculate button properties to be used in PyPortal via portkiScreens converted to JSON
     @IBOutlet var screenView: UIView!
     
+    let googleDriveService = GTLRDriveService()
+    var googleUser: GIDGoogleUser?
+    var uploadFolderID: String?
+    let filesFolderName = "portki-files"
+    
     var portkiScreens: [PortkiScreen] = []
     var portkiNodes: [PortkiNode] = []
     var newNodes: [PortkiNode] = []
@@ -23,6 +31,14 @@ class ScreenListViewController: UIViewController {
     var imageURL = "https://gallaugher.com/wp-content/uploads/2009/08/John-White-Border-Beard-Crossed-Arms-Photo.jpg"
     
     override func viewDidLoad() {
+        GIDSignIn.sharedInstance().delegate = self
+        GIDSignIn.sharedInstance().uiDelegate = self
+        GIDSignIn.sharedInstance()?.scopes =
+            [kGTLRAuthScopeDrive]
+        GIDSignIn.sharedInstance()?.signIn()
+        //        GIDSignIn.sharedInstance().signInSilently()
+        
+        
         tableView.delegate = self
         tableView.dataSource = self
         
@@ -276,6 +292,27 @@ class ScreenListViewController: UIViewController {
                 let filename = getDocumentsDirectory().appendingPathComponent("portkiScreens.json")
                 do {
                     try json.write(to: filename, options: .atomic)
+                    
+                    // Now try writing json to the Google Drive
+                    // let fileURL = Bundle.main.url(forResource: "my-image", withExtension: ".png")
+                    
+                    getFolderID(name: filesFolderName, service: googleDriveService, user: googleUser!) { folderID in
+                        if folderID == nil {
+                            self.createFolder(name: self.filesFolderName,service: self.googleDriveService) { self.uploadFolderID = $0
+                                if let uploadFolderID = self.uploadFolderID {
+                                    self.uploadFile(name: "portki.json", folderID: uploadFolderID, fileURL: filename, mimeType: "application/json", service: self.googleDriveService)
+                                }
+                            }
+                        } else {
+                            // Folder already exists
+                            self.uploadFolderID = folderID
+                            if let uploadFolderID = self.uploadFolderID {
+                                self.uploadFile(name: "portki.json", folderID: uploadFolderID, fileURL: filename, mimeType: "application/json", service: self.googleDriveService)
+                            }
+                        }
+                    }
+                    
+                    
                     sendJsonToAdafruitIo(jsonString: jsonString)
                 } catch {
                     print("😡 Grr. json wasn't writte to file \(error.localizedDescription)")
@@ -284,6 +321,114 @@ class ScreenListViewController: UIViewController {
         } else {
             print("encoding didn't work")
         }
+    }
+}
+
+extension ScreenListViewController {
+    
+    func getFolderID(name: String, service: GTLRDriveService, user: GIDGoogleUser, completion: @escaping (String?) -> Void) {
+        
+        let query = GTLRDriveQuery_FilesList.query()
+        
+        // Comma-separated list of areas the search applies to. E.g., appDataFolder, photos, drive.
+        query.spaces = "drive"
+        
+        // Comma-separated list of access levels to search in. Some possible values are "user,allTeamDrives" or "user"
+        query.corpora = "user"
+        
+        let withName = "name = '\(name)'" // Case insensitive!
+        let foldersOnly = "mimeType = 'application/vnd.google-apps.folder'"
+        let ownedByUser = "'\(user.profile!.email!)' in owners"
+        query.q = "\(withName) and \(foldersOnly) and \(ownedByUser)"
+        
+        service.executeQuery(query) { (_, result, error) in
+            guard error == nil else {
+                fatalError(error!.localizedDescription)
+            }
+            
+            let folderList = result as! GTLRDrive_FileList
+            
+            // For brevity, assumes only one folder is returned.
+            completion(folderList.files?.first?.identifier)
+        }
+    }
+    
+    func createFolder(name: String, service: GTLRDriveService, completion: @escaping (String) -> Void) {
+        
+        let folder = GTLRDrive_File()
+        folder.mimeType = "application/vnd.google-apps.folder"
+        folder.name = name
+        
+        // Google Drive folders are files with a special MIME-type.
+        let query = GTLRDriveQuery_FilesCreate.query(withObject: folder, uploadParameters: nil)
+        //let folderPermission =  GTLRDrive_Permission
+
+       service.executeQuery(query) { (_, file, error) in
+            guard error == nil else {
+                fatalError(error!.localizedDescription)
+            }
+            
+            let folder = file as! GTLRDrive_File
+            completion(folder.identifier!)
+        }
+    }
+    
+    func uploadFile(name: String, folderID: String, fileURL: URL, mimeType: String, service: GTLRDriveService) {
+        let file = GTLRDrive_File()
+        file.name = name
+        file.parents = [folderID]
+        
+        // Optionally, GTLRUploadParameters can also be created with a Data object.
+        let uploadParameters = GTLRUploadParameters(fileURL: fileURL, mimeType: mimeType)
+        
+        let query = GTLRDriveQuery_FilesCreate.query(withObject: file, uploadParameters: uploadParameters)
+        
+        service.uploadProgressBlock = { _, totalBytesUploaded, totalBytesExpectedToUpload in
+            // This block is called multiple times during upload and can
+            // be used to update a progress indicator visible to the user.
+        }
+        
+        service.executeQuery(query) { (_, result, error) in
+            guard error == nil else {
+                print("🚫 file \(name) was not uploaded to Google Drive \(folderID)")
+                fatalError(error!.localizedDescription)
+            }
+            
+            print("📁📁 File Successfully Uploaded to Google Drive! File name on drive is \(name)")
+            
+            // Successful upload if no error is returned.
+        }
+    }
+}
+
+extension ScreenListViewController: GIDSignInDelegate, GIDSignInUIDelegate {
+
+    func sign(_ signIn: GIDSignIn!, didSignInFor user: GIDGoogleUser!,
+              withError error: Error!) {
+        if let error = error {
+            self.googleDriveService.authorizer = nil
+            self.googleUser = nil
+            print("🥵🥵 \(error.localizedDescription)")
+        } else {
+            // Include authorization headers/values with each Drive API request.
+            self.googleDriveService.authorizer = user.authentication.fetcherAuthorizer()
+            self.googleUser = user
+            print("🐶 WOO HOO! You signed in, dawg! ")
+            // Perform any operations on signed in user here.
+            let userId = user.userID                  // For client-side use only!
+            let idToken = user.authentication.idToken // Safe to send to the server
+            let fullName = user.profile.name
+            let givenName = user.profile.givenName
+            let familyName = user.profile.familyName
+            let email = user.profile.email
+            // ...
+        }
+    }
+    
+    func sign(_ signIn: GIDSignIn!, didDisconnectWith user: GIDGoogleUser!,
+              withError error: Error!) {
+        // Perform any operations when the user disconnects from app here.
+        // ...
     }
 }
 

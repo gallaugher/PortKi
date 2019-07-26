@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import GoogleSignIn
 import Firebase
 
 @UIApplicationMain
@@ -14,8 +15,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
 
-
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        GIDSignIn.sharedInstance().clientID = "109572691793-mu2g9fkm3427f6343sacff688t8fkn60.apps.googleusercontent.com"
         FirebaseApp.configure()
         return true
     }
@@ -41,7 +42,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
+    
+    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+        return GIDSignIn.sharedInstance().handle(url as URL?,
+                                                 sourceApplication: options[UIApplication.OpenURLOptionsKey.sourceApplication] as? String,
+                                                 annotation: options[UIApplication.OpenURLOptionsKey.annotation])
+    }
 
-
+    // Below is from Medium post - above was from Google
+//    // below implemented as part of Google Drive SignIn
+//    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+//        let sourceApplication = options[.sourceApplication] as? String
+//        let annotation = options[.annotation]
+//
+//        return GIDSignIn.sharedInstance()?.handle(url, sourceApplication: sourceApplication, annotation: annotation) ?? false
+//    }
 }
 

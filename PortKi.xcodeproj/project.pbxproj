@@ -14,6 +14,7 @@
 		3E11E3BB228B8436001599ED /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3E11E3B9228B8436001599ED /* LaunchScreen.storyboard */; };
 		3E185C682293533800A5FB7E /* UIColor+toHex+initHex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E185C672293533800A5FB7E /* UIColor+toHex+initHex.swift */; };
 		3E279ACA229472BA000A20E0 /* ScreenDesignViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E279AC9229472BA000A20E0 /* ScreenDesignViewController.swift */; };
+		3E318C6D22EB697200C2EBCA /* client_109572691793-mu2g9fkm3427f6343sacff688t8fkn60.apps.googleusercontent.com.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3E318C6C22EB697200C2EBCA /* client_109572691793-mu2g9fkm3427f6343sacff688t8fkn60.apps.googleusercontent.com.plist */; };
 		3E3CF42922949CF300ACD87B /* UITextField+adjustHeight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E3CF42822949CF300ACD87B /* UITextField+adjustHeight.swift */; };
 		3E3CF42B22949D4900ACD87B /* UIFont+helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E3CF42A22949D4900ACD87B /* UIFont+helpers.swift */; };
 		3E480CE622D6C0510084AF63 /* portki.json in Resources */ = {isa = PBXBuildFile; fileRef = 3E480CE522D6C0510084AF63 /* portki.json */; };
@@ -54,6 +55,7 @@
 		3E11E3BC228B8436001599ED /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		3E185C672293533800A5FB7E /* UIColor+toHex+initHex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+toHex+initHex.swift"; sourceTree = "<group>"; };
 		3E279AC9229472BA000A20E0 /* ScreenDesignViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenDesignViewController.swift; sourceTree = "<group>"; };
+		3E318C6C22EB697200C2EBCA /* client_109572691793-mu2g9fkm3427f6343sacff688t8fkn60.apps.googleusercontent.com.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "client_109572691793-mu2g9fkm3427f6343sacff688t8fkn60.apps.googleusercontent.com.plist"; sourceTree = SOURCE_ROOT; };
 		3E3CF42822949CF300ACD87B /* UITextField+adjustHeight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITextField+adjustHeight.swift"; sourceTree = "<group>"; };
 		3E3CF42A22949D4900ACD87B /* UIFont+helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIFont+helpers.swift"; sourceTree = "<group>"; };
 		3E480CE522D6C0510084AF63 /* portki.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = portki.json; sourceTree = "<group>"; };
@@ -160,6 +162,7 @@
 				3E11E3B9228B8436001599ED /* LaunchScreen.storyboard */,
 				3E11E3BC228B8436001599ED /* Info.plist */,
 				3E89CC7C228B86D40067B0F0 /* GoogleService-Info.plist */,
+				3E318C6C22EB697200C2EBCA /* client_109572691793-mu2g9fkm3427f6343sacff688t8fkn60.apps.googleusercontent.com.plist */,
 				3E480CE522D6C0510084AF63 /* portki.json */,
 				3E85BF9222DCD09A00943D81 /* code.py */,
 			);
@@ -239,6 +242,7 @@
 				3E11E3BB228B8436001599ED /* LaunchScreen.storyboard in Resources */,
 				3E89CC7D228B86D40067B0F0 /* GoogleService-Info.plist in Resources */,
 				3E11E3B8228B8436001599ED /* Assets.xcassets in Resources */,
+				3E318C6D22EB697200C2EBCA /* client_109572691793-mu2g9fkm3427f6343sacff688t8fkn60.apps.googleusercontent.com.plist in Resources */,
 				3E85BF9322DCD09A00943D81 /* code.py in Resources */,
 				3E11E3B6228B8435001599ED /* Main.storyboard in Resources */,
 				3E480CE622D6C0510084AF63 /* portki.json in Resources */,
@@ -262,6 +266,7 @@
 				"${BUILT_PRODUCTS_DIR}/ColorSlider/ColorSlider.framework",
 				"${BUILT_PRODUCTS_DIR}/CropViewController/CropViewController.framework",
 				"${BUILT_PRODUCTS_DIR}/GTMSessionFetcher/GTMSessionFetcher.framework",
+				"${BUILT_PRODUCTS_DIR}/GoogleAPIClientForREST/GoogleAPIClientForREST.framework",
 				"${BUILT_PRODUCTS_DIR}/GoogleToolboxForMac/GoogleToolboxForMac.framework",
 				"${BUILT_PRODUCTS_DIR}/GoogleUtilities/GoogleUtilities.framework",
 				"${BUILT_PRODUCTS_DIR}/Protobuf/Protobuf.framework",
@@ -281,6 +286,7 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ColorSlider.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CropViewController.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GTMSessionFetcher.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleAPIClientForREST.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleToolboxForMac.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleUtilities.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Protobuf.framework",

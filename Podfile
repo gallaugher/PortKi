@@ -5,6 +5,8 @@ use_frameworks!
 target 'PortKi' do
     pod 'Alamofire', '~> 4.4'
     pod 'SwiftyJSON', '~> 4.0'
+    pod 'GoogleSignIn'
+    pod 'GoogleAPIClientForREST/Drive'
     pod 'Firebase/Core'
     pod 'Firebase/Storage'
     pod 'Firebase/Firestore'
