@@ -24,7 +24,6 @@ struct Button: Codable {
 struct PortkiScreen: Codable {
     var pageID: String
     var buttons: [Button]
-    var imageURL: String
 }
 
 struct PortkiImage: Codable {

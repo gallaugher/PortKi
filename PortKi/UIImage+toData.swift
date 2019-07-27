@@ -30,6 +30,17 @@ extension UIImage {
     // about properties: https://developer.apple.com/documentation/imageio/1464962-cgimagedestinationaddimage
     func toData (options: NSDictionary, type: CFString) -> Data? {
         guard let cgImage = cgImage else { return nil }
+
+        // Some code I put in to (unsuccessfully) see if I could remove the alpha channel from the bmp & figure out why it's still there, even if I set dictionary properties.
+//        let newData = NSMutableData()
+//        let newImage = cgImage
+//        guard let newImageDestination = CGImageDestinationCreateWithData(newData as CFMutableData, type, 1, nil) else {
+//            print("💀 Couldn't create newImageDestination")
+//            return nil }
+//        CGImageDestinationAddImage(newImageDestination, newImage, options)
+//        CGImageDestinationFinalize(newImageDestination)
+//        print("pausing here")
+        
         return autoreleasepool { () -> Data? in
             let data = NSMutableData()
             guard let imageDestination = CGImageDestinationCreateWithData(data as CFMutableData, type, 1, nil) else { return nil }

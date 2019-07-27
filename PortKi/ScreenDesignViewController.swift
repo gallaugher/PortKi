@@ -862,7 +862,6 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
                 let filename = getDocumentsDirectory().appendingPathComponent("portkiNodes.json")
                 do {
                     try json.write(to: filename, options: .atomic)
-//                    try json.write(to: filename, atomically: true, encoding: String.Encoding.utf8)
                 } catch {
                     print("😡 Grr. json wasn't writte to file \(error.localizedDescription)")
                 }
@@ -873,30 +872,12 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     }
     
     func saveImageToFile(bmpImage: Data) {
-        var portkiImage = PortkiImage(imageFileName: portkiNode.documentID, imageData: bmpImage)
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
-        if let encoded = try? encoder.encode(portkiImage) {
-            if let jsonString = String(data: encoded, encoding: .utf8) {
-                // print(jsonString)
-                
-                let parameters = ["value": jsonString]
-                guard let json = try? JSONSerialization.data(withJSONObject: parameters, options: []) else {
-                    print("😡 Drat! json conversion for bmpImage didn't work")
-                    return
-                }
-                print("** JSON bmpImage Conversion Worked !!!")
-                // print(json)
-                
-                let filename = getDocumentsDirectory().appendingPathComponent("\(portkiNode.documentID).json")
-                do {
-                    try json.write(to: filename, options: .atomic)
-                } catch {
-                    print("😡 Drat! json for bmpImage couldn't be written to file \(error.localizedDescription)")
-                }
-            }
-        } else {
-            print("😡 bmpImage encoding before json save didn't work")
+
+        let filename = getDocumentsDirectory().appendingPathComponent("\(portkiNode.documentID).bmp")
+        do {
+            try bmpImage.write(to: filename, options: .atomic)
+        } catch {
+            print("😡 Drat! bmpImage named \(portkiNode.documentID).bmp couldn't be written to file \(error.localizedDescription)")
         }
     }
     
@@ -906,6 +887,9 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     }
     
     func convertToBmp(image: UIImage) -> Data {
+        // I tried modifying the image save via options, below, to remove alpha - not successful so returned to original blank dictionary.
+        // let options: NSDictionary = [kCGImagePropertyHasAlpha: false, kCGImagePropertyDepth: 8]
+        
         let options: NSDictionary = [:]
         let convertToBmp = image.toData(options: options, type: .bmp)
         guard let screenBmpData = convertToBmp else {
@@ -952,19 +936,10 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         let scale = UIScreen.main.scale
         let newSize = CGSize(width: screenView.bounds.width * (1/scale), height: screenView.bounds.height * (1/scale))
         let resizedImage = grabbedImage.resized(to: newSize)
+        
         let bmpData = convertToBmp(image: resizedImage)
 
         saveImageToFile(bmpImage: bmpData)
-        
-//        let scaleFactor = UIScreen.main.scale // This shows the scaleFactor, e.g. 3.0 for Retina iPhone X
-//        let scale = CGAffineTransform(scaleX: 1/scaleFactor, y: 1/scaleFactor)
-//        
-//        let size = grabbedImage.bounds.size.applying(scale)
-//        
-//        let screenBounds = UIScreen.main.bounds
-//        let screenScale = UIScreen.main.scale
-//        let screenSize = CGSize(width: screenBounds.size.width * screenScale, height: screenBounds.size.height * screenScale)
-
 
         performSegue(withIdentifier: "UwindFromScreenDesign", sender: nil)
         

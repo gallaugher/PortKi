@@ -38,7 +38,6 @@ class ScreenListViewController: UIViewController {
         GIDSignIn.sharedInstance()?.signIn()
         //        GIDSignIn.sharedInstance().signInSilently()
         
-        
         tableView.delegate = self
         tableView.dataSource = self
         
@@ -64,7 +63,7 @@ class ScreenListViewController: UIViewController {
         if portkiNodes.isEmpty {
             // if there are no portkiNodes then there must not be any portkiScreens, either
             // If there are no portkiScreens, then create new "Home" screen and new "Home" node.
-            portkiScreens.append(PortkiScreen(pageID: "Home", buttons: [Button](), imageURL: imageURL))
+            portkiScreens.append(PortkiScreen(pageID: "Home", buttons: [Button]()))
             portkiNodes.append(PortkiNode(nodeName: "Home", nodeType: "Home", parentID: "", hierarchyLevel: 0, childrenIDs: [String](), backgroundImageUUID: "", documentID: "Home"))
             tableView.reloadData()
             let indexPathForSelectedRow = IndexPath(row: 0, section: 0) // "Home" should always be row zero.
@@ -86,20 +85,20 @@ class ScreenListViewController: UIViewController {
         let filename = getDocumentsDirectory().appendingPathComponent("portkiNodes.json")
         do {
             let data = try Data(contentsOf: filename)
-            print(data)
+            // print(data)
             let json = JSON(data)
-            print(json["value"])
+            // print(json["value"])
             
-            print("now decoding")
+            // print("now decoding")
             let decoder = JSONDecoder()
             let jsonString = json["value"].stringValue
             let convertedJsonData = Data(jsonString.utf8)
             do {
                 portkiNodes = try decoder.decode([PortkiNode].self, from: convertedJsonData)
-                for node in portkiNodes {
-                    print(node.nodeName)
-                    print("   This screen has \(node.childrenIDs.count) children")
-                }
+//                for node in portkiNodes {
+//                    print(node.nodeName)
+//                    print("   This screen has \(node.childrenIDs.count) children")
+//                }
             } catch {
                 print(error.localizedDescription)
             }
@@ -113,20 +112,20 @@ class ScreenListViewController: UIViewController {
         let filename = getDocumentsDirectory().appendingPathComponent("portkiScreens.json")
         do {
             let data = try Data(contentsOf: filename)
-            print(data)
+            // print(data)
             let json = JSON(data)
-            print(json["value"])
+            // print(json["value"])
             
-            print("now decoding")
+            // print("now decoding")
             let decoder = JSONDecoder()
             let jsonString = json["value"].stringValue
             let convertedJsonData = Data(jsonString.utf8)
             do {
                 portkiScreens = try decoder.decode([PortkiScreen].self, from: convertedJsonData)
-                for node in portkiNodes {
-                    print(node.nodeName)
-                    print("   This screen has \(node.childrenIDs.count) children")
-                }
+//                for node in portkiNodes {
+//                    print(node.nodeName)
+//                    print("   This screen has \(node.childrenIDs.count) children")
+//                }
             } catch {
                 print(error.localizedDescription)
             }
@@ -142,17 +141,17 @@ class ScreenListViewController: UIViewController {
             case .success(let value):
                 let json = JSON(value)
                 let jsonData = json["last_value"]
-                print(jsonData)
-                print("now decoding")
+//                print(jsonData)
+//                print("now decoding")
                 let decoder = JSONDecoder()
                 let jsonString = json["last_value"].stringValue
                 let convertedJsonData = Data(jsonString.utf8)
                 do {
                     self.portkiScreens = try decoder.decode([PortkiScreen].self, from: convertedJsonData)
-                    for screen in self.portkiScreens {
-                        print(screen.pageID)
-                        print("   This screen has \(screen.buttons.count) buttons")
-                    }
+//                    for screen in self.portkiScreens {
+//                        print(screen.pageID)
+//                        print("   This screen has \(screen.buttons.count) buttons")
+//                    }
                 } catch {
                     print(error.localizedDescription)
                 }
@@ -172,7 +171,7 @@ class ScreenListViewController: UIViewController {
             }
         }
     }
-
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // click to edit an exiseting screen
         if segue.identifier == "ShowScreen" {
@@ -238,7 +237,7 @@ class ScreenListViewController: UIViewController {
     func sendJsonToAdafruitIo(jsonString: String) {
         let parameters = ["value": jsonString]
         guard let url = URL(string: "https://io.adafruit.com/api/feeds/portki/data.json?X-AIO-Key=073cd97c69db42dab2b411062bf15f23") else { return }
-
+        
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -246,13 +245,13 @@ class ScreenListViewController: UIViewController {
         request.httpBody = httpBody
         let session = URLSession.shared
         session.dataTask(with: request) { (data, response, error) in
-            if let response = response {
-                print(response)
-            }
+            //            if let response = response {
+            //                print(response)
+            //            }
             if let data = data {
                 do {
                     let json = try JSONSerialization.jsonObject(with: data, options: [])
-                    print(json)
+                    // print(json)
                     print("😀 JSON for portKiScreens POSTED to Adafruit.io - HURRAY!!!")
                 } catch {
                     print(error)
@@ -279,7 +278,7 @@ class ScreenListViewController: UIViewController {
         encoder.outputFormatting = .prettyPrinted
         if let encoded = try? encoder.encode(portkiScreens) {
             if let jsonString = String(data: encoded, encoding: .utf8) {
-                print(jsonString)
+                // print(jsonString)
                 
                 let parameters = ["value": jsonString]
                 guard let json = try? JSONSerialization.data(withJSONObject: parameters, options: []) else {
@@ -287,32 +286,12 @@ class ScreenListViewController: UIViewController {
                     return
                 }
                 print("** JSON Conversion Worked !!!")
-                print(json)
+                // print(json)
                 
-                let filename = getDocumentsDirectory().appendingPathComponent("portkiScreens.json")
+                let fileNameURL = getDocumentsDirectory().appendingPathComponent("portkiScreens.json")
                 do {
-                    try json.write(to: filename, options: .atomic)
-                    
-                    // Now try writing json to the Google Drive
-                    // let fileURL = Bundle.main.url(forResource: "my-image", withExtension: ".png")
-                    
-                    getFolderID(name: filesFolderName, service: googleDriveService, user: googleUser!) { folderID in
-                        if folderID == nil {
-                            self.createFolder(name: self.filesFolderName,service: self.googleDriveService) { self.uploadFolderID = $0
-                                if let uploadFolderID = self.uploadFolderID {
-                                    self.uploadFile(name: "portki.json", folderID: uploadFolderID, fileURL: filename, mimeType: "application/json", service: self.googleDriveService)
-                                }
-                            }
-                        } else {
-                            // Folder already exists
-                            self.uploadFolderID = folderID
-                            if let uploadFolderID = self.uploadFolderID {
-                                self.uploadFile(name: "portki.json", folderID: uploadFolderID, fileURL: filename, mimeType: "application/json", service: self.googleDriveService)
-                            }
-                        }
-                    }
-                    
-                    
+                    try json.write(to: fileNameURL, options: .atomic)
+                    writeJsonFileToGoogleDrive(fileNameURL: fileNameURL)
                     sendJsonToAdafruitIo(jsonString: jsonString)
                 } catch {
                     print("😡 Grr. json wasn't writte to file \(error.localizedDescription)")
@@ -324,7 +303,41 @@ class ScreenListViewController: UIViewController {
     }
 }
 
+// NOTE: This is where I write files to Google Drive
 extension ScreenListViewController {
+    
+    func writeAllImagesToGoogleDrive() {
+        for portkiScreen in portkiScreens {
+            let fileNameURL = getDocumentsDirectory().appendingPathComponent("\(portkiScreen.pageID).bmp")
+            
+            if let uploadFolderID = self.uploadFolderID {
+                self.uploadFile(name: "\(portkiScreen.pageID).bmp", folderID: uploadFolderID, fileURL: fileNameURL, mimeType: "image/bmp", service: self.googleDriveService)
+            }
+        }
+    }
+    
+    func writeJsonFileToGoogleDrive(fileNameURL: URL) {
+        // Now try writing json to the Google Drive
+        // let fileURL = Bundle.main.url(forResource: "my-image", withExtension: ".png")
+        
+        getFolderID(name: filesFolderName, service: googleDriveService, user: googleUser!) { folderID in
+            if folderID == nil {
+                self.createFolder(name: self.filesFolderName,service: self.googleDriveService) { self.uploadFolderID = $0
+                    if let uploadFolderID = self.uploadFolderID {
+                        self.uploadFile(name: "portki.json", folderID: uploadFolderID, fileURL: fileNameURL, mimeType: "application/json", service: self.googleDriveService)
+                        self.writeAllImagesToGoogleDrive()
+                    }
+                }
+            } else {
+                // Folder already exists
+                self.uploadFolderID = folderID
+                if let uploadFolderID = self.uploadFolderID {
+                    self.uploadFile(name: "portki.json", folderID: uploadFolderID, fileURL: fileNameURL, mimeType: "application/json", service: self.googleDriveService)
+                    self.writeAllImagesToGoogleDrive()
+                }
+            }
+        }
+    }
     
     func getFolderID(name: String, service: GTLRDriveService, user: GIDGoogleUser, completion: @escaping (String?) -> Void) {
         
@@ -362,8 +375,8 @@ extension ScreenListViewController {
         // Google Drive folders are files with a special MIME-type.
         let query = GTLRDriveQuery_FilesCreate.query(withObject: folder, uploadParameters: nil)
         //let folderPermission =  GTLRDrive_Permission
-
-       service.executeQuery(query) { (_, file, error) in
+        
+        service.executeQuery(query) { (_, file, error) in
             guard error == nil else {
                 fatalError(error!.localizedDescription)
             }
@@ -393,7 +406,6 @@ extension ScreenListViewController {
                 print("🚫 file \(name) was not uploaded to Google Drive \(folderID)")
                 fatalError(error!.localizedDescription)
             }
-            
             print("📁📁 File Successfully Uploaded to Google Drive! File name on drive is \(name)")
             
             // Successful upload if no error is returned.
@@ -402,7 +414,7 @@ extension ScreenListViewController {
 }
 
 extension ScreenListViewController: GIDSignInDelegate, GIDSignInUIDelegate {
-
+    
     func sign(_ signIn: GIDSignIn!, didSignInFor user: GIDGoogleUser!,
               withError error: Error!) {
         if let error = error {
@@ -414,7 +426,7 @@ extension ScreenListViewController: GIDSignInDelegate, GIDSignInUIDelegate {
             self.googleDriveService.authorizer = user.authentication.fetcherAuthorizer()
             self.googleUser = user
             print("🐶 WOO HOO! You signed in, dawg! ")
-            // Perform any operations on signed in user here.
+            // Perform any operations on signed in user here. I don't think I need any of this info, but keeping them here as a reference for now, as per tutorial, in case I need them later on.
             let userId = user.userID                  // For client-side use only!
             let idToken = user.authentication.idToken // Safe to send to the server
             let fullName = user.profile.name
@@ -512,14 +524,14 @@ extension ScreenListViewController: PlusAndDisclosureDelegate {
         
         
         // Also setup new PortkiScreen and add it to PortkiScreens, this is what will be saved to json for use on PyPortal
-
+        
         // var buttonInfoArray = buildButtonArray(portkiNode: newScreen)
         // Also setup new PortkiScreen and add it to PortkiScreens, this is what will be saved to json for use on PyPortal
         var buttons = createLeftRightBackButtons(portkiNode: newScreen)
         let leafButtons = createLeafButtons(portkiNode: newScreen)
         buttons += getButtonsFromUIButtons(leafButtons: leafButtons, portkiNode: newScreen)
         
-        portkiScreens.append(PortkiScreen(pageID: newPageID, buttons: buttons, imageURL: imageURL))
+        portkiScreens.append(PortkiScreen(pageID: newPageID, buttons: buttons))
         
         tableView.reloadData()
         let selectedIndexPath = IndexPath(row: portkiNodes.count-1, section: indexPath.section)
@@ -532,7 +544,7 @@ extension ScreenListViewController: PlusAndDisclosureDelegate {
         let newScreen = PortkiNode(nodeName: portkiNodes[indexPath.row].nodeName, nodeType: "Screen", parentID: portkiNodes[indexPath.row].documentID, hierarchyLevel: portkiNodes[indexPath.row].hierarchyLevel+1, childrenIDs: [String](), backgroundImageUUID: "", documentID: newPageID)
         
         // Now add the new nodes + indexPaths and reload data
-
+        
         portkiNodes[indexPath.row].childrenIDs.append(newPageID)
         portkiNodes.append(newScreen)
         
@@ -543,7 +555,7 @@ extension ScreenListViewController: PlusAndDisclosureDelegate {
         var buttons = createLeftRightBackButtons(portkiNode: newScreen)
         let leafButtons = createLeafButtons(portkiNode: newScreen)
         buttons += getButtonsFromUIButtons(leafButtons: leafButtons, portkiNode: newScreen)
-        portkiScreens.append(PortkiScreen(pageID: newPageID, buttons: buttons, imageURL: imageURL))
+        portkiScreens.append(PortkiScreen(pageID: newPageID, buttons: buttons))
         
         tableView.reloadData()
         let selectedIndexPath = IndexPath(row: portkiNodes.count-1, section: indexPath.section)
