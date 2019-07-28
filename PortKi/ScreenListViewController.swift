@@ -307,12 +307,20 @@ class ScreenListViewController: UIViewController {
 extension ScreenListViewController {
     
     func writeAllImagesToGoogleDrive(completed: @escaping () -> ()) {
-        for portkiScreen in portkiScreens {
-            let fileNameURL = getDocumentsDirectory().appendingPathComponent("\(portkiScreen.pageID).bmp")
-            
+        
+        guard let fileURLs = FileManager.default.urls(for: .documentDirectory) else {
+            print("🥶 Chill - No fileURLs, dude. Nothing has been saved, yet, to the iOS device.")
+            return
+        }
+        
+        for fileURL in fileURLs {
+            // Find file extension
+            let fileExtension = fileURL.pathExtension
+            let fileName = fileURL.lastPathComponent
+            print(">>> fileExtension is \(fileExtension)")
             if let uploadFolderID = self.uploadFolderID {
-                self.uploadFile(name: "\(portkiScreen.pageID).bmp", folderID: uploadFolderID, fileURL: fileNameURL, mimeType: "image/bmp", service: self.googleDriveService) {
-                    print("^^ completed writing image for \(portkiScreen.pageID).bmp")
+                self.uploadFile(name: fileName, folderID: uploadFolderID, fileURL: fileURL, mimeType: "image/\(fileExtension)", service: self.googleDriveService) {
+                    print("^^ completed writing to Google Drive for fileName \(fileName).")
                     completed()
                 }
             } else {
@@ -320,8 +328,22 @@ extension ScreenListViewController {
                 completed()
             }
         }
-        // moved completed up - unsure if this'll work
-        //completed()
+        //        for portkiScreen in portkiScreens {
+        //            let fileNameURL = getDocumentsDirectory().appendingPathComponent("\(portkiScreen.pageID).bmp")
+        //
+        //            // Find file extension
+        //            let fileExtension = fileNameURL.pathExtension
+        //            print(">>> fileExtension is \(fileExtension)")
+        //            if let uploadFolderID = self.uploadFolderID {
+        //                self.uploadFile(name: "\(portkiScreen.pageID).\(fileExtension)", folderID: uploadFolderID, fileURL: fileNameURL, mimeType: "image/\(fileExtension)", service: self.googleDriveService) {
+        //                    print("^^ completed writing image for \(portkiScreen.pageID).\(fileExtension)")
+        //                    completed()
+        //                }
+        //            } else {
+        //                print("😡 if let uploadFolderID = self.uploadFolderID didn't work in writeAllImagesToGoogleDrive.")
+        //                completed()
+        //            }
+        //        }
     }
     
     func writeJsonFileToGoogleDrive(fileNameURL: URL) {
@@ -337,9 +359,9 @@ extension ScreenListViewController {
                                 self.getFileWebLinks()
                             }
                         }
-//                        self.writeAllImagesToGoogleDrive {
-//                            self.getFileWebLinks()
-//                        }
+                        //                        self.writeAllImagesToGoogleDrive {
+                        //                            self.getFileWebLinks()
+                        //                        }
                     }
                 }
             } else {
@@ -352,9 +374,9 @@ extension ScreenListViewController {
                             self.getFileWebLinks()
                         }
                     }
-//                    self.writeAllImagesToGoogleDrive {
-//                        self.getFileWebLinks()
-//                    }
+                    //                    self.writeAllImagesToGoogleDrive {
+                    //                        self.getFileWebLinks()
+                    //                    }
                 }
             }
         }
@@ -447,7 +469,7 @@ extension ScreenListViewController {
         folderQuery.spaces = "drive"
         // Comma-separated list of access levels to search in. Some possible values are "user,allTeamDrives" or "user"
         folderQuery.corpora = "user"
-
+        
         let ownedByUser = "'\(googleUser!.profile!.email!)' in owners"
         // let ownedByUser = "'\(String(describing: googleUser!.profile!.email!))' in owners"
         // folderQuery.q = "\(withName) and \(foldersOnly) and \(ownedByUser)"
@@ -456,7 +478,7 @@ extension ScreenListViewController {
         googleDriveService.executeQuery(folderQuery) { (_, result, error) in
             guard error == nil else {
                 print("😡😡 ERROR: getFileWebLinks in googleDriveService.executeQuery for \(folderQuery)")
-
+                
                 fatalError(error!.localizedDescription)
             }
             let fileList = result as! GTLRDrive_FileList
@@ -464,8 +486,7 @@ extension ScreenListViewController {
                 print("** There were \(fileListFiles.count) files returned by the getFileWebLinks query")
                 print("\(fileListFiles)")
                 for fileListFile in fileList.files! {
-                    print("\(fileListFile.name)")
-                    print("WebLink for file is: https://drive.google.com/uc?export=view&id=\(fileListFile.identifier!)")
+                    print("WebLink for file \(fileListFile.name) is: https://drive.google.com/uc?export=view&id=\(fileListFile.identifier!)")
                     print("\(fileListFile.webContentLink)")
                 }
             } else {

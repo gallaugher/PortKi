@@ -871,13 +871,14 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
-    func saveImageToFile(bmpImage: Data) {
+    func saveImageToFile(imageData: Data, imageType: String) {
 
-        let filename = getDocumentsDirectory().appendingPathComponent("\(portkiNode.documentID).bmp")
+        let filename = getDocumentsDirectory().appendingPathComponent("\(portkiNode.documentID).\(imageType)")
         do {
-            try bmpImage.write(to: filename, options: .atomic)
+            try imageData.write(to: filename, options: .atomic)
+            print("😀 Successfully wrote filename: \(filename)")
         } catch {
-            print("😡 Drat! bmpImage named \(portkiNode.documentID).bmp couldn't be written to file \(error.localizedDescription)")
+            print("😡 Drat! bmpImage named \(portkiNode.documentID).\(imageType) couldn't be written to file \(error.localizedDescription)")
         }
     }
     
@@ -961,7 +962,12 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         
         
         // let bmpData = convertToBmp(image: resizedImage)
-        saveImageToFile(bmpImage: bmpData)
+        saveImageToFile(imageData: bmpData, imageType: "bmp")
+        if let imageData = resizedImage.pngData() {
+            saveImageToFile(imageData: imageData, imageType: "png")
+        } else {
+            print("🛑🛑 Couldn't create data from resizedImage.png")
+        }
 
         performSegue(withIdentifier: "UwindFromScreenDesign", sender: nil)
         
