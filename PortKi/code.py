@@ -1,4 +1,3 @@
-# NOTE: This version temporarily broken as I test wget. Will post working v. soon.
 import time
 import json
 import board
@@ -9,6 +8,7 @@ import adafruit_sdcard
 import os
 import digitalio
 import busio
+
 """
     # Use stuff below when working with the PyPortal's microSD card
     spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
@@ -18,54 +18,24 @@ import busio
     storage.mount(vfs, "/sd")
     print(os.listdir('/sd'))
     """
-
-"""
-    # See if a card is present
-    card_detect_pin = digitalio.DigitalInOut(board.SD_CARD_DETECT)
-    card_detect_pin.direction = digitalio.Direction.INPUT
-    card_detect_pin.pull = digitalio.Pull.UP
-    print('SD card present: %s' % card_detect_pin.value)
-    
-    # Try to connect to the SD card
-    sdcard = adafruit_sdcard.SDCard(
-    busio.SPI(board.SCK, board.MOSI, board.MISO),
-    digitalio.DigitalInOut(board.SD_CS)
-    )
-    # Mount the card to a directory
-    virtual_file_system = storage.VfsFat(sdcard)
-    storage.mount(virtual_file_system, '/sd')
-    """
-
 # pyportal = PyPortal(default_bg="Home.bmp",)
 
-DATA_SOURCE = "https://io.adafruit.com/api/v2/gallaugher/feeds/portkijsondemo/data/"
-num = 0
+# DATA_SOURCE = "https://io.adafruit.com/api/v2/gallaugher/feeds/portkijsondemo/data/"
+DATA_SOURCE = "https://io.adafruit.com/api/v2/gallaugher/feeds/portki/data/"
+# num = 0
 
 DATA_LOCATION = [0, "value"]
-URL_PATH = "https://cdn-shop.adafruit.com/310x233/4116-00.jpeg"
+# MY_IMAGE_URL_PATH = "https://gallaugher.com/wp-content/uploads/2019/07/Home.jpeg"
+IMAGE_LOCATION = ["screenURL"]
 
 pyportal = PyPortal(url=DATA_SOURCE,
                     json_path=DATA_LOCATION,
+                    #                    image_json_path=IMAGE_LOCATION,
                     default_bg="Home.bmp",)
 
-# to get direct, usable link to a jpeg publically accessible on a google drive
-# first get the sharable link, then copy the long ID from this link &
-# paste it into the URL string following: https://drive.google.com/uc?
+data = pyportal.fetch()
 
-# below is direct image to a jpeg
-image_url = "https://drive.google.com/uc?id=1Ixv3QGuc8Yk8WhxRyjY0RP39huszKvCY"
-
-# below is a direct image to a bmp, there doesn't seem to be any speed adv.
-# to using a .bmp over a .jpeg
-# image_url = "https://drive.google.com/uc?id=1UllzeBmeRMw-Tb6dHX3OoAC54f2rP1lY"
-
-pyportal.image_url_path = URL_PATH
-
-pyportal.wget(pyportal.image_converter_url(image_url,320, 240,color_depth=16),
-              "imageFromWeb.bmp",
-              chunk_size=12000)
-
-pyportal.set_background("imageFromWeb.bmp")
+# pyportal.image_url_path = URL_PATH
 
 p_list = [] # holds points indicating where a press occurred
 # These pins are used as both analog and digital! XL, XR and YU must be analog
@@ -84,13 +54,15 @@ class Button:
         self.height = height
 
 class Screen:
-    def __init__(self, pageID, buttons):
+    def __init__(self, pageID, buttons, screenURL):
         self.pageID = pageID
         self.buttons = buttons
+        self.screenURL = screenURL
 
 def read_json_into_screens():
     for i in range(len(screens_list)):
         pageID = screens_list[i]["pageID"]
+        screenURL = screens_list[i]["screenURL"]
         num_of_buttons = len(screens_list[i]["buttons"])
         print("This page has", num_of_buttons, "buttons")
         buttons = []
@@ -103,11 +75,12 @@ def read_json_into_screens():
             height = screens_list[i]["buttons"][button_index]["buttonCoordinates"]["height"]
             button = Button(buttonText, buttonDestination, x, y, width, height)
             buttons.append(button)
-        screen = Screen(pageID, buttons)
+        screen = Screen(pageID, buttons, screenURL)
         screens.append(screen)
     
     for screen in screens:
         print(screen.pageID)
+        print(screen.screenURL)
         print("This screen has", len(screen.buttons), "buttons")
         for index in range(len(screen.buttons)):
             print("  Button", index, "text =", screen.buttons[index].buttonText)
@@ -123,11 +96,9 @@ try:
     convertedJson = json.loads(response)
     print("*** convertedJson is of type:\n", type(convertedJson), "\n")
     print("*** PRINTING convertedJson:\n", convertedJson, "\n")
-    #    print(convertedJson["screens"][0]["pageID"])
     print(convertedJson[0]["pageID"])
     screens_json = convertedJson
     
-    #    screens_list = screens_json["screens"]
     screens_list = screens_json
     print("There are", len(screens_list), "screens in this kiosk.")
     screens = []
@@ -137,6 +108,18 @@ except RuntimeError as e:
 
 read_json_into_screens()
 current_pageID = "Home"
+
+
+screens[0].screenURL = "https://gallaugher.com/wp-content/uploads/2019/07/Home.jpeg"
+# *** NOTE: Seems to work with jpegs but not pngs, so try jpegs!
+image_url = screens[0].screenURL
+# image_url = "https://gallaugher.com/wp-content/uploads/2019/07/Home.jpeg"
+print("image_url =", image_url)
+
+pyportal.wget(pyportal.image_converter_url(image_url,320, 240,color_depth=16),
+              "/cache.bmp",
+              chunk_size=12000)
+pyportal.set_background("/cache.bmp")
 
 while True:
     p = ts.touch_point

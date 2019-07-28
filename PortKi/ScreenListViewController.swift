@@ -63,7 +63,7 @@ class ScreenListViewController: UIViewController {
         if portkiNodes.isEmpty {
             // if there are no portkiNodes then there must not be any portkiScreens, either
             // If there are no portkiScreens, then create new "Home" screen and new "Home" node.
-            portkiScreens.append(PortkiScreen(pageID: "Home", buttons: [Button]()))
+            portkiScreens.append(PortkiScreen(pageID: "Home", buttons: [Button](), screenURL: ""))
             portkiNodes.append(PortkiNode(nodeName: "Home", nodeType: "Home", parentID: "", hierarchyLevel: 0, childrenIDs: [String](), backgroundImageUUID: "", documentID: "Home"))
             tableView.reloadData()
             let indexPathForSelectedRow = IndexPath(row: 0, section: 0) // "Home" should always be row zero.
@@ -278,7 +278,7 @@ class ScreenListViewController: UIViewController {
         encoder.outputFormatting = .prettyPrinted
         if let encoded = try? encoder.encode(portkiScreens) {
             if let jsonString = String(data: encoded, encoding: .utf8) {
-                // print(jsonString)
+                print(jsonString)
                 
                 let parameters = ["value": jsonString]
                 guard let json = try? JSONSerialization.data(withJSONObject: parameters, options: []) else {
@@ -286,7 +286,7 @@ class ScreenListViewController: UIViewController {
                     return
                 }
                 print("** JSON Conversion Worked !!!")
-                // print(json)
+                print(json)
                 
                 let fileNameURL = getDocumentsDirectory().appendingPathComponent("portkiScreens.json")
                 do {
@@ -359,9 +359,6 @@ extension ScreenListViewController {
                                 self.getFileWebLinks()
                             }
                         }
-                        //                        self.writeAllImagesToGoogleDrive {
-                        //                            self.getFileWebLinks()
-                        //                        }
                     }
                 }
             } else {
@@ -374,9 +371,6 @@ extension ScreenListViewController {
                             self.getFileWebLinks()
                         }
                     }
-                    //                    self.writeAllImagesToGoogleDrive {
-                    //                        self.getFileWebLinks()
-                    //                    }
                 }
             }
         }
@@ -486,14 +480,28 @@ extension ScreenListViewController {
                 print("** There were \(fileListFiles.count) files returned by the getFileWebLinks query")
                 print("\(fileListFiles)")
                 for fileListFile in fileList.files! {
-                    print("WebLink for file \(fileListFile.name) is: https://drive.google.com/uc?export=view&id=\(fileListFile.identifier!)")
-                    print("\(fileListFile.webContentLink)")
+                    let webLink = "https://drive.google.com/uc?export=view&id=\(fileListFile.identifier!)"
+                    print("WebLink for file \(fileListFile.name) is: \(webLink)")
+                    if let fileName = fileListFile.name {
+                        self.addWebLinkToNode(fileName: fileName, webLink: webLink)
+                    }
+                    print("\(webLink )")
                 }
             } else {
                 print(" GRUMP! No fileList files returned for \(folderQuery.q).")
             }
         }
+    }
+    
+    func addWebLinkToNode(fileName: String, webLink: String) {
+        let pageID = fileName.removeEverythingAfter(lastOccuranceOf: ".")
         
+        for index in 0..<portkiScreens.count {
+            if portkiScreens[index].pageID == pageID {
+                portkiScreens[index].screenURL = webLink
+                print("\(portkiScreens[index].pageID) has the webLink \(portkiScreens[index].screenURL)")
+            }
+        }
     }
 }
 
@@ -607,7 +615,7 @@ extension ScreenListViewController: PlusAndDisclosureDelegate {
         let leafButtons = createLeafButtons(portkiNode: newScreen)
         buttons += getButtonsFromUIButtons(leafButtons: leafButtons, portkiNode: newScreen)
         
-        portkiScreens.append(PortkiScreen(pageID: newPageID, buttons: buttons))
+        portkiScreens.append(PortkiScreen(pageID: newPageID, buttons: buttons, screenURL: ""))
         
         tableView.reloadData()
         let selectedIndexPath = IndexPath(row: portkiNodes.count-1, section: indexPath.section)
@@ -631,14 +639,13 @@ extension ScreenListViewController: PlusAndDisclosureDelegate {
         var buttons = createLeftRightBackButtons(portkiNode: newScreen)
         let leafButtons = createLeafButtons(portkiNode: newScreen)
         buttons += getButtonsFromUIButtons(leafButtons: leafButtons, portkiNode: newScreen)
-        portkiScreens.append(PortkiScreen(pageID: newPageID, buttons: buttons))
+        portkiScreens.append(PortkiScreen(pageID: newPageID, buttons: buttons, screenURL: ""))
         
         tableView.reloadData()
         let selectedIndexPath = IndexPath(row: portkiNodes.count-1, section: indexPath.section)
         self.tableView.selectRow(at: selectedIndexPath, animated: true, scrollPosition: .none)
         self.performSegue(withIdentifier: "AddScreen", sender: nil)
     }
-    
     
     func didTapPlusButton(at indexPath: IndexPath) {
         switch portkiNodes[indexPath.row].nodeType {

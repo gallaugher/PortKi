@@ -25,6 +25,7 @@
 		3E4E3A81229342AE0078DB45 /* UITextField+Characters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4E3A80229342AE0078DB45 /* UITextField+Characters.swift */; };
 		3E4E3A83229345D60078DB45 /* UITextField+limitLength.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4E3A82229345D60078DB45 /* UITextField+limitLength.swift */; };
 		3E8242B722EE2EA70051313D /* FileManager+URLs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8242B622EE2EA70051313D /* FileManager+URLs.swift */; };
+		3E8242B922EE40550051313D /* String+removeEverythingAfter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8242B822EE40550051313D /* String+removeEverythingAfter.swift */; };
 		3E850D462297169800F4B739 /* Screen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E850D452297169800F4B739 /* Screen.swift */; };
 		3E850D482297176300F4B739 /* ButtonInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E850D472297176300F4B739 /* ButtonInfo.swift */; };
 		3E85BF9322DCD09A00943D81 /* code.py in Resources */ = {isa = PBXBuildFile; fileRef = 3E85BF9222DCD09A00943D81 /* code.py */; };
@@ -67,6 +68,7 @@
 		3E4E3A80229342AE0078DB45 /* UITextField+Characters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITextField+Characters.swift"; sourceTree = "<group>"; };
 		3E4E3A82229345D60078DB45 /* UITextField+limitLength.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITextField+limitLength.swift"; sourceTree = "<group>"; };
 		3E8242B622EE2EA70051313D /* FileManager+URLs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FileManager+URLs.swift"; sourceTree = "<group>"; };
+		3E8242B822EE40550051313D /* String+removeEverythingAfter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+removeEverythingAfter.swift"; sourceTree = "<group>"; };
 		3E850D452297169800F4B739 /* Screen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screen.swift; sourceTree = "<group>"; };
 		3E850D472297176300F4B739 /* ButtonInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonInfo.swift; sourceTree = "<group>"; };
 		3E85BF9222DCD09A00943D81 /* code.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = code.py; sourceTree = "<group>"; };
@@ -160,6 +162,7 @@
 				3E4E3A82229345D60078DB45 /* UITextField+limitLength.swift */,
 				3E3CF42822949CF300ACD87B /* UITextField+adjustHeight.swift */,
 				3E8242B622EE2EA70051313D /* FileManager+URLs.swift */,
+				3E8242B822EE40550051313D /* String+removeEverythingAfter.swift */,
 				3E11E3B4228B8435001599ED /* Main.storyboard */,
 				3E11E3B7228B8436001599ED /* Assets.xcassets */,
 				3E11E3B9228B8436001599ED /* LaunchScreen.storyboard */,
@@ -366,6 +369,7 @@
 				3E279ACA229472BA000A20E0 /* ScreenDesignViewController.swift in Sources */,
 				3EA68357228C622900990E61 /* TextBlock.swift in Sources */,
 				3E8242B722EE2EA70051313D /* FileManager+URLs.swift in Sources */,
+				3E8242B922EE40550051313D /* String+removeEverythingAfter.swift in Sources */,
 				3E11E3B3228B8435001599ED /* ScreenListViewController.swift in Sources */,
 				3E4E3A81229342AE0078DB45 /* UITextField+Characters.swift in Sources */,
 				3E4DB79C2296205000F73F2F /* HomeTableViewCell.swift in Sources */,
