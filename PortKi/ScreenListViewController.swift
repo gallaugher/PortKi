@@ -95,10 +95,10 @@ class ScreenListViewController: UIViewController {
             let convertedJsonData = Data(jsonString.utf8)
             do {
                 portkiNodes = try decoder.decode([PortkiNode].self, from: convertedJsonData)
-//                for node in portkiNodes {
-//                    print(node.nodeName)
-//                    print("   This screen has \(node.childrenIDs.count) children")
-//                }
+                //                for node in portkiNodes {
+                //                    print(node.nodeName)
+                //                    print("   This screen has \(node.childrenIDs.count) children")
+                //                }
             } catch {
                 print(error.localizedDescription)
             }
@@ -122,10 +122,10 @@ class ScreenListViewController: UIViewController {
             let convertedJsonData = Data(jsonString.utf8)
             do {
                 portkiScreens = try decoder.decode([PortkiScreen].self, from: convertedJsonData)
-//                for node in portkiNodes {
-//                    print(node.nodeName)
-//                    print("   This screen has \(node.childrenIDs.count) children")
-//                }
+                //                for node in portkiNodes {
+                //                    print(node.nodeName)
+                //                    print("   This screen has \(node.childrenIDs.count) children")
+                //                }
             } catch {
                 print(error.localizedDescription)
             }
@@ -141,17 +141,17 @@ class ScreenListViewController: UIViewController {
             case .success(let value):
                 let json = JSON(value)
                 let jsonData = json["last_value"]
-//                print(jsonData)
-//                print("now decoding")
+                //                print(jsonData)
+                //                print("now decoding")
                 let decoder = JSONDecoder()
                 let jsonString = json["last_value"].stringValue
                 let convertedJsonData = Data(jsonString.utf8)
                 do {
                     self.portkiScreens = try decoder.decode([PortkiScreen].self, from: convertedJsonData)
-//                    for screen in self.portkiScreens {
-//                        print(screen.pageID)
-//                        print("   This screen has \(screen.buttons.count) buttons")
-//                    }
+                    //                    for screen in self.portkiScreens {
+                    //                        print(screen.pageID)
+                    //                        print("   This screen has \(screen.buttons.count) buttons")
+                    //                    }
                 } catch {
                     print(error.localizedDescription)
                 }
@@ -306,14 +306,22 @@ class ScreenListViewController: UIViewController {
 // NOTE: This is where I write files to Google Drive
 extension ScreenListViewController {
     
-    func writeAllImagesToGoogleDrive() {
+    func writeAllImagesToGoogleDrive(completed: @escaping () -> ()) {
         for portkiScreen in portkiScreens {
             let fileNameURL = getDocumentsDirectory().appendingPathComponent("\(portkiScreen.pageID).bmp")
             
             if let uploadFolderID = self.uploadFolderID {
-                self.uploadFile(name: "\(portkiScreen.pageID).bmp", folderID: uploadFolderID, fileURL: fileNameURL, mimeType: "image/bmp", service: self.googleDriveService)
+                self.uploadFile(name: "\(portkiScreen.pageID).bmp", folderID: uploadFolderID, fileURL: fileNameURL, mimeType: "image/bmp", service: self.googleDriveService) {
+                    print("^^ completed writing image for \(portkiScreen.pageID).bmp")
+                    completed()
+                }
+            } else {
+                print("😡 if let uploadFolderID = self.uploadFolderID didn't work in writeAllImagesToGoogleDrive.")
+                completed()
             }
         }
+        // moved completed up - unsure if this'll work
+        //completed()
     }
     
     func writeJsonFileToGoogleDrive(fileNameURL: URL) {
@@ -324,16 +332,29 @@ extension ScreenListViewController {
             if folderID == nil {
                 self.createFolder(name: self.filesFolderName,service: self.googleDriveService) { self.uploadFolderID = $0
                     if let uploadFolderID = self.uploadFolderID {
-                        self.uploadFile(name: "portki.json", folderID: uploadFolderID, fileURL: fileNameURL, mimeType: "application/json", service: self.googleDriveService)
-                        self.writeAllImagesToGoogleDrive()
+                        self.uploadFile(name: "portki.json", folderID: uploadFolderID, fileURL: fileNameURL, mimeType: "application/json", service: self.googleDriveService) {
+                            self.writeAllImagesToGoogleDrive {
+                                self.getFileWebLinks()
+                            }
+                        }
+//                        self.writeAllImagesToGoogleDrive {
+//                            self.getFileWebLinks()
+//                        }
                     }
                 }
             } else {
                 // Folder already exists
                 self.uploadFolderID = folderID
                 if let uploadFolderID = self.uploadFolderID {
-                    self.uploadFile(name: "portki.json", folderID: uploadFolderID, fileURL: fileNameURL, mimeType: "application/json", service: self.googleDriveService)
-                    self.writeAllImagesToGoogleDrive()
+                    
+                    self.uploadFile(name: "portki.json", folderID: uploadFolderID, fileURL: fileNameURL, mimeType: "application/json", service: self.googleDriveService) {
+                        self.writeAllImagesToGoogleDrive {
+                            self.getFileWebLinks()
+                        }
+                    }
+//                    self.writeAllImagesToGoogleDrive {
+//                        self.getFileWebLinks()
+//                    }
                 }
             }
         }
@@ -358,8 +379,10 @@ extension ScreenListViewController {
             guard error == nil else {
                 fatalError(error!.localizedDescription)
             }
-            
             let folderList = result as! GTLRDrive_FileList
+            
+            // working experiments were here...
+            print(" ** getFolderID returned \(folderList.files?.first?.identifier)")
             
             // For brevity, assumes only one folder is returned.
             completion(folderList.files?.first?.identifier)
@@ -382,11 +405,14 @@ extension ScreenListViewController {
             }
             
             let folder = file as! GTLRDrive_File
+            
+            print(" ** createFolder returned \(folder.identifier!)")
+            
             completion(folder.identifier!)
         }
     }
     
-    func uploadFile(name: String, folderID: String, fileURL: URL, mimeType: String, service: GTLRDriveService) {
+    func uploadFile(name: String, folderID: String, fileURL: URL, mimeType: String, service: GTLRDriveService, completed: @escaping () -> ()) {
         let file = GTLRDrive_File()
         file.name = name
         file.parents = [folderID]
@@ -405,11 +431,48 @@ extension ScreenListViewController {
             guard error == nil else {
                 print("🚫 file \(name) was not uploaded to Google Drive \(folderID)")
                 fatalError(error!.localizedDescription)
+                completed()
             }
             print("📁📁 File Successfully Uploaded to Google Drive! File name on drive is \(name)")
             
             // Successful upload if no error is returned.
+            completed()
         }
+    }
+    
+    func getFileWebLinks() {
+        // experiments to try to get permissions
+        let folderQuery = GTLRDriveQuery_FilesList.query()
+        // Comma-separated list of areas the search applies to. E.g., appDataFolder, photos, drive.
+        folderQuery.spaces = "drive"
+        // Comma-separated list of access levels to search in. Some possible values are "user,allTeamDrives" or "user"
+        folderQuery.corpora = "user"
+
+        let ownedByUser = "'\(googleUser!.profile!.email!)' in owners"
+        // let ownedByUser = "'\(String(describing: googleUser!.profile!.email!))' in owners"
+        // folderQuery.q = "\(withName) and \(foldersOnly) and \(ownedByUser)"
+        // folderQuery.q = " '\(folderIdentifier!)' in parents and \(withName) and \(ownedByUser)"
+        folderQuery.q = " '\(uploadFolderID!)' in parents and \(ownedByUser)"
+        googleDriveService.executeQuery(folderQuery) { (_, result, error) in
+            guard error == nil else {
+                print("😡😡 ERROR: getFileWebLinks in googleDriveService.executeQuery for \(folderQuery)")
+
+                fatalError(error!.localizedDescription)
+            }
+            let fileList = result as! GTLRDrive_FileList
+            if let fileListFiles = fileList.files {
+                print("** There were \(fileListFiles.count) files returned by the getFileWebLinks query")
+                print("\(fileListFiles)")
+                for fileListFile in fileList.files! {
+                    print("\(fileListFile.name)")
+                    print("WebLink for file is: https://drive.google.com/uc?export=view&id=\(fileListFile.identifier!)")
+                    print("\(fileListFile.webContentLink)")
+                }
+            } else {
+                print(" GRUMP! No fileList files returned for \(folderQuery.q).")
+            }
+        }
+        
     }
 }
 
@@ -426,14 +489,6 @@ extension ScreenListViewController: GIDSignInDelegate, GIDSignInUIDelegate {
             self.googleDriveService.authorizer = user.authentication.fetcherAuthorizer()
             self.googleUser = user
             print("🐶 WOO HOO! You signed in, dawg! ")
-            // Perform any operations on signed in user here. I don't think I need any of this info, but keeping them here as a reference for now, as per tutorial, in case I need them later on.
-            let userId = user.userID                  // For client-side use only!
-            let idToken = user.authentication.idToken // Safe to send to the server
-            let fullName = user.profile.name
-            let givenName = user.profile.givenName
-            let familyName = user.profile.familyName
-            let email = user.profile.email
-            // ...
         }
     }
     

@@ -937,8 +937,30 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         let newSize = CGSize(width: screenView.bounds.width * (1/scale), height: screenView.bounds.height * (1/scale))
         let resizedImage = grabbedImage.resized(to: newSize)
         
-        let bmpData = convertToBmp(image: resizedImage)
-
+        // stuff I'm trying based on HackingWithSwift
+        guard let jpegData = resizedImage.toJpegData(compressionQuality: 1.0, hasAlpha: false, orientation: 6) else {
+            print("🛑🛑 Couldn't create jpegData")
+            return
+        }
+        
+        guard let jpegImage = UIImage(data: jpegData) else {
+            print("🛑🛑 Couldn't create image from jpegData")
+            return
+        }
+        let bmpData = convertToBmp(image: jpegImage)
+        
+//        guard let pngData = resizedImage.pngData() else {
+//            print("🛑🛑 Couldn't create data from resizedImage.png")
+//            return
+//        }
+//        guard let imageFromPngData = UIImage(data: pngData) else {
+//            print("🛑🛑 Couldn't create imageFromPngData from pngData")
+//            return
+//        }
+//       let bmpData = convertToBmp(image: imageFromPngData)
+        
+        
+        // let bmpData = convertToBmp(image: resizedImage)
         saveImageToFile(bmpImage: bmpData)
 
         performSegue(withIdentifier: "UwindFromScreenDesign", sender: nil)
