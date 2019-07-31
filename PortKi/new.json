@@ -1,0 +1,34 @@
+[
+    {
+        "buttons" : [
+            {
+                "buttonDestination" : "0CED0463-80CF-4528-99D3-DFCF01B60CC8",
+                "text" : "Contact",
+                "buttonCoordinates" : {
+                    "y" : 200,
+                    "x" : 126.5,
+                    "width" : 67,
+                    "height" : 28
+                }
+            }
+        ],
+        "pageID" : "Home",
+        "screenURL" : "https://firebasestorage.googleapis.com/v0/b/portki-86c6d.appspot.com/o/screenImages%2Fadafruit-logo.jpeg?alt=media&token=1d59f831-633d-48e2-a8ba-dcee8c5e66a9"
+    },
+    {
+        "buttons" : [
+            {
+                "buttonDestination" : "Home",
+                "text" : "xBack",
+                "buttonCoordinates" : {
+                    "y" : 188,
+                    "x" : 269,
+                    "width" : 44,
+                    "height" : 44
+                }
+            }
+        ],
+        "pageID" : "0CED0463-80CF-4528-99D3-DFCF01B60CC8",
+        "screenURL" : "https:\/\/drive.google.com\/uc?export=view&id=14n-nnqQ-Mr2kW21VCEv4n0aYKl3d4Pti"
+    }
+]

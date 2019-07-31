@@ -7,11 +7,10 @@
 //
 
 import UIKit
-import GoogleSignIn
-import GoogleAPIClientForREST
-import GTMSessionFetcher
 import Alamofire
 import SwiftyJSON
+import AWSCognito
+import AWSS3
 
 class ScreenListViewController: UIViewController {
     @IBOutlet weak var tableView: UITableView!
@@ -19,10 +18,8 @@ class ScreenListViewController: UIViewController {
     // used simply to calculate button properties to be used in PyPortal via portkiScreens converted to JSON
     @IBOutlet var screenView: UIView!
     
-    let googleDriveService = GTLRDriveService()
-    var googleUser: GIDGoogleUser?
-    var uploadFolderID: String?
     let filesFolderName = "portki-files"
+    let awsBucketName = "portki" // at some point you'll want to get this for individual users.
     
     var portkiScreens: [PortkiScreen] = []
     var portkiNodes: [PortkiNode] = []
@@ -31,12 +28,7 @@ class ScreenListViewController: UIViewController {
     var imageURL = "https://gallaugher.com/wp-content/uploads/2009/08/John-White-Border-Beard-Crossed-Arms-Photo.jpg"
     
     override func viewDidLoad() {
-        GIDSignIn.sharedInstance().delegate = self
-        GIDSignIn.sharedInstance().uiDelegate = self
-        GIDSignIn.sharedInstance()?.scopes =
-            [kGTLRAuthScopeDrive]
-        GIDSignIn.sharedInstance()?.signIn()
-        //        GIDSignIn.sharedInstance().signInSilently()
+        setupAWSS3()
         
         tableView.delegate = self
         tableView.dataSource = self
@@ -57,6 +49,13 @@ class ScreenListViewController: UIViewController {
             portkiNodes = self.newNodes
         }
         self.tableView.reloadData()
+    }
+    
+    func setupAWSS3() {
+        let credentialsProvider = AWSCognitoCredentialsProvider(regionType:.USEast1,
+                                                                identityPoolId:"us-east-1:93b4d97e-1aaa-43a3-99f3-ae183b5a8b86")
+        let configuration = AWSServiceConfiguration(region:.USEast1, credentialsProvider:credentialsProvider)
+        AWSServiceManager.default().defaultServiceConfiguration = configuration
     }
     
     func setUpFirstNodesIfNoNodesExist(){
@@ -85,20 +84,12 @@ class ScreenListViewController: UIViewController {
         let filename = getDocumentsDirectory().appendingPathComponent("portkiNodes.json")
         do {
             let data = try Data(contentsOf: filename)
-            // print(data)
             let json = JSON(data)
-            // print(json["value"])
-            
-            // print("now decoding")
             let decoder = JSONDecoder()
             let jsonString = json["value"].stringValue
             let convertedJsonData = Data(jsonString.utf8)
             do {
                 portkiNodes = try decoder.decode([PortkiNode].self, from: convertedJsonData)
-                //                for node in portkiNodes {
-                //                    print(node.nodeName)
-                //                    print("   This screen has \(node.childrenIDs.count) children")
-                //                }
             } catch {
                 print(error.localizedDescription)
             }
@@ -245,9 +236,6 @@ class ScreenListViewController: UIViewController {
         request.httpBody = httpBody
         let session = URLSession.shared
         session.dataTask(with: request) { (data, response, error) in
-            //            if let response = response {
-            //                print(response)
-            //            }
             if let data = data {
                 do {
                     let json = try JSONSerialization.jsonObject(with: data, options: [])
@@ -262,23 +250,37 @@ class ScreenListViewController: UIViewController {
     }
     
     @IBAction func updatePyPortalPressed(_ sender: UIBarButtonItem) {
+        // Go through all portkiScreens + add proper [Button] + Button coordinates for each screen
         for index in 0..<portkiScreens.count {
+            // find the node index for the portkiScreen
             let foundNodeIndexForScreen = portkiNodes.firstIndex(where: {$0.documentID == portkiScreens[index].pageID})
             guard let nodeIndexForScreen = foundNodeIndexForScreen else {
                 print("😡 For some reason there wasn't a portkiNode with documentID \(portkiScreens[index].pageID)")
                 continue // No
             }
+            // Create all buttons for that node and update the portkiScreen with proper coordinates
             var buttons = createLeftRightBackButtons(portkiNode: portkiNodes[nodeIndexForScreen])
             let leafButtons = createLeafButtons(portkiNode: portkiNodes[nodeIndexForScreen])
             buttons += getButtonsFromUIButtons(leafButtons: leafButtons, portkiNode: portkiNodes[nodeIndexForScreen])
             portkiScreens[index].buttons = buttons
+            let fileName = "\(portkiScreens[index].pageID).jpeg"
+            let screenURL = "https://\(awsBucketName).s3.amazonaws.com/\(fileName)"
+            portkiScreens[index].screenURL = screenURL
+            
+            getDataFromFile(named: fileName) { (data) in
+                guard let data = data else {
+                    print("😡 ERROR: Bummer, didn't return valid data from getDataFromFile")
+                    return
+                }
+                self.uploadFileToAWS(fileName: fileName, contentType: "image/jpeg", data: data)
+            }
         }
         
         let encoder = JSONEncoder()
         encoder.outputFormatting = .prettyPrinted
         if let encoded = try? encoder.encode(portkiScreens) {
             if let jsonString = String(data: encoded, encoding: .utf8) {
-                print(jsonString)
+                //                print(jsonString)
                 
                 let parameters = ["value": jsonString]
                 guard let json = try? JSONSerialization.data(withJSONObject: parameters, options: []) else {
@@ -286,12 +288,12 @@ class ScreenListViewController: UIViewController {
                     return
                 }
                 print("** JSON Conversion Worked !!!")
-                print(json)
+                //                print(json)
                 
                 let fileNameURL = getDocumentsDirectory().appendingPathComponent("portkiScreens.json")
                 do {
                     try json.write(to: fileNameURL, options: .atomic)
-                    writeJsonFileToGoogleDrive(fileNameURL: fileNameURL)
+                    uploadFileToAWS(fileName: "portki.json", contentType: "application/json", data: json)
                     sendJsonToAdafruitIo(jsonString: jsonString)
                 } catch {
                     print("😡 Grr. json wasn't writte to file \(error.localizedDescription)")
@@ -306,225 +308,31 @@ class ScreenListViewController: UIViewController {
 // NOTE: This is where I write files to Google Drive
 extension ScreenListViewController {
     
-    func writeAllImagesToGoogleDrive(completed: @escaping () -> ()) {
-        
-        guard let fileURLs = FileManager.default.urls(for: .documentDirectory) else {
-            print("🥶 Chill - No fileURLs, dude. Nothing has been saved, yet, to the iOS device.")
-            return
+    func getDataFromFile(named fileName: String, completed: @escaping (_ data: Data?) -> ()) {
+        let fileURL = getDocumentsDirectory().appendingPathComponent(fileName)
+        do {
+            let data = try Data(contentsOf: fileURL)
+            print("😀 Success: created data from file \(fileName) via fileURL \(fileURL)")
+            completed(data)
+        } catch {
+            print("😡 ERROR: couldn't create data for fileName \(fileName) at local URL \(fileURL).")
+            completed(nil)
         }
-        
-        for fileURL in fileURLs {
-            // Find file extension
-            let fileExtension = fileURL.pathExtension
-            let fileName = fileURL.lastPathComponent
-            print(">>> fileExtension is \(fileExtension)")
-            if let uploadFolderID = self.uploadFolderID {
-                self.uploadFile(name: fileName, folderID: uploadFolderID, fileURL: fileURL, mimeType: "image/\(fileExtension)", service: self.googleDriveService) {
-                    print("^^ completed writing to Google Drive for fileName \(fileName).")
-                    completed()
+    }
+    
+    func uploadFileToAWS(fileName: String, contentType: String, data: Data) {
+        DispatchQueue.main.async {
+            let transferUtility = AWSS3TransferUtility.default()
+            let expression = AWSS3TransferUtilityUploadExpression()
+            
+            transferUtility.uploadData(data, bucket: self.awsBucketName, key: fileName, contentType: contentType, expression: expression) { (task, error) in
+                if let error = error {
+                    print(error.localizedDescription)
+                    return
                 }
-            } else {
-                print("😡 if let uploadFolderID = self.uploadFolderID didn't work in writeAllImagesToGoogleDrive.")
-                completed()
+                print(" 😀 Upload of file \(fileName) to AWS S3 bucket \(self.awsBucketName) was successful!")
             }
         }
-        //        for portkiScreen in portkiScreens {
-        //            let fileNameURL = getDocumentsDirectory().appendingPathComponent("\(portkiScreen.pageID).bmp")
-        //
-        //            // Find file extension
-        //            let fileExtension = fileNameURL.pathExtension
-        //            print(">>> fileExtension is \(fileExtension)")
-        //            if let uploadFolderID = self.uploadFolderID {
-        //                self.uploadFile(name: "\(portkiScreen.pageID).\(fileExtension)", folderID: uploadFolderID, fileURL: fileNameURL, mimeType: "image/\(fileExtension)", service: self.googleDriveService) {
-        //                    print("^^ completed writing image for \(portkiScreen.pageID).\(fileExtension)")
-        //                    completed()
-        //                }
-        //            } else {
-        //                print("😡 if let uploadFolderID = self.uploadFolderID didn't work in writeAllImagesToGoogleDrive.")
-        //                completed()
-        //            }
-        //        }
-    }
-    
-    func writeJsonFileToGoogleDrive(fileNameURL: URL) {
-        // Now try writing json to the Google Drive
-        // let fileURL = Bundle.main.url(forResource: "my-image", withExtension: ".png")
-        
-        getFolderID(name: filesFolderName, service: googleDriveService, user: googleUser!) { folderID in
-            if folderID == nil {
-                self.createFolder(name: self.filesFolderName,service: self.googleDriveService) { self.uploadFolderID = $0
-                    if let uploadFolderID = self.uploadFolderID {
-                        self.uploadFile(name: "portki.json", folderID: uploadFolderID, fileURL: fileNameURL, mimeType: "application/json", service: self.googleDriveService) {
-                            self.writeAllImagesToGoogleDrive {
-                                self.getFileWebLinks()
-                            }
-                        }
-                    }
-                }
-            } else {
-                // Folder already exists
-                self.uploadFolderID = folderID
-                if let uploadFolderID = self.uploadFolderID {
-                    
-                    self.uploadFile(name: "portki.json", folderID: uploadFolderID, fileURL: fileNameURL, mimeType: "application/json", service: self.googleDriveService) {
-                        self.writeAllImagesToGoogleDrive {
-                            self.getFileWebLinks()
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    func getFolderID(name: String, service: GTLRDriveService, user: GIDGoogleUser, completion: @escaping (String?) -> Void) {
-        
-        let query = GTLRDriveQuery_FilesList.query()
-        
-        // Comma-separated list of areas the search applies to. E.g., appDataFolder, photos, drive.
-        query.spaces = "drive"
-        
-        // Comma-separated list of access levels to search in. Some possible values are "user,allTeamDrives" or "user"
-        query.corpora = "user"
-        
-        let withName = "name = '\(name)'" // Case insensitive!
-        let foldersOnly = "mimeType = 'application/vnd.google-apps.folder'"
-        let ownedByUser = "'\(user.profile!.email!)' in owners"
-        query.q = "\(withName) and \(foldersOnly) and \(ownedByUser)"
-        
-        service.executeQuery(query) { (_, result, error) in
-            guard error == nil else {
-                fatalError(error!.localizedDescription)
-            }
-            let folderList = result as! GTLRDrive_FileList
-            
-            // working experiments were here...
-            print(" ** getFolderID returned \(folderList.files?.first?.identifier)")
-            
-            // For brevity, assumes only one folder is returned.
-            completion(folderList.files?.first?.identifier)
-        }
-    }
-    
-    func createFolder(name: String, service: GTLRDriveService, completion: @escaping (String) -> Void) {
-        
-        let folder = GTLRDrive_File()
-        folder.mimeType = "application/vnd.google-apps.folder"
-        folder.name = name
-        
-        // Google Drive folders are files with a special MIME-type.
-        let query = GTLRDriveQuery_FilesCreate.query(withObject: folder, uploadParameters: nil)
-        //let folderPermission =  GTLRDrive_Permission
-        
-        service.executeQuery(query) { (_, file, error) in
-            guard error == nil else {
-                fatalError(error!.localizedDescription)
-            }
-            
-            let folder = file as! GTLRDrive_File
-            
-            print(" ** createFolder returned \(folder.identifier!)")
-            
-            completion(folder.identifier!)
-        }
-    }
-    
-    func uploadFile(name: String, folderID: String, fileURL: URL, mimeType: String, service: GTLRDriveService, completed: @escaping () -> ()) {
-        let file = GTLRDrive_File()
-        file.name = name
-        file.parents = [folderID]
-        
-        // Optionally, GTLRUploadParameters can also be created with a Data object.
-        let uploadParameters = GTLRUploadParameters(fileURL: fileURL, mimeType: mimeType)
-        
-        let query = GTLRDriveQuery_FilesCreate.query(withObject: file, uploadParameters: uploadParameters)
-        
-        service.uploadProgressBlock = { _, totalBytesUploaded, totalBytesExpectedToUpload in
-            // This block is called multiple times during upload and can
-            // be used to update a progress indicator visible to the user.
-        }
-        
-        service.executeQuery(query) { (_, result, error) in
-            guard error == nil else {
-                print("🚫 file \(name) was not uploaded to Google Drive \(folderID)")
-                fatalError(error!.localizedDescription)
-                completed()
-            }
-            print("📁📁 File Successfully Uploaded to Google Drive! File name on drive is \(name)")
-            
-            // Successful upload if no error is returned.
-            completed()
-        }
-    }
-    
-    func getFileWebLinks() {
-        // experiments to try to get permissions
-        let folderQuery = GTLRDriveQuery_FilesList.query()
-        // Comma-separated list of areas the search applies to. E.g., appDataFolder, photos, drive.
-        folderQuery.spaces = "drive"
-        // Comma-separated list of access levels to search in. Some possible values are "user,allTeamDrives" or "user"
-        folderQuery.corpora = "user"
-        
-        let ownedByUser = "'\(googleUser!.profile!.email!)' in owners"
-        // let ownedByUser = "'\(String(describing: googleUser!.profile!.email!))' in owners"
-        // folderQuery.q = "\(withName) and \(foldersOnly) and \(ownedByUser)"
-        // folderQuery.q = " '\(folderIdentifier!)' in parents and \(withName) and \(ownedByUser)"
-        folderQuery.q = " '\(uploadFolderID!)' in parents and \(ownedByUser)"
-        googleDriveService.executeQuery(folderQuery) { (_, result, error) in
-            guard error == nil else {
-                print("😡😡 ERROR: getFileWebLinks in googleDriveService.executeQuery for \(folderQuery)")
-                
-                fatalError(error!.localizedDescription)
-            }
-            let fileList = result as! GTLRDrive_FileList
-            if let fileListFiles = fileList.files {
-                print("** There were \(fileListFiles.count) files returned by the getFileWebLinks query")
-                print("\(fileListFiles)")
-                for fileListFile in fileList.files! {
-                    let webLink = "https://drive.google.com/uc?export=view&id=\(fileListFile.identifier!)"
-                    print("WebLink for file \(fileListFile.name) is: \(webLink)")
-                    if let fileName = fileListFile.name {
-                        self.addWebLinkToNode(fileName: fileName, webLink: webLink)
-                    }
-                    print("\(webLink )")
-                }
-            } else {
-                print(" GRUMP! No fileList files returned for \(folderQuery.q).")
-            }
-        }
-    }
-    
-    func addWebLinkToNode(fileName: String, webLink: String) {
-        let pageID = fileName.removeEverythingAfter(lastOccuranceOf: ".")
-        
-        for index in 0..<portkiScreens.count {
-            if portkiScreens[index].pageID == pageID {
-                portkiScreens[index].screenURL = webLink
-                print("\(portkiScreens[index].pageID) has the webLink \(portkiScreens[index].screenURL)")
-            }
-        }
-    }
-}
-
-extension ScreenListViewController: GIDSignInDelegate, GIDSignInUIDelegate {
-    
-    func sign(_ signIn: GIDSignIn!, didSignInFor user: GIDGoogleUser!,
-              withError error: Error!) {
-        if let error = error {
-            self.googleDriveService.authorizer = nil
-            self.googleUser = nil
-            print("🥵🥵 \(error.localizedDescription)")
-        } else {
-            // Include authorization headers/values with each Drive API request.
-            self.googleDriveService.authorizer = user.authentication.fetcherAuthorizer()
-            self.googleUser = user
-            print("🐶 WOO HOO! You signed in, dawg! ")
-        }
-    }
-    
-    func sign(_ signIn: GIDSignIn!, didDisconnectWith user: GIDGoogleUser!,
-              withError error: Error!) {
-        // Perform any operations when the user disconnects from app here.
-        // ...
     }
 }
 

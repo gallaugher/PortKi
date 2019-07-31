@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import Firebase
 
 class Element {
     var elementName: String
@@ -75,104 +74,104 @@ class Element {
         let backgroundColor = UIColor.init(hexString: backgroundColorHex)
         self.init(elementName: elementName, elementType: elementType, parentID: parentID, hierarchyLevel: hierarchyLevel, childrenIDs: childrenIDs, backgroundImageUUID: backgroundImageUUID, backgroundImage: backgroundImage, backgroundColor: backgroundColor, documentID: "")
     }
-    
-    // NOTE: If you keep the same programming conventions (e.g. a calculated property .dictionary that converts class properties to String: Any pairs, the name of the document stored in the class as .documentID) then the only thing you'll need to change is the document path (i.e. the lines containing "elements" below.
-    func saveData(completed: @escaping (Bool) -> ()) {
-        let db = Firestore.firestore()
-        // Create the dictionary representing the data we want to save
-        let dataToSave = self.dictionary
-        // if we HAVE saved a record, we'll have a documentID
-        if self.documentID != "" {
-            let ref = db.collection("elements").document(self.documentID)
-            ref.setData(dataToSave) { (error) in
-                
-                if let error = error {
-                    print("*** ERROR: updating document \(self.documentID) \(error.localizedDescription)")
-                    completed(false)
-                } else {
-                    print("^^^ Document updated with ref ID \(ref.documentID)")
-                    completed(true)
-                }
-            }
-        } else {
-            var ref: DocumentReference? = nil // Let firestore create the new documentID
-            ref = db.collection("elements").addDocument(data: dataToSave) { error in
-                if let error = error {
-                    print("*** ERROR: creating new document \(error.localizedDescription)")
-                    completed(false)
-                } else {
-                    print("^^^ new element document created with ref ID \(ref?.documentID ?? "unknown")")
-                    self.documentID = ref!.documentID
-                    completed(true)
-                }
-            }
-        }
-    }
-    
-    func saveImage(completed: @escaping (Bool) -> ()) {
-        let storage = Storage.storage()
-        // convert screen.image to a Data type so it can be saved by Firebase Storage
-        guard let imageToStore = self.backgroundImage.jpegData(compressionQuality: 0.25) else {
-            print("*** ERROR: couuld not convert image to data format")
-            return completed(false)
-        }
-        let options: NSDictionary = [:]
-        let convertToBmp = self.backgroundImage.toData(options: options, type: .bmp)
-        guard let bmpData = convertToBmp else {
-            print("😡 ERROR: could not convert image to a bitmap bmpData var.")
-            return completed(false)
-        }
-        let uploadMetadata = StorageMetadata()
-        // uploadMetadata.contentType = "image/jpeg"
-        uploadMetadata.contentType = "image/jpeg"
-        // create a ref to upload storage to with the backgroundImageUUID that we created.
-        let storageRef = storage.reference().child("backgroundImages").child(self.backgroundImageUUID)
-        let uploadTask = storageRef.putData(bmpData, metadata: uploadMetadata) {metadata, error in
-            guard error == nil else {
-                print("😡 ERROR during .putData storage upload for reference \(storageRef). Error: \(error!.localizedDescription)")
-                return completed(false)
-            }
-            print("😎 Upload worked! Metadata is \(metadata!)")
-        }
-        
-        uploadTask.observe(.success) { (snapshot) in
-            print("😎 successfully saved image to Firebase Storage")
-            return completed(true)
-//            // Create the dictionary representing the data we want to save
-//            let dataToSave = self.dictionary
-//            // This will either create a new doc at documentUUID or update the existing doc with that name
-//            let ref = db.collection("spots").document(spot.documentID).collection("photos").document(self.documentUUID)
+//    
+//    // NOTE: If you keep the same programming conventions (e.g. a calculated property .dictionary that converts class properties to String: Any pairs, the name of the document stored in the class as .documentID) then the only thing you'll need to change is the document path (i.e. the lines containing "elements" below.
+//    func saveData(completed: @escaping (Bool) -> ()) {
+//        let db = Firestore.firestore()
+//        // Create the dictionary representing the data we want to save
+//        let dataToSave = self.dictionary
+//        // if we HAVE saved a record, we'll have a documentID
+//        if self.documentID != "" {
+//            let ref = db.collection("elements").document(self.documentID)
 //            ref.setData(dataToSave) { (error) in
+//                
 //                if let error = error {
-//                    print("*** ERROR: updating document \(self.documentUUID) in spot \(spot.documentID) \(error.localizedDescription)")
+//                    print("*** ERROR: updating document \(self.documentID) \(error.localizedDescription)")
 //                    completed(false)
 //                } else {
 //                    print("^^^ Document updated with ref ID \(ref.documentID)")
 //                    completed(true)
 //                }
 //            }
-        }
-        
-        uploadTask.observe(.failure) { (snapshot) in
-            if let error = snapshot.error {
-                print("*** ERROR: upload task for file \(self.backgroundImageUUID) failed, in element \(self.documentID), error \(error)")
-            }
-            return completed(false)
-        }
-    }
-    
-    func loadBackgroundImage (completed: @escaping () -> ()) {
-        let storage = Storage.storage()
-        let backgroundImageRef = storage.reference().child("backgroundImages").child(self.backgroundImageUUID)
-        backgroundImageRef.getData(maxSize: 25 * 1025 * 1025) { data, error in
-            if let error = error {
-                print("*** ERROR: An error occurred while reading data from file ref: \(backgroundImageRef) \(error.localizedDescription)")
-                return completed()
-            } else {
-                let image = UIImage(data: data!)
-                self.backgroundImage = image!
-                return completed()
-            }
-        }
-    }
+//        } else {
+//            var ref: DocumentReference? = nil // Let firestore create the new documentID
+//            ref = db.collection("elements").addDocument(data: dataToSave) { error in
+//                if let error = error {
+//                    print("*** ERROR: creating new document \(error.localizedDescription)")
+//                    completed(false)
+//                } else {
+//                    print("^^^ new element document created with ref ID \(ref?.documentID ?? "unknown")")
+//                    self.documentID = ref!.documentID
+//                    completed(true)
+//                }
+//            }
+//        }
+//    }
+//    
+//    func saveImage(completed: @escaping (Bool) -> ()) {
+//        let storage = Storage.storage()
+//        // convert screen.image to a Data type so it can be saved by Firebase Storage
+//        guard let imageToStore = self.backgroundImage.jpegData(compressionQuality: 0.25) else {
+//            print("*** ERROR: couuld not convert image to data format")
+//            return completed(false)
+//        }
+//        let options: NSDictionary = [:]
+//        let convertToBmp = self.backgroundImage.toData(options: options, type: .bmp)
+//        guard let bmpData = convertToBmp else {
+//            print("😡 ERROR: could not convert image to a bitmap bmpData var.")
+//            return completed(false)
+//        }
+//        let uploadMetadata = StorageMetadata()
+//        // uploadMetadata.contentType = "image/jpeg"
+//        uploadMetadata.contentType = "image/jpeg"
+//        // create a ref to upload storage to with the backgroundImageUUID that we created.
+//        let storageRef = storage.reference().child("backgroundImages").child(self.backgroundImageUUID)
+//        let uploadTask = storageRef.putData(bmpData, metadata: uploadMetadata) {metadata, error in
+//            guard error == nil else {
+//                print("😡 ERROR during .putData storage upload for reference \(storageRef). Error: \(error!.localizedDescription)")
+//                return completed(false)
+//            }
+//            print("😎 Upload worked! Metadata is \(metadata!)")
+//        }
+//        
+//        uploadTask.observe(.success) { (snapshot) in
+//            print("😎 successfully saved image to Firebase Storage")
+//            return completed(true)
+////            // Create the dictionary representing the data we want to save
+////            let dataToSave = self.dictionary
+////            // This will either create a new doc at documentUUID or update the existing doc with that name
+////            let ref = db.collection("spots").document(spot.documentID).collection("photos").document(self.documentUUID)
+////            ref.setData(dataToSave) { (error) in
+////                if let error = error {
+////                    print("*** ERROR: updating document \(self.documentUUID) in spot \(spot.documentID) \(error.localizedDescription)")
+////                    completed(false)
+////                } else {
+////                    print("^^^ Document updated with ref ID \(ref.documentID)")
+////                    completed(true)
+////                }
+////            }
+//        }
+//        
+//        uploadTask.observe(.failure) { (snapshot) in
+//            if let error = snapshot.error {
+//                print("*** ERROR: upload task for file \(self.backgroundImageUUID) failed, in element \(self.documentID), error \(error)")
+//            }
+//            return completed(false)
+//        }
+//    }
+//    
+//    func loadBackgroundImage (completed: @escaping () -> ()) {
+//        let storage = Storage.storage()
+//        let backgroundImageRef = storage.reference().child("backgroundImages").child(self.backgroundImageUUID)
+//        backgroundImageRef.getData(maxSize: 25 * 1025 * 1025) { data, error in
+//            if let error = error {
+//                print("*** ERROR: An error occurred while reading data from file ref: \(backgroundImageRef) \(error.localizedDescription)")
+//                return completed()
+//            } else {
+//                let image = UIImage(data: data!)
+//                self.backgroundImage = image!
+//                return completed()
+//            }
+//        }
+//    }
 }

@@ -923,7 +923,6 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         }
         buttonInfoArray = buildButtonArray()
     
-        
         // Now create a bmp of whatever's on screen.
         deselectAllFields()
         
@@ -931,15 +930,16 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         let grabbedImage = renderer.image { ctx in
             screenView.drawHierarchy(in: screenView.bounds, afterScreenUpdates: true)
         }
-        //let bmpData = convertToBmp(image: grabbedImage)
+        
         // you'll need to scale the image down since Retina displays show points at 2x or 3x the pixel size.
         // if you don't do this, your bmp will be scale times larger than you'd like.
         let scale = UIScreen.main.scale
         let newSize = CGSize(width: screenView.bounds.width * (1/scale), height: screenView.bounds.height * (1/scale))
         let resizedImage = grabbedImage.resized(to: newSize)
-        
+
         // stuff I'm trying based on HackingWithSwift
-        guard let jpegData = resizedImage.toJpegData(compressionQuality: 1.0, hasAlpha: false, orientation: 6) else {
+        // orientation 0 is supposed to be up
+        guard let jpegData = resizedImage.toJpegData(compressionQuality: 1.0, hasAlpha: false, orientation: 0) else {
             print("🛑🛑 Couldn't create jpegData")
             return
         }
@@ -948,33 +948,9 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             print("🛑🛑 Couldn't create image from jpegData")
             return
         }
-        let bmpData = convertToBmp(image: jpegImage)
-        
-//        guard let pngData = resizedImage.pngData() else {
-//            print("🛑🛑 Couldn't create data from resizedImage.png")
-//            return
-//        }
-//        guard let imageFromPngData = UIImage(data: pngData) else {
-//            print("🛑🛑 Couldn't create imageFromPngData from pngData")
-//            return
-//        }
-//       let bmpData = convertToBmp(image: imageFromPngData)
-        
-        
-        // let bmpData = convertToBmp(image: resizedImage)
-        saveImageToFile(imageData: bmpData, imageType: "bmp")
-        if let imageData = resizedImage.pngData() {
-            saveImageToFile(imageData: imageData, imageType: "png")
-        } else {
-            print("🛑🛑 Couldn't create data from resizedImage.png")
-        }
-
+        saveImageToFile(imageData: jpegData, imageType: "jpeg")
         performSegue(withIdentifier: "UwindFromScreenDesign", sender: nil)
-        
-
-        
-
-        
+    
         // TODO: Save your TextBlocks here!!
         //        textBlocks.saveData(element: element) { success in
         //            if success {
