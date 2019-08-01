@@ -29,7 +29,40 @@ struct PortkiNode: Codable {
         self.documentID = documentID
     }
     
-
+    func getDocumentsDirectory() -> URL {
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        return paths[0]
+    }
+    
+    func saveTextBlocks(textBlocks: TextBlocks) {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        if let encoded = try? encoder.encode(textBlocks) {
+            if let jsonString = String(data: encoded, encoding: .utf8) {
+                print("/n *** This is the textblock json for portkiNode w/documentID \(self.documentID)")
+                print(jsonString)
+                
+                let parameters = ["value": jsonString]
+                guard let json = try? JSONSerialization.data(withJSONObject: parameters, options: []) else {
+                    print("😡 Grr. json conversion didn't work")
+                    return
+                }
+                print(" 😀 JSON Conversion for PortkiNode.saveTextBlocks Worked !!! - JSON below")
+                print(json)
+                
+                let fileNameURL = getDocumentsDirectory().appendingPathComponent("\(self.documentID).json")
+                do {
+                    try json.write(to: fileNameURL, options: .atomic)
+                    // TODO: At some point consider writing all of this to adafruit for backup or sync
+                } catch {
+                    print("😡 Grr. json wasn't writte to file \(error.localizedDescription)")
+                }
+            }
+        } else {
+            print("encoding didn't work")
+        }
+    }
+    
 }
 
 

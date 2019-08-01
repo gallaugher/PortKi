@@ -9,33 +9,27 @@ import os
 import digitalio
 import busio
 
+# Working PyPortal code for PortKi for everything except SD card
 """
     # Use stuff below when working with the PyPortal's microSD card
-    spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
+    # spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
+    # the line below did execute & seemed to let the print, 5 lines down, find the /sd volume & list code
+    spi = board.SPI()
     cs = digitalio.DigitalInOut(board.SD_CS)
     sdcard = adafruit_sdcard.SDCard(spi, cs)
     vfs = storage.VfsFat(sdcard)
     storage.mount(vfs, "/sd")
-    print(os.listdir('/sd'))
+    print('-> the sd directory follows:', os.listdir('/sd'))
     """
-# pyportal = PyPortal(default_bg="Home.bmp",)
 
-# DATA_SOURCE = "https://io.adafruit.com/api/v2/gallaugher/feeds/portkijsondemo/data/"
 DATA_SOURCE = "https://io.adafruit.com/api/v2/gallaugher/feeds/portki/data/"
-# num = 0
-
 DATA_LOCATION = [0, "value"]
-# MY_IMAGE_URL_PATH = "https://gallaugher.com/wp-content/uploads/2019/07/Home.jpeg"
-IMAGE_LOCATION = ["screenURL"]
 
 pyportal = PyPortal(url=DATA_SOURCE,
                     json_path=DATA_LOCATION,
-                    #                    image_json_path=IMAGE_LOCATION,
-                    default_bg="Home.bmp",)
+                    default_bg="portki-please-wait.bmp",)
 
-data = pyportal.fetch()
-
-# pyportal.image_url_path = URL_PATH
+# pyportal.set_background("Home.bmp")
 
 p_list = [] # holds points indicating where a press occurred
 # These pins are used as both analog and digital! XL, XR and YU must be analog
@@ -62,7 +56,9 @@ class Screen:
 def read_json_into_screens():
     for i in range(len(screens_list)):
         pageID = screens_list[i]["pageID"]
+        print("pageID =", pageID)
         screenURL = screens_list[i]["screenURL"]
+        print("screenURL =", screens_list[i]["screenURL"])
         num_of_buttons = len(screens_list[i]["buttons"])
         print("This page has", num_of_buttons, "buttons")
         buttons = []
@@ -109,17 +105,25 @@ except RuntimeError as e:
 read_json_into_screens()
 current_pageID = "Home"
 
+"""
+    print("screens[0].screenURL = ", screens[0].screenURL)
+    image_url = screens[0].screenURL
+    fileName = screens[0].pageID+".bmp"
+    # image_url = "https://gallaugher.com/wp-content/uploads/2019/07/Home.jpeg"
+    print("image_url =", image_url)
+    
+    pyportal.wget(pyportal.image_converter_url(image_url,320, 240,color_depth=16), fileName, chunk_size=12000)
+    pyportal.set_background(fileName)
+    """
 
-screens[0].screenURL = "https://gallaugher.com/wp-content/uploads/2019/07/Home.jpeg"
-# *** NOTE: Seems to work with jpegs but not pngs, so try jpegs!
-image_url = screens[0].screenURL
-# image_url = "https://gallaugher.com/wp-content/uploads/2019/07/Home.jpeg"
-print("image_url =", image_url)
+for screen in screens:
+    image_url = screen.screenURL
+    fileName = screen.pageID+".bmp"
+    print("image_url =", image_url)
+    print("screen.screenURL = ", screen.screenURL)
+    pyportal.wget(pyportal.image_converter_url(image_url,320, 240,color_depth=16), fileName, chunk_size=12000)
 
-pyportal.wget(pyportal.image_converter_url(image_url,320, 240,color_depth=16),
-              "/cache.bmp",
-              chunk_size=12000)
-pyportal.set_background("/cache.bmp")
+pyportal.set_background("Home.bmp")
 
 while True:
     p = ts.touch_point

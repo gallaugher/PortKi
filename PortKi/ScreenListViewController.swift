@@ -211,18 +211,18 @@ class ScreenListViewController: UIViewController {
         // Unwind only happens on "Save" press, not cancel, so you should always need to update the portkiNode
         
         // First update portkiScreens - the data structure used to create JSON for the PyPortal:
-        let portkiScreen = sourceViewController.portkiScreen!
-        let portkiScreenIndex = portkiScreens.firstIndex(where: {$0.pageID == portkiScreen.pageID})
-        
+//        let portkiScreen = sourceViewController.portkiScreen!
+//        let portkiScreenIndex = portkiScreens.firstIndex(where: {$0.pageID == portkiScreen.pageID})
+//
         // TODO: Unsure if I'm doing anything on the design screen that requires passing back a modified portkiScreen. Need to think about whether info below is even necessary.
-        if let portkiScreenIndex = portkiScreenIndex {
-            portkiScreens[portkiScreenIndex] = portkiScreen
-            print(">> Must have UPDATED a screen in unwindFromScreenDesignVC")
-        } else {
-            print("😡😡 ERROR IN unwindFromScreenDesignVC - since portKiScreens were created before transfer, then there should be on already and you shouldn't have to create a new one.")
-            portkiScreens.append(portkiScreen)
-            print(">> Must have just added a new screen in unwindFromScreenDesignVC")
-        }
+//        if let portkiScreenIndex = portkiScreenIndex {
+//            portkiScreens[portkiScreenIndex] = portkiScreen
+//            print(">> Must have UPDATED a screen in unwindFromScreenDesignVC")
+//        } else {
+//            print("😡😡 ERROR IN unwindFromScreenDesignVC - since portKiScreens were created before transfer, then there should be on already and you shouldn't have to create a new one.")
+//            portkiScreens.append(portkiScreen)
+//            print(">> Must have just added a new screen in unwindFromScreenDesignVC")
+//        }
     }
     
     func sendJsonToAdafruitIo(jsonString: String) {
@@ -251,6 +251,7 @@ class ScreenListViewController: UIViewController {
     
     @IBAction func updatePyPortalPressed(_ sender: UIBarButtonItem) {
         // Go through all portkiScreens + add proper [Button] + Button coordinates for each screen
+        // So as long as I have a count of the # of screens I have, I don't need to pass PortkiScreen data back and forth between the view controllers.
         for index in 0..<portkiScreens.count {
             // find the node index for the portkiScreen
             let foundNodeIndexForScreen = portkiNodes.firstIndex(where: {$0.documentID == portkiScreens[index].pageID})

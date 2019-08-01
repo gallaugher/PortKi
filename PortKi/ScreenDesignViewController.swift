@@ -108,13 +108,38 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     }
     
     func createFieldCollectionFromTextBlocks(){
+        fieldCollection = []
         for textBlock in textBlocks.textBlocksArray {
             let newFieldRect = CGRect(x: textBlock.originPoint.x, y: textBlock.originPoint.y, width: 320, height: 30)
             let newField = PaddedTextField(frame: newFieldRect)
             newField.font = UIFont(name: textBlock.font.fontName, size: textBlock.fontSize)
             newField.text = textBlock.text
-            newField.textColor = textBlock.textColor
-            newField.backgroundColor = textBlock.backgroundColor
+            newField.textColor =  UIColor.init(hexString: textBlock.textColorHexString)
+            newField.backgroundColor = UIColor.init(hexString: textBlock.backgroundColorHexString)
+            // configure field alignment
+            switch textBlock.alignment {
+            case 0: // left
+                newField.textAlignment = NSTextAlignment.left
+            case 1: // center
+                newField.textAlignment = NSTextAlignment.center
+            case 2: // right
+                newField.textAlignment = NSTextAlignment.right
+            default:
+                print("😡 ERROR: for some reason textBlock.alignment came back as something other than 0-2")
+            }
+            // field configure bold, italics, underline
+            if textBlock.isBold {
+                newField.font = newField.font?.setBoldFnc()
+            }
+            if textBlock.isItalic {
+                newField.font = newField.font?.setItalicFnc()
+            }
+            if textBlock.isUnderlined {
+                let field = newField
+                newField.attributedText = NSAttributedString(string: field.text!, attributes:
+                    [.underlineStyle: NSUnderlineStyle.single.rawValue])
+            }
+            fieldCollection.append(newField)
             setUpBlockAndField(newBlock: textBlock, newField: newField)
         }
     }
@@ -122,12 +147,16 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     func loadTextBlocks() {
         // get all the text blocks that make up the selected screen
         
-        // TODO I'll need to get all of the textblocks here. Not sure how to save them. Maybe an array of dictionary String: Any key value pair types. Unsure.
+        // TODO load up backgrounds first. There is a chance there is no textblock but there is a background.
         
-        if self.textBlocks.textBlocksArray.count == 0 {
-            self.createNewField()
-            self.configureUserInterface()
-        } else {
+        
+        textBlocks.loadTextBlocks(pageID: portkiNode.documentID) { returnedTextBlocks in
+            guard let returnedTextBlocksArray = returnedTextBlocks?.textBlocksArray else {
+                self.createNewField()
+                self.configureUserInterface()
+                return
+            }
+            self.textBlocks.textBlocksArray = returnedTextBlocksArray
             self.createFieldCollectionFromTextBlocks()
             self.configureUserInterface()
         }
@@ -135,11 +164,11 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         backgroundImageView.image = UIImage()
         if portkiNode.backgroundImageUUID != "" {
             // TODO: Handle loading background image, here
-//            element.loadBackgroundImage {
-//                self.backgroundImageView.image = self.element.backgroundImage
-//            }
+            //            element.loadBackgroundImage {
+            //                self.backgroundImageView.image = self.element.backgroundImage
+            //            }
         }
-
+        
         
         //        textBlocks.loadData(element: element) {
         //            if self.textBlocks.textBlocksArray.count == 0 {
@@ -222,11 +251,11 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         switch selectedColorButtonTag {
         case 0: // text color selected
             colorButtonCollection[selectedColorButtonTag].backgroundColor = color
-            textBlocks.textBlocksArray[selectedTextBlockIndex].textColor = color
+            textBlocks.textBlocksArray[selectedTextBlockIndex].textColorHexString = color.hexString
             fieldCollection[selectedTextBlockIndex].textColor = color
         case 1: // text background selected
             colorButtonCollection[selectedColorButtonTag].backgroundColor = color
-            textBlocks.textBlocksArray[selectedTextBlockIndex].backgroundColor = color
+            textBlocks.textBlocksArray[selectedTextBlockIndex].backgroundColorHexString = color.hexString
             fieldCollection[selectedTextBlockIndex].backgroundColor = color
         case 2: // screen color selected
             colorButtonCollection[selectedColorButtonTag].backgroundColor = color
@@ -265,7 +294,11 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     }
     
     func setUpBlockAndField(newBlock: TextBlock, newField: UITextField) {
-        selectedTextBlockIndex = textBlocks.textBlocksArray.count-1
+        // selectedTextBlockIndex = textBlocks.textBlocksArray.count-1
+        selectedTextBlockIndex = fieldCollection.count-1
+        print(">>>> setting up field # \(fieldCollection.count-1)")
+        print(">>>> there are \(fieldCollection.count) fields and \(textBlocks.textBlocksArray.count) textBLocks")
+        print(">>>> current selected textBlock is \(selectedTextBlockIndex)")
         newField.borderStyle = .roundedRect
         newField.isUserInteractionEnabled = true
         newField.addGestureRecognizer(addGestureToField())
@@ -275,23 +308,35 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         newFieldRect = CGRect(x: newFieldRect.origin.x, y: newFieldRect.origin.y, width: 320, height: newFieldHeight)
         newField.frame = newFieldRect
         newField.textColor = newBlock.textColor
-        newField.backgroundColor = newBlock.backgroundColor
+        let fieldBackgroundColor = UIColor(hex: newBlock.backgroundColorHexString)
+        newField.backgroundColor = fieldBackgroundColor
         screenView.addSubview(newField)
         screenView.bringSubviewToFront(newField)
         selectedColorButtonTag = 0 // New field? Select textColor button
-        if fieldCollection == nil {
-            fieldCollection = [newField]
-        } else {
-            fieldCollection.append(newField)
-        }
-        newField.delegate = self
-        newField.becomeFirstResponder()
-        if newField.backgroundColor == UIColor.clear {
+        fieldCollection[selectedTextBlockIndex] = newField
+//        if fieldCollection == nil {
+//            fieldCollection = [newField]
+//        } else {
+//            fieldCollection.append(newField)
+//        }
+        fieldCollection.last!.delegate = self
+        fieldCollection.last!.becomeFirstResponder()
+        if newBlock.backgroundColorHexString == "" { // same as clear {
             enableTextBackgroundColor(false)
         } else {
+            let backgroundColor = fieldCollection.last!.backgroundColor
+            let backgroundColorHex = textBlocks.textBlocksArray[selectedTextBlockIndex].backgroundColorHexString
+            let convertedFieldHexString = fieldCollection.last!.backgroundColor?.toHex
             enableTextBackgroundColor(true)
+            let textColor = fieldCollection.last!.textColor!
+            let textColorHex = textBlocks.textBlocksArray[selectedTextBlockIndex].textColorHexString
+            let convertedtextFieldHexString = fieldCollection.last!.textColor?.toHex
+            enableTextBackgroundColor(true)
+            selectedColorButtonTag = 1
+            changeColor(color: fieldCollection.last!.backgroundColor!)
         }
-        changeColor(color: newField.textColor!)
+        selectedColorButtonTag = 0
+        changeColor(color: fieldCollection.last!.textColor!)
     }
     
     @objc func changeButtonTitle(_ sender: UIButton) {
@@ -397,24 +442,28 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     // UITextField created & added to fieldCollection
     func createNewField() {
         let newBlock = TextBlock()
-        textBlocks.textBlocksArray.append(newBlock)
-        
+        textBlocks.pageID = portkiNode.documentID // Unique identifier for the current screen
         let newFieldRect = CGRect(x: newBlock.originPoint.x, y: newBlock.originPoint.y, width: 320, height: 30)
         let newField = PaddedTextField(frame: newFieldRect)
         newField.font?.withSize(newBlock.fontSize)
         newField.text = newBlock.text
-        newField.textColor = newBlock.textColor
-        newField.backgroundColor = newBlock.backgroundColor
-        setUpBlockAndField(newBlock: newBlock, newField: newField)
+        newField.textColor = UIColor(hex: newBlock.textColorHexString)
+        newField.backgroundColor =  UIColor(hex: newBlock.backgroundColorHexString)
+        textBlocks.textBlocksArray.append(newBlock)
+        setUpBlockAndField(newBlock: textBlocks.textBlocksArray.last!, newField: newField)
     }
     
     func enableTextBackgroundColor(_ enable: Bool) {
         if enable {
             // enable textBackgroundColor
+            if let textBackgroundColor = fieldCollection[selectedTextBlockIndex].backgroundColor {
+                fieldCollection[selectedTextBlockIndex].backgroundColor = textBackgroundColor
+            } else {
+                fieldCollection[selectedTextBlockIndex].backgroundColor = UIColor.clear
+            }
             colorButtonCollection[1].isSelected = true // call below will set it to false
             colorButtonCollection[1].isEnabled = true
-            // colorButtonCollection[1].backgroundColor = UIColor.clear
-            colorButtonCollection[1].backgroundColor = fieldCollection[selectedTextBlockIndex].backgroundColor
+             colorButtonCollection[1].backgroundColor = fieldCollection[selectedTextBlockIndex].backgroundColor
             textBackgroundStaticLabel.textColor = UIColor.black
             colorFrameViewCollection[1].layer.borderWidth = 1.0
             selectedColorButtonTag = 1
@@ -449,11 +498,14 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         configureSizeCell()
         updateFieldBasedOnStyleButtons()
         configureColorSlider()
-        if fieldCollection[selectedTextBlockIndex].backgroundColor == UIColor.clear {
+        // if fieldCollection[selectedTextBlockIndex].backgroundColor == UIColor.clear {
+        if textBlocks.textBlocksArray[selectedTextBlockIndex].backgroundColorHexString == "" {
             // initially disable textBackgroundColor
             enableTextBackgroundColor(false)
-            //            colorButtonCollection[1].isSelected = true // call below will set it to false
-            //            allowTextBackgroundPressed(allowTextBackgroundCheckButton)
+            
+            // NOTE: When I had a crash Wed. evening I uncommented these
+//                        colorButtonCollection[1].isSelected = true // call below will set it to false
+//                        allowTextBackgroundPressed(allowTextBackgroundCheckButton)
         } else {
             enableTextBackgroundColor(true)
         }
@@ -526,11 +578,11 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         switch selectedColorButtonTag {
         case 0: // text color selected
             colorButtonCollection[selectedColorButtonTag].backgroundColor = color
-            textBlocks.textBlocksArray[selectedTextBlockIndex].textColor = color
+            textBlocks.textBlocksArray[selectedTextBlockIndex].textColorHexString = color.hexString
             fieldCollection[selectedTextBlockIndex].textColor = color
         case 1: // text background selected
             colorButtonCollection[selectedColorButtonTag].backgroundColor = color
-            textBlocks.textBlocksArray[selectedTextBlockIndex].backgroundColor = color
+            textBlocks.textBlocksArray[selectedTextBlockIndex].backgroundColorHexString = color.hexString
             fieldCollection[selectedTextBlockIndex].backgroundColor = color
         case 2: // screen color selected
             colorButtonCollection[selectedColorButtonTag].backgroundColor = color
@@ -594,7 +646,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         case "UwindFromScreenDesign":
             print("just lettin' you know I'm unwinding from screen design")
         default:
-         print("😡 ERROR: unexpectedly hit the default case in ScreenDesignViewController's prepareForSegue")
+            print("😡 ERROR: unexpectedly hit the default case in ScreenDesignViewController's prepareForSegue")
         }
     }
     
@@ -765,18 +817,12 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
                 if indexOfCurrentScreen == nil {
                     // This happens when screen is a new screen & there's not yet a record for it
                     print("😡 I don't think this should have happened. Look for the comment: This happens when screen is a new screen & there's not yet a record for it")
-//                    prevButtonIndex = siblingIDs!.count-1
-//                    indexOfCurrentScreen = siblingIDs!.count
                     prevButtonIndex = siblingButtonIDArray.count-1
                     indexOfCurrentScreen = siblingButtonIDArray.count
-
+                    
                 } else {
                     prevButtonIndex = indexOfCurrentScreen! - 1
                 }
-                // I can likely delete if code below
-                //                if indexOfCurrentScreen! < 0 {
-                //                    prevButtonIndex = siblingButtonIDArray.count-1
-                //                }
                 if prevButtonIndex < 0 {
                     prevButtonIndex = siblingButtonIDArray.count-1
                 }
@@ -794,11 +840,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
                 var nextButtonIndex = 0 // this 0 is a placeholder - the 0 may change.
                 if indexOfCurrentScreen == nil {
                     // This happens when screen is a new screen & there's not yet a record for it
-                    // indexOfCurrentScreen = siblingIDs!.count
-                    
                     print("😡 I don't think this should have happened. Look for the comment near nextButton.isHidden labeled: This happens when screen is a new screen & there's not yet a record for it")
-                    //                    prevButtonIndex = siblingIDs!.count-1
-                    //                    indexOfCurrentScreen = siblingIDs!.count
                     nextButtonIndex = siblingButtonIDArray.count+1
                     indexOfCurrentScreen = siblingButtonIDArray.count
                 } else {
@@ -872,7 +914,6 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     }
     
     func saveImageToFile(imageData: Data, imageType: String) {
-
         let filename = getDocumentsDirectory().appendingPathComponent("\(portkiNode.documentID).\(imageType)")
         do {
             try imageData.write(to: filename, options: .atomic)
@@ -887,21 +928,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         return paths[0]
     }
     
-    func convertToBmp(image: UIImage) -> Data {
-        // I tried modifying the image save via options, below, to remove alpha - not successful so returned to original blank dictionary.
-        // let options: NSDictionary = [kCGImagePropertyHasAlpha: false, kCGImagePropertyDepth: 8]
-        
-        let options: NSDictionary = [:]
-        let convertToBmp = image.toData(options: options, type: .bmp)
-        guard let screenBmpData = convertToBmp else {
-            print("😡 ERROR: could not convert image to a bitmap bmpData var.")
-            return Data()
-        }
-        return screenBmpData
-    }
-    
     @IBAction func saveButtonPressed(_ sender: Any) {
-        
         if let currentScreenIndex = self.portkiNodes.firstIndex(where: {$0.documentID == portkiNode.documentID}) {
             // update currentScreen
             portkiNodes[currentScreenIndex] = portkiNode
@@ -912,17 +939,18 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         saveNodesAsJson()
         
         for index in 0..<fieldCollection.count {
-            let field = fieldCollection[index]
-            let textBlock = textBlocks.textBlocksArray[index]
-            textBlock.font = field.font!
-            textBlock.fontSize = field.font!.pointSize
-            textBlock.text = field.text!
-            textBlock.textColor = field.textColor ?? UIColor.black
-            textBlock.backgroundColor = field.backgroundColor ?? UIColor.clear
-            textBlock.originPoint = field.frame.origin
+            textBlocks.textBlocksArray[index].fontNameString = fieldCollection[index].font!.familyName
+            textBlocks.textBlocksArray[index].fontSize = fieldCollection[index].font!.pointSize
+            textBlocks.textBlocksArray[index].text = fieldCollection[index].text!
+            textBlocks.textBlocksArray[index].textColorHexString = fieldCollection[index].textColor?.hexString ?? UIColor.black.hexString
+            textBlocks.textBlocksArray[index].backgroundColorHexString = fieldCollection[index].backgroundColor?.hexString ?? UIColor.clear.hexString
+            textBlocks.textBlocksArray[index].originPoint = fieldCollection[index].frame.origin
         }
+        
+        portkiNode.saveTextBlocks(textBlocks: textBlocks)
+        
         buttonInfoArray = buildButtonArray()
-    
+        
         // Now create a bmp of whatever's on screen.
         deselectAllFields()
         
@@ -936,7 +964,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         let scale = UIScreen.main.scale
         let newSize = CGSize(width: screenView.bounds.width * (1/scale), height: screenView.bounds.height * (1/scale))
         let resizedImage = grabbedImage.resized(to: newSize)
-
+        
         // stuff I'm trying based on HackingWithSwift
         // orientation 0 is supposed to be up
         guard let jpegData = resizedImage.toJpegData(compressionQuality: 1.0, hasAlpha: false, orientation: 0) else {
@@ -950,7 +978,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         }
         saveImageToFile(imageData: jpegData, imageType: "jpeg")
         performSegue(withIdentifier: "UwindFromScreenDesign", sender: nil)
-    
+        
         // TODO: Save your TextBlocks here!!
         //        textBlocks.saveData(element: element) { success in
         //            if success {
@@ -995,7 +1023,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             hexTextField.text = ""
             colorButtonPressed(colorButtonCollection[1])
         } else {
-            textBlocks.textBlocksArray[selectedTextBlockIndex].backgroundColor = UIColor.clear
+            textBlocks.textBlocksArray[selectedTextBlockIndex].backgroundColorHexString = UIColor.clear.hexString
             fieldCollection[selectedTextBlockIndex].backgroundColor = UIColor.clear
             colorButtonPressed(colorButtonCollection[0])
         }
@@ -1006,7 +1034,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
 extension ScreenDesignViewController: PassFontDelegate {
     func getSelectedFont(selectedFont: UIFont) {
         let pointSizeBeforeChange = fieldCollection[selectedTextBlockIndex].font?.pointSize ?? CGFloat(17.0)
-        textBlocks.textBlocksArray[selectedTextBlockIndex].font = selectedFont
+        textBlocks.textBlocksArray[selectedTextBlockIndex].fontNameString = selectedFont.familyName
         textBlocks.textBlocksArray[selectedTextBlockIndex].fontSize = CGFloat(pointSizeBeforeChange)
         fieldCollection[selectedTextBlockIndex].font = selectedFont
         fieldCollection[selectedTextBlockIndex].font = fieldCollection[selectedTextBlockIndex].font?.withSize(CGFloat(pointSizeBeforeChange))
