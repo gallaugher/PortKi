@@ -2,6 +2,7 @@
 PortKi - (currently a Work in Progress) an iOS app for creating Kiosk-style navigation screens for the Adafruit PyPortal.
 
 Here's a video of the PyPortal and app, in-action, briefly demonstrating features and use.
+https://youtu.be/XVfCQ6XWwH4
 
 Because it's a work-in-progress, it's not really ready for end-users who aren't comfortable diving in to code. To use this version you'll need to download the code, install cocoapods as shown in the pod file, set up an S3 and Adafruit.io account, etc. I do hope to continue to work on this & I really hope others offer suggestions / improvements / advice so I can learn, too!
 
