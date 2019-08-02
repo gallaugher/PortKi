@@ -165,7 +165,8 @@ class ScreenListViewController: UIViewController {
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // click to edit an exiseting screen
-        if segue.identifier == "ShowScreen" {
+        switch segue.identifier {
+        case "ShowScreen":
             let destination = segue.destination as! ScreenDesignViewController
             let selectedIndexPath = tableView.indexPathForSelectedRow!
             let selectedScreen = portkiNodes[selectedIndexPath.row]
@@ -187,8 +188,8 @@ class ScreenListViewController: UIViewController {
             } else {
                 print("😡 ERROR: Couldn't find a portkiScreenIndex to pass in with the portkiNode")
             }
-            
-        } else { // adding a screen pass the last element - we'll sort them when they're back. No need to worry about deselecting
+        case "AddScreen":
+            // adding a screen pass the last element - we'll sort them when they're back. No need to worry about deselecting
             let navigationController = segue.destination as! UINavigationController
             let destination = navigationController.viewControllers.first as! ScreenDesignViewController
             destination.portkiNode = portkiNodes.last
@@ -203,7 +204,50 @@ class ScreenListViewController: UIViewController {
             } else {
                 print("😡 ERROR: Couldn't find a portkiScreenIndex to pass in with the portkiNode")
             }
+        case "About":
+            print("Headed to the about screen")
+        default:
+            print("😡 ERROR: segueing to an unidentified view controller")
         }
+        //        if segue.identifier == "ShowScreen" {
+        //            let destination = segue.destination as! ScreenDesignViewController
+        //            let selectedIndexPath = tableView.indexPathForSelectedRow!
+        //            let selectedScreen = portkiNodes[selectedIndexPath.row]
+        //            if selectedScreen.nodeName != "Home" {
+        //                let parentIndex = portkiNodes.firstIndex(where: {$0.documentID == portkiNodes[selectedIndexPath.row].parentID})
+        //                if let parentIndex = parentIndex {
+        //                    destination.siblingButtonIDArray = portkiNodes[parentIndex].childrenIDs
+        //                }
+        //            }
+        //            destination.portkiNode = portkiNodes[selectedIndexPath.row]
+        //            destination.portkiNodes = portkiNodes
+        //
+        //            // Now find portkiScreen that cooresponds to the portkiNode you're passing, and pass in that portkiScreen, too.
+        //            let foundPortkiScreenIndex = portkiScreens.firstIndex(where: {$0.pageID == portkiNodes[selectedIndexPath.row].documentID})
+        //
+        //            if let portkiScreenIndex = foundPortkiScreenIndex {
+        //                destination.portkiScreen = portkiScreens[portkiScreenIndex]
+        //                print("Just properly passed in a portkiScreen")
+        //            } else {
+        //                print("😡 ERROR: Couldn't find a portkiScreenIndex to pass in with the portkiNode")
+        //            }
+        //
+        //        } else { // adding a screen pass the last element - we'll sort them when they're back. No need to worry about deselecting
+        //            let navigationController = segue.destination as! UINavigationController
+        //            let destination = navigationController.viewControllers.first as! ScreenDesignViewController
+        //            destination.portkiNode = portkiNodes.last
+        //            destination.portkiNodes = portkiNodes
+        //
+        //            // Now find portkiScreen that cooresponds to the portkiNode you're passing, and pass in that portkiScreen, too.
+        //            let foundPortkiScreenIndex = portkiScreens.firstIndex(where: {$0.pageID == portkiNodes.last!.documentID})
+        //
+        //            if let portkiScreenIndex = foundPortkiScreenIndex {
+        //                destination.portkiScreen = portkiScreens[portkiScreenIndex]
+        //                print("Just properly passed in a portkiScreen")
+        //            } else {
+        //                print("😡 ERROR: Couldn't find a portkiScreenIndex to pass in with the portkiNode")
+        //            }
+        
     }
     
     @IBAction func unwindFromScreenDesignViewController(segue: UIStoryboardSegue) {
@@ -213,7 +257,7 @@ class ScreenListViewController: UIViewController {
         // First update portkiScreens - the data structure used to create JSON for the PyPortal:
         let portkiNode = sourceViewController.portkiNode!
         let portkiNodeIndex = portkiNodes.firstIndex(where: {$0.documentID == portkiNode.documentID})
-
+        
         if let portkiNodeIndex = portkiNodeIndex {
             portkiNodes[portkiNodeIndex] = portkiNode
             // print(">> Must have UPDATED a screen in unwindFromScreenDesignVC")
@@ -251,21 +295,25 @@ class ScreenListViewController: UIViewController {
     @IBAction func updatePyPortalPressed(_ sender: UIBarButtonItem) {
         // Go through all portkiScreens + add proper [Button] + Button coordinates for each screen
         // So as long as I have a count of the # of screens I have, I don't need to pass PortkiScreen data back and forth between the view controllers.
-        for index in 0..<portkiScreens.count {
-            // find the node index for the portkiScreen
-            let foundNodeIndexForScreen = portkiNodes.firstIndex(where: {$0.documentID == portkiScreens[index].pageID})
-            guard let nodeIndexForScreen = foundNodeIndexForScreen else {
-                print("😡 For some reason there wasn't a portkiNode with documentID \(portkiScreens[index].pageID)")
-                continue // No
+        
+        portkiScreens = []
+        // Note: Do I even need portkiScreens if I'm rebuilding the array, below?
+        for index in 0..<portkiNodes.count {
+            if portkiNodes[index].nodeType == "Button" {
+                continue
             }
             // Create all buttons for that node and update the portkiScreen with proper coordinates
-            var buttons = createLeftRightBackButtons(portkiNode: portkiNodes[nodeIndexForScreen])
-            let leafButtons = createLeafButtons(portkiNode: portkiNodes[nodeIndexForScreen])
-            buttons += getButtonsFromUIButtons(leafButtons: leafButtons, portkiNode: portkiNodes[nodeIndexForScreen])
-            portkiScreens[index].buttons = buttons
-            let fileName = "\(portkiScreens[index].pageID).jpeg"
+            var buttons = createLeftRightBackButtons(portkiNode: portkiNodes[index])
+            let leafButtons = createLeafButtons(portkiNode: portkiNodes[index])
+            buttons += getButtonsFromUIButtons(leafButtons: leafButtons, portkiNode: portkiNodes[index])
+            let fileName = "\(portkiNodes[index].documentID).jpeg"
             let screenURL = "https://\(awsBucketName).s3.amazonaws.com/\(fileName)"
-            portkiScreens[index].screenURL = screenURL
+            var portkiScreen = PortkiScreen(pageID: portkiNodes[index].documentID, buttons: buttons, screenURL: screenURL)
+            portkiScreens.append(portkiScreen)
+            print("Node # \(index):")
+            print(portkiNodes[index])
+            print("Screen # \(portkiScreens.count-1):")
+            print(portkiScreens.last!)
             
             getDataFromFile(named: fileName) { (data) in
                 guard let data = data else {

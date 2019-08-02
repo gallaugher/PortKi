@@ -24,6 +24,7 @@
 		3E4DB79C2296205000F73F2F /* HomeTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4DB7992296205000F73F2F /* HomeTableViewCell.swift */; };
 		3E4E3A81229342AE0078DB45 /* UITextField+Characters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4E3A80229342AE0078DB45 /* UITextField+Characters.swift */; };
 		3E4E3A83229345D60078DB45 /* UITextField+limitLength.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4E3A82229345D60078DB45 /* UITextField+limitLength.swift */; };
+		3E54ACEA22F494A600A6159F /* AboutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E54ACE922F494A600A6159F /* AboutViewController.swift */; };
 		3E8242B722EE2EA70051313D /* FileManager+URLs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8242B622EE2EA70051313D /* FileManager+URLs.swift */; };
 		3E8242B922EE40550051313D /* String+removeEverythingAfter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8242B822EE40550051313D /* String+removeEverythingAfter.swift */; };
 		3E8242BB22EF14F20051313D /* new.json in Resources */ = {isa = PBXBuildFile; fileRef = 3E8242BA22EF14F20051313D /* new.json */; };
@@ -68,6 +69,7 @@
 		3E4DB7992296205000F73F2F /* HomeTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HomeTableViewCell.swift; sourceTree = "<group>"; };
 		3E4E3A80229342AE0078DB45 /* UITextField+Characters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITextField+Characters.swift"; sourceTree = "<group>"; };
 		3E4E3A82229345D60078DB45 /* UITextField+limitLength.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITextField+limitLength.swift"; sourceTree = "<group>"; };
+		3E54ACE922F494A600A6159F /* AboutViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutViewController.swift; sourceTree = "<group>"; };
 		3E8242B622EE2EA70051313D /* FileManager+URLs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FileManager+URLs.swift"; sourceTree = "<group>"; };
 		3E8242B822EE40550051313D /* String+removeEverythingAfter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+removeEverythingAfter.swift"; sourceTree = "<group>"; };
 		3E8242BA22EF14F20051313D /* new.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = new.json; sourceTree = "<group>"; };
@@ -146,6 +148,7 @@
 				3EA68356228C622900990E61 /* TextBlock.swift */,
 				3EC8046A2295E85F0007FDC6 /* TextBlocks.swift */,
 				3E4DB79522961F2A00F73F2F /* PaddedTextField.swift */,
+				3E54ACE922F494A600A6159F /* AboutViewController.swift */,
 				3E11E3B2228B8435001599ED /* ScreenListViewController.swift */,
 				3E4DB7972296204F00F73F2F /* ButtonTableViewCell.swift */,
 				3E4DB7992296205000F73F2F /* HomeTableViewCell.swift */,
@@ -366,6 +369,7 @@
 				3E8242B722EE2EA70051313D /* FileManager+URLs.swift in Sources */,
 				3E8242B922EE40550051313D /* String+removeEverythingAfter.swift in Sources */,
 				3E11E3B3228B8435001599ED /* ScreenListViewController.swift in Sources */,
+				3E54ACEA22F494A600A6159F /* AboutViewController.swift in Sources */,
 				3E4E3A81229342AE0078DB45 /* UITextField+Characters.swift in Sources */,
 				3E4DB79C2296205000F73F2F /* HomeTableViewCell.swift in Sources */,
 				3E11E3B1228B8435001599ED /* AppDelegate.swift in Sources */,

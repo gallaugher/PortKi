@@ -1,3 +1,16 @@
+# Python code for "PortKi", which runs a touch-screen kiosk
+# on an adafruit PyPortal. https://learn.adafruit.com/adafruit-pyportal
+# This code is meant to read JSON and use .jpeg files of screens
+# created by the PortKi app. Find out more at:
+# http://github.com/gallaugher/portki
+#
+# Special Thanks to John Park, Scott Shawcroft for helping a newbie w/this project
+# and to Limor "Lady Ada" Fried for creating PyPortal and so many other wonderful
+# open-source products at adafruit.com.
+# Comments? Find me at twitter: @gallaugher
+# Projects & tutorials at: YouTube: bit.ly/GallaugherYouTube
+# and the web: gallaugher.com
+
 import time
 import json
 import board
@@ -9,18 +22,9 @@ import os
 import digitalio
 import busio
 
-# Working PyPortal code for PortKi for everything except SD card
-"""
-    # Use stuff below when working with the PyPortal's microSD card
-    # spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
-    # the line below did execute & seemed to let the print, 5 lines down, find the /sd volume & list code
-    spi = board.SPI()
-    cs = digitalio.DigitalInOut(board.SD_CS)
-    sdcard = adafruit_sdcard.SDCard(spi, cs)
-    vfs = storage.VfsFat(sdcard)
-    storage.mount(vfs, "/sd")
-    print('-> the sd directory follows:', os.listdir('/sd'))
-    """
+# DIRECTORY = "/sd/" # sd card
+DIRECTORY = "/portki-files/"
+# os.mkdir(DIRECTORY)
 
 DATA_SOURCE = "https://io.adafruit.com/api/v2/gallaugher/feeds/portki/data/"
 DATA_LOCATION = [0, "value"]
@@ -28,8 +32,6 @@ DATA_LOCATION = [0, "value"]
 pyportal = PyPortal(url=DATA_SOURCE,
                     json_path=DATA_LOCATION,
                     default_bg="portki-please-wait.bmp",)
-
-# pyportal.set_background("Home.bmp")
 
 p_list = [] # holds points indicating where a press occurred
 # These pins are used as both analog and digital! XL, XR and YU must be analog
@@ -105,25 +107,14 @@ except RuntimeError as e:
 read_json_into_screens()
 current_pageID = "Home"
 
-"""
-    print("screens[0].screenURL = ", screens[0].screenURL)
-    image_url = screens[0].screenURL
-    fileName = screens[0].pageID+".bmp"
-    # image_url = "https://gallaugher.com/wp-content/uploads/2019/07/Home.jpeg"
-    print("image_url =", image_url)
-    
-    pyportal.wget(pyportal.image_converter_url(image_url,320, 240,color_depth=16), fileName, chunk_size=12000)
-    pyportal.set_background(fileName)
-    """
-
 for screen in screens:
     image_url = screen.screenURL
     fileName = screen.pageID+".bmp"
     print("image_url =", image_url)
     print("screen.screenURL = ", screen.screenURL)
-    pyportal.wget(pyportal.image_converter_url(image_url,320, 240,color_depth=16), fileName, chunk_size=12000)
+    pyportal.wget(pyportal.image_converter_url(image_url,320, 240,color_depth=16), DIRECTORY+fileName, chunk_size=12000)
 
-pyportal.set_background("Home.bmp")
+pyportal.set_background(DIRECTORY+"Home.bmp")
 
 while True:
     p = ts.touch_point
@@ -153,13 +144,12 @@ while True:
                     right_side = screen.buttons[index].x + screen.buttons[index].width
                     top_side = screen.buttons[index].y
                     bottom_side = screen.buttons[index].y + screen.buttons[index].height
-                    #                print(screen.buttons[index].buttonText, "coordinates", left_side, right_side, top_side, bottom_side)
                     if ( left_side <= x and right_side >= x ) and ( top_side <= y and bottom_side >= y ):
                         print("***** TOUCH DETECTED ***** inside button ", screen.buttons[index].buttonText)
                         break_outer_loop = True
                         current_pageID = screen.buttons[index].buttonDestination
                         print("Time to load screen", current_pageID)
-                        pyportal.set_background(current_pageID+".bmp")
+                        pyportal.set_background(DIRECTORY+current_pageID+".bmp")
                         break
             if break_outer_loop:
                 break
