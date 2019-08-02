@@ -190,11 +190,7 @@
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <navigationItem key="navigationItem" id="V29-kW-AqF">
-                        <barButtonItem key="leftBarButtonItem" title="Sign Out" id="69R-Dl-cUM">
-                            <connections>
-                                <action selector="signOutPressed:" destination="BYZ-38-t0r" id="c36-9J-ZJB"/>
-                            </connections>
-                        </barButtonItem>
+                        <barButtonItem key="leftBarButtonItem" title="About..." id="vUK-ev-bdI"/>
                         <barButtonItem key="rightBarButtonItem" title="Update PyPortal" id="Wfx-Nw-ciT">
                             <connections>
                                 <action selector="updatePyPortalPressed:" destination="BYZ-38-t0r" id="WED-P6-bHr"/>

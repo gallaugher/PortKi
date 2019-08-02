@@ -211,18 +211,17 @@ class ScreenListViewController: UIViewController {
         // Unwind only happens on "Save" press, not cancel, so you should always need to update the portkiNode
         
         // First update portkiScreens - the data structure used to create JSON for the PyPortal:
-//        let portkiScreen = sourceViewController.portkiScreen!
-//        let portkiScreenIndex = portkiScreens.firstIndex(where: {$0.pageID == portkiScreen.pageID})
-//
-        // TODO: Unsure if I'm doing anything on the design screen that requires passing back a modified portkiScreen. Need to think about whether info below is even necessary.
-//        if let portkiScreenIndex = portkiScreenIndex {
-//            portkiScreens[portkiScreenIndex] = portkiScreen
-//            print(">> Must have UPDATED a screen in unwindFromScreenDesignVC")
-//        } else {
-//            print("😡😡 ERROR IN unwindFromScreenDesignVC - since portKiScreens were created before transfer, then there should be on already and you shouldn't have to create a new one.")
-//            portkiScreens.append(portkiScreen)
-//            print(">> Must have just added a new screen in unwindFromScreenDesignVC")
-//        }
+        let portkiNode = sourceViewController.portkiNode!
+        let portkiNodeIndex = portkiNodes.firstIndex(where: {$0.documentID == portkiNode.documentID})
+
+        if let portkiNodeIndex = portkiNodeIndex {
+            portkiNodes[portkiNodeIndex] = portkiNode
+            // print(">> Must have UPDATED a screen in unwindFromScreenDesignVC")
+        } else {
+            print("😡😡 ERROR IN unwindFromScreenDesignVC - since portkiNodes were created before transfer, then there should be on already and you shouldn't have to create a new one.")
+            portkiNodes.append(portkiNode)
+            print(">> Must have just added a new screen in unwindFromScreenDesignVC")
+        }
     }
     
     func sendJsonToAdafruitIo(jsonString: String) {

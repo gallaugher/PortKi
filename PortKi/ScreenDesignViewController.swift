@@ -27,7 +27,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     // The content view is inside the screenView, all interface portkiNodes are configured to the contentView, so any shifting of contentView will shift all portkiNodes by the same amount.
     @IBOutlet weak var contentView: UIView!
     @IBOutlet weak var grayBackgroundView: UIView!
-    @IBOutlet var fieldCollection: [UITextField]! // Not connected, fields created programmatically
+    @IBOutlet var fieldCollection: [UITextField] = [] // Not connected, fields created programmatically
     @IBOutlet weak var deleteTextButton: UIButton!
     @IBOutlet weak var editStyleBarButton: UIBarButtonItem!
     @IBOutlet weak var scrollView: UIScrollView!
@@ -92,6 +92,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         
         deleteTextButton.isEnabled = false
         editStyleBarButton.isEnabled = false
+        loadBackgroundImage()
         loadTextBlocks()
     }
     
@@ -115,7 +116,11 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             newField.font = UIFont(name: textBlock.font.fontName, size: textBlock.fontSize)
             newField.text = textBlock.text
             newField.textColor =  UIColor.init(hexString: textBlock.textColorHexString)
-            newField.backgroundColor = UIColor.init(hexString: textBlock.backgroundColorHexString)
+            if textBlock.backgroundColorHexString == "" {
+                newField.backgroundColor = UIColor.clear
+            } else {
+                newField.backgroundColor = UIColor.init(hexString: textBlock.backgroundColorHexString)
+            }
             // configure field alignment
             switch textBlock.alignment {
             case 0: // left
@@ -144,11 +149,29 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
+    func loadBackgroundImage() {
+        backgroundImageView.image = UIImage()
+        guard portkiNode.backgroundImageUUID != "" else {
+            return // no backgroundImage for this screen
+        }
+        let imageType = "jpeg"
+        let fileName = getDocumentsDirectory().appendingPathComponent("background.\(portkiNode.backgroundImageUUID).\(imageType)")
+        do {
+            let data = try Data(contentsOf: fileName)
+            guard let image = UIImage(data: data) else {
+                print("😡 Couldn't convert data for backgroundImage from \(fileName)")
+                return
+            }
+            backgroundImageView.image = image
+        } catch {
+            print("😡 Couldn't get file named background.\(portkiNode.backgroundImageUUID): error:\(error)")
+        }
+    }
+    
     func loadTextBlocks() {
         // get all the text blocks that make up the selected screen
         
         // TODO load up backgrounds first. There is a chance there is no textblock but there is a background.
-        
         
         textBlocks.loadTextBlocks(pageID: portkiNode.documentID) { returnedTextBlocks in
             guard let returnedTextBlocksArray = returnedTextBlocks?.textBlocksArray else {
@@ -160,34 +183,6 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             self.createFieldCollectionFromTextBlocks()
             self.configureUserInterface()
         }
-        
-        backgroundImageView.image = UIImage()
-        if portkiNode.backgroundImageUUID != "" {
-            // TODO: Handle loading background image, here
-            //            element.loadBackgroundImage {
-            //                self.backgroundImageView.image = self.element.backgroundImage
-            //            }
-        }
-        
-        
-        //        textBlocks.loadData(element: element) {
-        //            if self.textBlocks.textBlocksArray.count == 0 {
-        //                self.createNewField()
-        //                self.configureUserInterface()
-        //            } else {
-        //                self.createFieldCollectionFromTextBlocks()
-        //                self.configureUserInterface()
-        //            }
-        //        }
-        //        backgroundImageView.image = UIImage()
-        //        if element.backgroundImageUUID != "" {
-        //            element.loadBackgroundImage {
-        //                self.backgroundImageView.image = self.element.backgroundImage
-        //            }
-        //        }
-        //        screen.loadData (element: element) {
-        //
-        //        }
     }
     
     func configurePreviousNextButtons(){
@@ -239,7 +234,8 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         let previewView = DefaultPreviewView(side: .top)
         previewView.offsetAmount = 10.0
         colorSlider = ColorSlider(orientation: .horizontal, previewView: previewView)
-        colorSlider.color = textColorButton.backgroundColor!
+        // colorSlider.color = textColorButton.backgroundColor!
+        colorSlider.color = colorButtonCollection[selectedColorButtonTag].backgroundColor!
         colorSlider.frame = colorSliderFrame
         contentView.addSubview(colorSlider)
         colorSlider.addTarget(self, action: #selector(changedColor(_:)), for: .valueChanged)
@@ -261,23 +257,30 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             colorButtonCollection[selectedColorButtonTag].backgroundColor = color
             screenView.backgroundColor = color
         default:
-            print("😡ERROR: Unexpected case in function changedColor")
+            print("😡 ERROR: Unexpected case in function changedColor")
         }
     }
     
     @IBAction func colorButtonPressed(_ sender: UIButton) {
+        selectedColorButtonTag = sender.tag
         for subview in self.contentView.subviews {
             if subview is ColorSlider {
                 colorSlider = subview as? ColorSlider
+                subview.removeFromSuperview()
             }
         }
-        if colorSlider == nil { // this is the case if a new field is added
-            configureColorSlider()
-        }
+        configureSlider()
         if selectedColorButtonTag == 1 && colorButtonCollection[sender.tag].backgroundColor == UIColor.clear {
             hexTextField.text = ""
-        } else {
-            hexTextField.text = colorButtonCollection[sender.tag].backgroundColor?.hexString
+            colorSlider.color = UIColor.clear
+        } else if selectedColorButtonTag == 1 {
+            var textBackgroundColor = UIColor.clear
+            if let nonNilBackgroundColor = fieldCollection[selectedTextBlockIndex].backgroundColor {
+                textBackgroundColor = nonNilBackgroundColor
+            }
+            colorButtonCollection[selectedColorButtonTag].backgroundColor = textBackgroundColor
+            hexTextField.text = colorButtonCollection[selectedColorButtonTag].backgroundColor?.hexString
+            changeColor(color: textBackgroundColor)
         }
         setSelectedFrame(sender: sender)
     }
@@ -289,7 +292,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             colorButtonFrame.layer.borderWidth = 0.0
         }
         colorFrameViewCollection[selectedColorButtonTag].layer.borderWidth = 1.0
-        // TODO: Check to see if we should remocve the comments, below
+        // TODO: This shows the selection circle inside the colorSlider
         colorSlider.layoutSubviews()
     }
     
@@ -308,29 +311,20 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         newFieldRect = CGRect(x: newFieldRect.origin.x, y: newFieldRect.origin.y, width: 320, height: newFieldHeight)
         newField.frame = newFieldRect
         newField.textColor = newBlock.textColor
-        let fieldBackgroundColor = UIColor(hex: newBlock.backgroundColorHexString)
-        newField.backgroundColor = fieldBackgroundColor
+        if newBlock.backgroundColorHexString == "" {
+            newField.backgroundColor = UIColor.clear
+        } else {
+            newField.backgroundColor = UIColor(hexString: newBlock.backgroundColorHexString)
+        }
         screenView.addSubview(newField)
         screenView.bringSubviewToFront(newField)
         selectedColorButtonTag = 0 // New field? Select textColor button
         fieldCollection[selectedTextBlockIndex] = newField
-//        if fieldCollection == nil {
-//            fieldCollection = [newField]
-//        } else {
-//            fieldCollection.append(newField)
-//        }
         fieldCollection.last!.delegate = self
         fieldCollection.last!.becomeFirstResponder()
         if newBlock.backgroundColorHexString == "" { // same as clear {
             enableTextBackgroundColor(false)
         } else {
-            let backgroundColor = fieldCollection.last!.backgroundColor
-            let backgroundColorHex = textBlocks.textBlocksArray[selectedTextBlockIndex].backgroundColorHexString
-            let convertedFieldHexString = fieldCollection.last!.backgroundColor?.toHex
-            enableTextBackgroundColor(true)
-            let textColor = fieldCollection.last!.textColor!
-            let textColorHex = textBlocks.textBlocksArray[selectedTextBlockIndex].textColorHexString
-            let convertedtextFieldHexString = fieldCollection.last!.textColor?.toHex
             enableTextBackgroundColor(true)
             selectedColorButtonTag = 1
             changeColor(color: fieldCollection.last!.backgroundColor!)
@@ -450,6 +444,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         newField.textColor = UIColor(hex: newBlock.textColorHexString)
         newField.backgroundColor =  UIColor(hex: newBlock.backgroundColorHexString)
         textBlocks.textBlocksArray.append(newBlock)
+        fieldCollection.append(newField)
         setUpBlockAndField(newBlock: textBlocks.textBlocksArray.last!, newField: newField)
     }
     
@@ -463,7 +458,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             }
             colorButtonCollection[1].isSelected = true // call below will set it to false
             colorButtonCollection[1].isEnabled = true
-             colorButtonCollection[1].backgroundColor = fieldCollection[selectedTextBlockIndex].backgroundColor
+            colorButtonCollection[1].backgroundColor = fieldCollection[selectedTextBlockIndex].backgroundColor
             textBackgroundStaticLabel.textColor = UIColor.black
             colorFrameViewCollection[1].layer.borderWidth = 1.0
             selectedColorButtonTag = 1
@@ -472,7 +467,6 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             //            hexTextField.text = ""
         } else {
             // initially disable textBackgroundColor
-            colorButtonCollection[1].backgroundColor = UIColor.white
             colorButtonCollection[1].isSelected = false // call below will set it to false
             colorButtonCollection[1].isEnabled = false
             colorButtonCollection[1].backgroundColor = UIColor.clear
@@ -504,8 +498,8 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             enableTextBackgroundColor(false)
             
             // NOTE: When I had a crash Wed. evening I uncommented these
-//                        colorButtonCollection[1].isSelected = true // call below will set it to false
-//                        allowTextBackgroundPressed(allowTextBackgroundCheckButton)
+            //                        colorButtonCollection[1].isSelected = true // call below will set it to false
+            //                        allowTextBackgroundPressed(allowTextBackgroundCheckButton)
         } else {
             enableTextBackgroundColor(true)
         }
@@ -529,7 +523,6 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             deleteTextButton.isEnabled = false
             editStyleBarButton.isEnabled = false
         }
-        
         if textField == hexTextField {
             print("********* YOU ENDED THE HEX COLOR CELL!!!!")
             let hexString = hexTextField.text!
@@ -680,10 +673,6 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         }
         
         scrollView.scrollIndicatorInsets = scrollView.contentInset
-        
-        // If reuse and want the text view to readjust itself so the user doesn't lose their place while editing, uncomment two lines below.
-        // let selectedRange = scrollView
-        // scrollView.scrollRangeToVisible(selectedRange)
     }
     
     @IBAction func addFieldPressed(_ sender: UIButton) {
@@ -913,13 +902,13 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
-    func saveImageToFile(imageData: Data, imageType: String) {
-        let filename = getDocumentsDirectory().appendingPathComponent("\(portkiNode.documentID).\(imageType)")
+    func saveImageToFile(fileName: String, imageData: Data, imageType: String) {
+        let filename = getDocumentsDirectory().appendingPathComponent("\(fileName).\(imageType)")
         do {
             try imageData.write(to: filename, options: .atomic)
             print("😀 Successfully wrote filename: \(filename)")
         } catch {
-            print("😡 Drat! bmpImage named \(portkiNode.documentID).\(imageType) couldn't be written to file \(error.localizedDescription)")
+            print("😡 Drat! image named \(fileName).\(imageType) couldn't be written to file \(error.localizedDescription)")
         }
     }
     
@@ -928,7 +917,36 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         return paths[0]
     }
     
+    func saveBackgroundImage() {
+        switch self.backgroundImageStatus {
+        case .delete:
+            portkiNode.backgroundImageUUID = ""
+            // TODO: actually delete the file from disk (and the cloud if you store it there, too)
+            return
+        case .save:
+            // For now I'm allowing only one backgroundImage, and
+            // give it the same name as the element and screen documents.
+            portkiNode.backgroundImageUUID = portkiNode.documentID
+            guard let image = backgroundImageView.image else {
+                print("🛑 Tried to saveBackgroundImage when backgroundImageView.image is nil")
+                return
+            }
+            // orientation 0 is supposed to be up. w/o this some images were rotated 90 degrees
+            guard let data = image.toJpegData(compressionQuality: 1.0, hasAlpha: false, orientation: 0) else {
+                print("🛑 Couldn't create jpegData from screenView.bounds")
+                return
+            }
+            saveImageToFile(fileName: "background.\(portkiNode.backgroundImageUUID)",imageData: data , imageType: "jpeg")
+        case .unchanged:
+            return
+        }
+    }
+    
     @IBAction func saveButtonPressed(_ sender: Any) {
+        // Save background image first. You'll want to update backgroundImageUUID
+        // in the portkiNode before savign the current node, below.
+        saveBackgroundImage()
+
         if let currentScreenIndex = self.portkiNodes.firstIndex(where: {$0.documentID == portkiNode.documentID}) {
             // update currentScreen
             portkiNodes[currentScreenIndex] = portkiNode
@@ -948,7 +966,6 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         }
         
         portkiNode.saveTextBlocks(textBlocks: textBlocks)
-        
         buttonInfoArray = buildButtonArray()
         
         // Now create a bmp of whatever's on screen.
@@ -971,12 +988,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             print("🛑🛑 Couldn't create jpegData")
             return
         }
-        
-        guard let jpegImage = UIImage(data: jpegData) else {
-            print("🛑🛑 Couldn't create image from jpegData")
-            return
-        }
-        saveImageToFile(imageData: jpegData, imageType: "jpeg")
+        saveImageToFile(fileName: portkiNode.documentID, imageData: jpegData, imageType: "jpeg")
         performSegue(withIdentifier: "UwindFromScreenDesign", sender: nil)
         
         // TODO: Save your TextBlocks here!!
@@ -1021,7 +1033,10 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         
         if sender.isSelected {
             hexTextField.text = ""
-            colorButtonPressed(colorButtonCollection[1])
+            // colorButtonPressed(colorButtonCollection[1])
+            // changed below to zero b/c color button on color line was showing
+            // when enabling background text color for the first time.
+            colorButtonPressed(colorButtonCollection[0])
         } else {
             textBlocks.textBlocksArray[selectedTextBlockIndex].backgroundColorHexString = UIColor.clear.hexString
             fieldCollection[selectedTextBlockIndex].backgroundColor = UIColor.clear
