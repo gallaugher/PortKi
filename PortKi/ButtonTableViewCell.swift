@@ -12,6 +12,7 @@ class ButtonTableViewCell: UITableViewCell {
     
     @IBOutlet weak var button: UIButton!
     @IBOutlet weak var indentView: UIView!
+    @IBOutlet weak var plusButton: UIButton!
     
     weak var delegate: PlusAndDisclosureDelegate?
     var indexPath: IndexPath!
