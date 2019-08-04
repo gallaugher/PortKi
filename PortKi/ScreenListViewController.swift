@@ -493,8 +493,7 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func deleteFileOnDevice(fileName: String) {
-        let imageType = "jpeg"
-        let fileURL = getDocumentsDirectory().appendingPathComponent("\(fileName).\(imageType)")
+        let fileURL = getDocumentsDirectory().appendingPathComponent("\(fileName)")
         do {
             let fileManager = FileManager.default
             try fileManager.removeItem(at: fileURL)
@@ -522,21 +521,23 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
             if let childIndex = portkiNodes[parentIndex].childrenIDs.firstIndex(where: {$0 == portkiNodes[selectedIndex].documentID}) {
                 // remove value here
                 let fileName = portkiNodes[parentIndex].childrenIDs[childIndex]
-                print("** I am deleting a node named \(fileName)")
+                print("** I am deleting the child index for the node named \(fileName) from the parent named \(portkiNodes[parentIndex].documentID) which is a \(portkiNodes[parentIndex].nodeType)")
                 portkiNodes[parentIndex].childrenIDs.remove(at: childIndex)
             } else {
                 print("😡 ERROR: Couldn't find the index of child in it's parent's .childrenIDs. This should not have happened. YOU SHOULD NEVER SEE THIS MESSAGE.")
             }
         }
         // then remove the element itself:
-        var fileName = portkiNodes[selectedIndex].documentID
+        let fileName = portkiNodes[selectedIndex].documentID
         print("** I am deleting a node named \(fileName)")
-        portkiNodes.remove(at: selectedIndex)
-        deleteFileFromCloud(fileName: fileName+".jpeg")
-        deleteFileOnDevice(fileName: fileName+".jpeg")
-        if fileName.hasSuffix(".jpeg") {
+        if portkiNodes[selectedIndex].nodeType == "Screen" {
+            // only "Screens" have deletable .jpegs and .json files
+            deleteFileFromCloud(fileName: fileName+".jpeg")
+            deleteFileOnDevice(fileName: fileName+".jpeg")
             deleteFileOnDevice(fileName: fileName+".json")
+            
         }
+        portkiNodes.remove(at: selectedIndex)
     }
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
