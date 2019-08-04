@@ -1,0 +1,126 @@
+PODS:
+  - Alamofire (4.8.2)
+  - AWSAutoScaling (2.9.5):
+    - AWSCore (= 2.9.5)
+  - AWSCloudWatch (2.9.5):
+    - AWSCore (= 2.9.5)
+  - AWSCognito (2.9.5):
+    - AWSCore (= 2.9.5)
+  - AWSCognitoIdentityProvider (2.9.5):
+    - AWSCognitoIdentityProviderASF (= 1.0.1)
+    - AWSCore (= 2.9.5)
+  - AWSCognitoIdentityProviderASF (1.0.1)
+  - AWSCore (2.9.5)
+  - AWSDynamoDB (2.9.5):
+    - AWSCore (= 2.9.5)
+  - AWSEC2 (2.9.5):
+    - AWSCore (= 2.9.5)
+  - AWSElasticLoadBalancing (2.9.5):
+    - AWSCore (= 2.9.5)
+  - AWSIoT (2.9.5):
+    - AWSCore (= 2.9.5)
+  - AWSKinesis (2.9.5):
+    - AWSCore (= 2.9.5)
+  - AWSLambda (2.9.5):
+    - AWSCore (= 2.9.5)
+  - AWSMachineLearning (2.9.5):
+    - AWSCore (= 2.9.5)
+  - AWSMobileAnalytics (2.9.5):
+    - AWSCore (= 2.9.5)
+  - AWSS3 (2.9.5):
+    - AWSCore (= 2.9.5)
+  - AWSSES (2.9.5):
+    - AWSCore (= 2.9.5)
+  - AWSSimpleDB (2.9.5):
+    - AWSCore (= 2.9.5)
+  - AWSSNS (2.9.5):
+    - AWSCore (= 2.9.5)
+  - AWSSQS (2.9.5):
+    - AWSCore (= 2.9.5)
+  - ColorSlider (4.4)
+  - CropViewController (2.4.0)
+  - SDWebImage (5.0.1):
+    - SDWebImage/Core (= 5.0.1)
+  - SDWebImage/Core (5.0.1)
+  - SwiftyJSON (4.3.0)
+
+DEPENDENCIES:
+  - Alamofire (~> 4.4)
+  - AWSAutoScaling
+  - AWSCloudWatch
+  - AWSCognito
+  - AWSCognitoIdentityProvider
+  - AWSDynamoDB
+  - AWSEC2
+  - AWSElasticLoadBalancing
+  - AWSIoT
+  - AWSKinesis
+  - AWSLambda
+  - AWSMachineLearning
+  - AWSMobileAnalytics
+  - AWSS3
+  - AWSSES
+  - AWSSimpleDB
+  - AWSSNS
+  - AWSSQS
+  - ColorSlider (~> 4.4)
+  - CropViewController
+  - SDWebImage (~> 5.0)
+  - SwiftyJSON (~> 4.0)
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - Alamofire
+    - AWSAutoScaling
+    - AWSCloudWatch
+    - AWSCognito
+    - AWSCognitoIdentityProvider
+    - AWSCognitoIdentityProviderASF
+    - AWSCore
+    - AWSDynamoDB
+    - AWSEC2
+    - AWSElasticLoadBalancing
+    - AWSIoT
+    - AWSKinesis
+    - AWSLambda
+    - AWSMachineLearning
+    - AWSMobileAnalytics
+    - AWSS3
+    - AWSSES
+    - AWSSimpleDB
+    - AWSSNS
+    - AWSSQS
+    - ColorSlider
+    - CropViewController
+    - SDWebImage
+    - SwiftyJSON
+
+SPEC CHECKSUMS:
+  Alamofire: ae5c501addb7afdbb13687d7f2f722c78734c2d3
+  AWSAutoScaling: 3033f622183caad02e59086bfcc647b9a4ac9a75
+  AWSCloudWatch: cdf2dae33540a21815ba7669e59b3701bca74d82
+  AWSCognito: 20a56a1e2808e62a09306f3d1ee8f0ec45f85247
+  AWSCognitoIdentityProvider: 52d859858e5166513fd7e1774d15596f405fa115
+  AWSCognitoIdentityProviderASF: f94f1a502e72ef3d0a1de93e10bf7a79c8698118
+  AWSCore: 90ddc0234a321d5649c9572b1447f528f68d41b9
+  AWSDynamoDB: b895b0260623c963fcfe251c9e6cd96cef097b33
+  AWSEC2: 1c8b0f1f4668954f2d2e3b7eaf6e5b5d8edabbdf
+  AWSElasticLoadBalancing: b707b89d775a9110244538e366f4cc430da3a161
+  AWSIoT: 31d85adfce6119409040c9c7430c4830697239a4
+  AWSKinesis: a23c0a2e32f3aaa5164208939304385aabfce8ea
+  AWSLambda: 8029e408369d9656c768e317e24caab36744942f
+  AWSMachineLearning: ac47f4a3a33eb61d08c31654af9fbabbae568392
+  AWSMobileAnalytics: 3f958622f620271236404c3c4a0c2ed6c2d3b189
+  AWSS3: 09de855268185fe8403ca03131f3a26c270aa037
+  AWSSES: 8683327b34a77bb4745e4f8f1304c296b123f900
+  AWSSimpleDB: ec8c5c026917dd89fe61fb4143e03406fb3004d7
+  AWSSNS: a81d8970173d69500b5a34a3f392d69529e0a02e
+  AWSSQS: c1844eb20bf1ece8fdc9686b4c4fc1c04fc743cd
+  ColorSlider: 9a888e65b871fa1e6a26fadebf4931c949935681
+  CropViewController: a090820b15fc3da68e694d7c192a4708c576828b
+  SDWebImage: 27dd2c9ea07a2252f94557c9fbb6105ee94b74c9
+  SwiftyJSON: 6faa0040f8b59dead0ee07436cbf76b73c08fd08
+
+PODFILE CHECKSUM: 8385cae257aaf7ed5230aa3a55b8d34b77da8afa
+
+COCOAPODS: 1.5.2
