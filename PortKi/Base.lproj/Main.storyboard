@@ -287,6 +287,9 @@ Learn to build apps:    gallaugher.com/swift
                                 <segue destination="1Ai-gg-eTC" kind="presentation" identifier="About" id="6bd-at-xET"/>
                             </connections>
                         </barButtonItem>
+                        <barButtonItem style="plain" systemItem="flexibleSpace" id="4PF-Be-E2L"/>
+                        <barButtonItem title="⬇️" id="LYn-xG-RPf"/>
+                        <barButtonItem title="⬆️" id="OYL-kg-sIl"/>
                     </toolbarItems>
                     <navigationItem key="navigationItem" id="V29-kW-AqF">
                         <barButtonItem key="leftBarButtonItem" title="Edit" id="aBd-KF-DvA">
@@ -302,8 +305,10 @@ Learn to build apps:    gallaugher.com/swift
                     </navigationItem>
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
+                        <outlet property="downButton" destination="LYn-xG-RPf" id="3yX-oe-g0j"/>
                         <outlet property="editBarButton" destination="aBd-KF-DvA" id="Tiy-8R-SaL"/>
                         <outlet property="tableView" destination="SoN-6c-qB6" id="HaJ-Ti-sn6"/>
+                        <outlet property="upButton" destination="OYL-kg-sIl" id="0xj-Xc-zXU"/>
                         <outlet property="updatePyPortalButton" destination="Wfx-Nw-ciT" id="SNE-0k-VDN"/>
                         <segue destination="XFc-0a-KgH" kind="presentation" identifier="AddScreen" id="fAN-zW-Xhd"/>
                         <segue destination="be5-Hg-lTQ" kind="show" identifier="ShowScreen" id="RiB-qh-Wj0"/>

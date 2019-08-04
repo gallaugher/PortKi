@@ -16,6 +16,8 @@ class ScreenListViewController: UIViewController {
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var editBarButton: UIBarButtonItem!
     @IBOutlet weak var updatePyPortalButton: UIBarButtonItem!
+    @IBOutlet weak var upButton: UIBarButtonItem!
+    @IBOutlet weak var downButton: UIBarButtonItem!
     
     // used simply to calculate button properties to be used in PyPortal via portkiScreens converted to JSON
     @IBOutlet var screenView: UIView!
@@ -34,6 +36,8 @@ class ScreenListViewController: UIViewController {
         
         tableView.delegate = self
         tableView.dataSource = self
+        upButton.isEnabled = false
+        downButton.isEnabled = false
         
         loadPortkiScreens()
         loadPortkiNodes()
@@ -568,14 +572,132 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
         }
     }
     
-    func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-        // First make a copy of the item that you are going to move
-        let itemToMove = portkiNodes[sourceIndexPath.row]
-        // Delete item from the original location (pre-move)
-        portkiNodes.remove(at: sourceIndexPath.row)
-        // Insert item into the "to", post-move, location
-        portkiNodes.insert(itemToMove, at: destinationIndexPath.row)
+    func traverseSiblingsAndChangeHierarchy(nodeIndex: Int, hierarchyLevel: Int) {
+        if portkiNodes[nodeIndex].childrenIDs.count > 0 {
+            for index in 0..<portkiNodes[nodeIndex].childrenIDs.count {
+                // find node for child
+                let foundChildNodeIndex = portkiNodes.firstIndex(where: {$0.documentID == portkiNodes[nodeIndex].childrenIDs[index] })
+                guard let childNodeIndex = foundChildNodeIndex else {
+                    print("😡 ERROR: couldn't find childNodeIndex of \(portkiNodes[nodeIndex].childrenIDs[index]). This shouldn't have happened. Please investigate.")
+                    return
+                }
+                // change hierarchy level of child to parent's hierarchyLevel +1
+                portkiNodes[childNodeIndex].hierarchyLevel = hierarchyLevel + 1
+                traverseSiblingsAndChangeHierarchy(nodeIndex: childNodeIndex, hierarchyLevel: hierarchyLevel + 1)
+            }
+        }
     }
+    
+    func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
+        
+        let cellType = portkiNodes[sourceIndexPath.row].nodeType
+        if cellType == "Screen" {
+            // it cannot be inserted below the "Home" screen
+            
+            // save old parent of cell to be moved
+            let oldParentOfMovedCell = portkiNodes[sourceIndexPath.row].parentID
+            var newParentOfMovedCell = ""
+            
+            // if the node above is a screen
+            if portkiNodes[destinationIndexPath.row-1].nodeType == "Screen" {
+                let screenIdAboveMovePosition = portkiNodes[destinationIndexPath.row-1].documentID
+                // moved screen's parent is the same as the parent of the screen above it
+                newParentOfMovedCell = portkiNodes[destinationIndexPath.row-1].parentID
+                
+                // find screenBeingMoved's old parent and remove it from the oldParent's childrenID array
+                guard let oldParentIndex = portkiNodes.firstIndex(where: {$0.documentID == oldParentOfMovedCell}) else {
+                    print("😡 ERROR: Couldn't find oldParentOfMovedCell \(oldParentOfMovedCell)  to remove it's child, which is being moved. This shouldn't have happened. Please investigate.")
+                    return
+                }
+                guard let childIdDeletePosition = portkiNodes[oldParentIndex].childrenIDs.firstIndex(where: {$0 == portkiNodes[sourceIndexPath.row].documentID}) else {
+                    print("😡 ERROR: Couldn't find childIdDeletePosition in parent \(oldParentOfMovedCell)  to remove it's child before move. This shouldn't have happened. Please investigate.")
+                    return
+                }
+                portkiNodes[oldParentIndex].childrenIDs.remove(at: childIdDeletePosition)
+                let newHierarchyPositon = portkiNodes[destinationIndexPath.row-1].hierarchyLevel
+                // find the parent of that screen & add it as a child of that parent, inserting it just after the screen's position in the parent's childrenIDs array
+//                let foundParentIndex = portkiNodes.firstIndex(where: {$0.documentID == newParentOfMovedCell})
+//                guard let parentIndex = foundParentIndex else {
+//                    print("😡 ERROR: Couldn't find parent index of screen cell named \(portkiNodes[sourceIndexPath.row].documentID). This should not have happened. Please investigate.")
+//                    return
+//                }
+//                let foundSiblingPosition = portkiNodes[parentIndex].childrenIDs.firstIndex(where: {$0 == screenIdAboveMovePosition })
+//                guard let childIndexPosition = foundSiblingPosition else {
+//                    print("😡 ERROR: Couldn't find childID for screen above where selected screen will be inserted. Selected screen is named \(portkiNodes[sourceIndexPath.row].documentID). This should not have happened. Please investigate.")
+//                    return
+//                }
+//                portkiNodes[parentIndex].childrenIDs.insert(portkiNodes[sourceIndexPath.row].documentID, at: childIndexPosition+1)
+                portkiNodes[sourceIndexPath.row].parentID = newParentOfMovedCell
+                portkiNodes[sourceIndexPath.row].hierarchyLevel = newHierarchyPositon
+                // First make a copy of the item that you are going to move
+                let itemToMove = portkiNodes[sourceIndexPath.row]
+                // Delete item from the original location (pre-move)
+                portkiNodes.remove(at: sourceIndexPath.row)
+                // Insert item into the "to", post-move, location
+                portkiNodes.insert(itemToMove, at: destinationIndexPath.row)
+                
+                let foundParentIndex = portkiNodes.firstIndex(where: {$0.documentID == newParentOfMovedCell})
+                guard let parentIndex = foundParentIndex else {
+                    print("😡 ERROR: Couldn't find parent index of screen cell named \(portkiNodes[sourceIndexPath.row].documentID). This should not have happened. Please investigate.")
+                    return
+                }
+                var childInserted = false
+                for childrenIdIndex in 0..<portkiNodes[parentIndex].childrenIDs.count {
+                    let foundChildIndex = portkiNodes.firstIndex(where: {$0.documentID == portkiNodes[parentIndex].childrenIDs[childrenIdIndex]})
+                    guard let childIndex = foundChildIndex else {
+                        print("😡 ERROR: Couldn't find childIndex for \(portkiNodes[parentIndex].childrenIDs[childrenIdIndex]) in parent \(portkiNodes[parentIndex].documentID). his should not have happened. Please investigate.")
+                        return
+                    }
+                    if childIndex > destinationIndexPath.row {
+                        portkiNodes[parentIndex].childrenIDs.insert(itemToMove.documentID, at: childrenIdIndex)
+                        childInserted = true
+                    }
+                }
+                if childInserted == false {
+                    portkiNodes[parentIndex].childrenIDs.append(itemToMove.documentID)
+                }
+                
+                
+                // Update all siblings
+                traverseSiblingsAndChangeHierarchy(nodeIndex: destinationIndexPath.row, hierarchyLevel: newHierarchyPositon)
+                // Now sort all nodes based on results
+                guard let home = portkiNodes.first(where: {$0.nodeType == "Home"}) else {
+                    print("ERROR: There was a problem finding the 'Home' node after a cell move")
+                    return
+                }
+                newNodes = []
+                if portkiNodes.count > 1 { // more than just home, so sort
+                    sortNodes(node: home)
+                    portkiNodes = self.newNodes
+                }
+                self.tableView.reloadData()
+            }
+            
+            // if the node above destination position is a button
+            if portkiNodes[destinationIndexPath.row-1].nodeType == "Button" {
+                // moved screen's parent is that button
+                
+            }
+                // moved screen's parent is that button
+                // insert it as the first element in the button's (parent's) childrenIDs array
+            
+            // then move all children of the moved node
+            // then remove the moved node from any childrenID lists of its previous parent
+            
+        }
+        
+//        // First make a copy of the item that you are going to move
+//        let itemToMove = portkiNodes[sourceIndexPath.row]
+//        // Delete item from the original location (pre-move)
+//        portkiNodes.remove(at: sourceIndexPath.row)
+//        // Insert item into the "to", post-move, location
+//        portkiNodes.insert(itemToMove, at: destinationIndexPath.row)
+    }
+    
+//    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+//        // if row is a button and button's parent is home, and next button up is home, then deselect up
+//        // if row is a screen
+//    }
     
     //MARK:- tableView methods to freeze the Home cell (first cell in array
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
