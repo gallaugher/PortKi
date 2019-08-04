@@ -14,6 +14,8 @@ import AWSS3
 
 class ScreenListViewController: UIViewController {
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var editBarButton: UIBarButtonItem!
+    @IBOutlet weak var updatePyPortalButton: UIBarButtonItem!
     
     // used simply to calculate button properties to be used in PyPortal via portkiScreens converted to JSON
     @IBOutlet var screenView: UIView!
@@ -81,9 +83,10 @@ class ScreenListViewController: UIViewController {
     }
     
     func loadPortkiNodes() {
-        let filename = getDocumentsDirectory().appendingPathComponent("portkiNodes.json")
+        let fileName = "portkiNodes.json"
+        let fileURL = getDocumentsDirectory().appendingPathComponent("portkiNodes.json")
         do {
-            let data = try Data(contentsOf: filename)
+            let data = try Data(contentsOf: fileURL)
             let json = JSON(data)
             let decoder = JSONDecoder()
             let jsonString = json["value"].stringValue
@@ -94,7 +97,7 @@ class ScreenListViewController: UIViewController {
                 print(error.localizedDescription)
             }
         } catch {
-            print("😡 Couldn't get json from file: error:\(error)")
+            print("😡 Couldn't get json from file \(fileName): error:\(error)")
         }
     }
     
@@ -351,6 +354,19 @@ class ScreenListViewController: UIViewController {
             print("encoding didn't work")
         }
     }
+    
+    @IBAction func editBarButtonPressed(_ sender: UIBarButtonItem) {
+        if tableView.isEditing {
+            tableView.setEditing(false, animated: true)
+            updatePyPortalButton.isEnabled = true
+            editBarButton.title = "Edit"
+        } else {
+            tableView.setEditing(true, animated: true)
+            updatePyPortalButton.isEnabled = false
+            editBarButton.title = "Done"
+        }
+        tableView.reloadData()
+    }
 }
 
 // NOTE: This is where I write files to Google Drive
@@ -399,6 +415,13 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
             let cell = tableView.dequeueReusableCell(withIdentifier: "HomeCell", for: indexPath) as! HomeTableViewCell
             cell.delegate = self
             cell.indexPath = indexPath
+            if tableView.isEditing {
+                cell.plusButton.isEnabled = false
+                cell.disclosureButton.isEnabled = false
+            } else {
+                cell.plusButton.isEnabled = true
+                cell.disclosureButton.isEnabled = true
+            }
             return cell
         case "Button":
             let cell = tableView.dequeueReusableCell(withIdentifier: "ButtonCell", for: indexPath) as! ButtonTableViewCell
@@ -412,6 +435,7 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
             UIView.animate(withDuration: 0.5, animations: {cell.indentView.frame = newRect})
             // cell.button.setTitle(elements.elementArray[indexPath.row].elementName, for: .normal)
             cell.button.setTitle(portkiNodes[indexPath.row].nodeName, for: .normal)
+            cell.plusButton.isEnabled = tableView.isEditing ? false : true
             return cell
         case "Screen":
             let cell = tableView.dequeueReusableCell(withIdentifier: "ScreenCell", for: indexPath) as! ScreenTableViewCell
@@ -430,11 +454,139 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
                     cell.screenIcon.image = UIImage(named:  "singleScreen")
                 }
             }
+            if tableView.isEditing {
+                cell.plusButton.isEnabled = false
+                cell.disclosureButton.isEnabled = false
+            } else {
+                cell.plusButton.isEnabled = true
+                cell.disclosureButton.isEnabled = true
+            }
             return cell
         default:
             print("*** ERROR: cellForRowAt had incorrect case.")
             return UITableViewCell()
         }
+    }
+    
+    func deleteFileFromCloud(fileName: String) {
+        let credentialsProvider = AWSCognitoCredentialsProvider(regionType:.USEast1,
+                                                                identityPoolId:"us-east-1:93b4d97e-1aaa-43a3-99f3-ae183b5a8b86")
+        guard let configuration = AWSServiceConfiguration(region:.USEast1, credentialsProvider:credentialsProvider) else {
+            print("😡 ERROR: Could not initialize AWSServiceConfiguration in deleteFileFromCloud")
+            return
+        }
+        AWSServiceManager.default().defaultServiceConfiguration = configuration
+        
+        AWSS3.register(with: configuration, forKey: "defaultKey")
+        let s3 = AWSS3.s3(forKey: "defaultKey")
+        let deleteObjectRequest = AWSS3DeleteObjectRequest()
+        deleteObjectRequest?.bucket = awsBucketName
+        deleteObjectRequest?.key = fileName
+        s3.deleteObject(deleteObjectRequest!).continueWith { (task:AWSTask) -> AnyObject? in
+            if let error = task.error {
+                print("Error occurred: \(error)")
+                return nil
+            }
+            print("AWS file named \(fileName) deleted successfully.")
+            return nil
+        }
+    }
+    
+    func deleteFileOnDevice(fileName: String) {
+        let imageType = "jpeg"
+        let fileURL = getDocumentsDirectory().appendingPathComponent("\(fileName).\(imageType)")
+        do {
+            let fileManager = FileManager.default
+            try fileManager.removeItem(at: fileURL)
+            print("Successfully deleted file named \(fileName) from iOS device")
+        } catch {
+            print("ERROR: Couldn't remove file named \(fileName) on iOS device")
+        }
+    }
+    
+    func deleteNodesFromTable(selectedIndex: Int) {
+        print("** selectedIndex = \(selectedIndex)")
+        print("** portkiNodes[selectedIndex] = \(portkiNodes[selectedIndex])")
+        if portkiNodes[selectedIndex].childrenIDs.count > 0 {
+            for childID in portkiNodes[selectedIndex].childrenIDs { // loop through all children
+                if let childIndex = portkiNodes.firstIndex(where: {$0.documentID == childID}) {
+                    print("   calling deleteNodesFromTable for index: \(childIndex) and documentID \(portkiNodes[childIndex].documentID)")
+                    deleteNodesFromTable(selectedIndex: childIndex ) // and sort its children, if any
+                }
+            }
+        }
+        // First remove the element from its parent's array of childrenIDs
+        // First find the parent's index
+        if let parentIndex = portkiNodes.firstIndex(where: {$0.documentID == portkiNodes[selectedIndex].parentID}) {
+            // then find the child's ID in the parent's index & remove that element.
+            if let childIndex = portkiNodes[parentIndex].childrenIDs.firstIndex(where: {$0 == portkiNodes[selectedIndex].documentID}) {
+                // remove value here
+                let fileName = portkiNodes[parentIndex].childrenIDs[childIndex]
+                print("** I am deleting a node named \(fileName)")
+                portkiNodes[parentIndex].childrenIDs.remove(at: childIndex)
+            } else {
+                print("😡 ERROR: Couldn't find the index of child in it's parent's .childrenIDs. This should not have happened. YOU SHOULD NEVER SEE THIS MESSAGE.")
+            }
+        }
+        // then remove the element itself:
+        var fileName = portkiNodes[selectedIndex].documentID
+        print("** I am deleting a node named \(fileName)")
+        portkiNodes.remove(at: selectedIndex)
+        deleteFileFromCloud(fileName: fileName+".jpeg")
+        deleteFileOnDevice(fileName: fileName+".jpeg")
+        if fileName.hasSuffix(".jpeg") {
+            deleteFileOnDevice(fileName: fileName+".json")
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        print("Nodes Before Delete")
+        print(portkiNodes)
+        print("")
+        if editingStyle == .delete {
+            // if it's a screen
+            if portkiNodes[indexPath.row].nodeType == "Screen" {
+                // find it's parent
+                if let parentIndex = portkiNodes.firstIndex(where: {$0.documentID == portkiNodes[indexPath.row].parentID}) {
+                    // if its parent has only one child, then it must be a button that would have no children after deleting selected child, so delete starting with the parent's index
+                    if portkiNodes[parentIndex].childrenIDs.count == 1 {
+                        deleteNodesFromTable(selectedIndex: parentIndex)
+                    } else {
+                        deleteNodesFromTable(selectedIndex: indexPath.row)
+                    }
+                } else {
+                    print("😡 ERROR: Couldn't find the index of $0.documentIDs parent. This should not have happened. YOU SHOULD NEVER SEE THIS MESSAGE.")
+                }
+            } else {
+                // start deleting from selected index.
+                deleteNodesFromTable(selectedIndex: indexPath.row)
+            }
+            tableView.reloadData()
+            print("Nodes AFTER Delete")
+            print(portkiNodes)
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
+        // First make a copy of the item that you are going to move
+        let itemToMove = portkiNodes[sourceIndexPath.row]
+        // Delete item from the original location (pre-move)
+        portkiNodes.remove(at: sourceIndexPath.row)
+        // Insert item into the "to", post-move, location
+        portkiNodes.insert(itemToMove, at: destinationIndexPath.row)
+    }
+    
+    //MARK:- tableView methods to freeze the Home cell (first cell in array
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return (indexPath.row != 0 ? true : false)
+    }
+    
+    func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
+        return (indexPath.row != 0 ? true : false)
+    }
+    
+    func tableView(_ tableView: UITableView, targetIndexPathForMoveFromRowAt sourceIndexPath: IndexPath, toProposedIndexPath proposedDestinationIndexPath: IndexPath) -> IndexPath {
+        return (proposedDestinationIndexPath.row == 0 ? sourceIndexPath : proposedDestinationIndexPath)
     }
 }
 

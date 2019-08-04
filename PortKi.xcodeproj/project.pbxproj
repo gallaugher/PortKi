@@ -25,7 +25,6 @@
 		3E4E3A81229342AE0078DB45 /* UITextField+Characters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4E3A80229342AE0078DB45 /* UITextField+Characters.swift */; };
 		3E4E3A83229345D60078DB45 /* UITextField+limitLength.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4E3A82229345D60078DB45 /* UITextField+limitLength.swift */; };
 		3E54ACEA22F494A600A6159F /* AboutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E54ACE922F494A600A6159F /* AboutViewController.swift */; };
-		3E54ACED22F5DE0500A6159F /* portki-please-wait.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 3E54ACEC22F5DE0500A6159F /* portki-please-wait.bmp */; };
 		3E8242B722EE2EA70051313D /* FileManager+URLs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8242B622EE2EA70051313D /* FileManager+URLs.swift */; };
 		3E8242B922EE40550051313D /* String+removeEverythingAfter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8242B822EE40550051313D /* String+removeEverythingAfter.swift */; };
 		3E8242BB22EF14F20051313D /* new.json in Resources */ = {isa = PBXBuildFile; fileRef = 3E8242BA22EF14F20051313D /* new.json */; };
@@ -267,7 +266,6 @@
 				3E11E3B8228B8436001599ED /* Assets.xcassets in Resources */,
 				3E318C6D22EB697200C2EBCA /* client_109572691793-mu2g9fkm3427f6343sacff688t8fkn60.apps.googleusercontent.com.plist in Resources */,
 				3E85BF9322DCD09A00943D81 /* code.py in Resources */,
-				3E54ACED22F5DE0500A6159F /* portki-please-wait.bmp in Resources */,
 				3E11E3B6228B8435001599ED /* Main.storyboard in Resources */,
 				3E480CE622D6C0510084AF63 /* portki.json in Resources */,
 			);

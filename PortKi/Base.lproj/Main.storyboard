@@ -110,7 +110,7 @@ Learn to build apps:    gallaugher.com/swift
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="SoN-6c-qB6">
-                                <rect key="frame" x="0.0" y="64" width="320" height="504"/>
+                                <rect key="frame" x="0.0" y="64" width="320" height="460"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="HomeCell" id="aSq-sb-Ygk" customClass="HomeTableViewCell" customModule="PortKi" customModuleProvider="target">
@@ -208,6 +208,7 @@ Learn to build apps:    gallaugher.com/swift
                                         <connections>
                                             <outlet property="button" destination="i82-bU-FME" id="XBA-GY-mNy"/>
                                             <outlet property="indentView" destination="gTg-aH-9I1" id="xam-kD-9vm"/>
+                                            <outlet property="plusButton" destination="Jdd-ez-Rdb" id="aAV-Tb-Tax"/>
                                         </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="ScreenCell" id="bGc-eZ-CN0" customClass="ScreenTableViewCell" customModule="PortKi" customModuleProvider="target">
@@ -280,10 +281,17 @@ Learn to build apps:    gallaugher.com/swift
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
-                    <navigationItem key="navigationItem" id="V29-kW-AqF">
-                        <barButtonItem key="leftBarButtonItem" title="About..." id="vUK-ev-bdI">
+                    <toolbarItems>
+                        <barButtonItem title="About..." id="vUK-ev-bdI">
                             <connections>
                                 <segue destination="1Ai-gg-eTC" kind="presentation" identifier="About" id="6bd-at-xET"/>
+                            </connections>
+                        </barButtonItem>
+                    </toolbarItems>
+                    <navigationItem key="navigationItem" id="V29-kW-AqF">
+                        <barButtonItem key="leftBarButtonItem" title="Edit" id="aBd-KF-DvA">
+                            <connections>
+                                <action selector="editBarButtonPressed:" destination="BYZ-38-t0r" id="fW1-EV-By8"/>
                             </connections>
                         </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" title="Update PyPortal" id="Wfx-Nw-ciT">
@@ -292,8 +300,11 @@ Learn to build apps:    gallaugher.com/swift
                             </connections>
                         </barButtonItem>
                     </navigationItem>
+                    <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
+                        <outlet property="editBarButton" destination="aBd-KF-DvA" id="Tiy-8R-SaL"/>
                         <outlet property="tableView" destination="SoN-6c-qB6" id="HaJ-Ti-sn6"/>
+                        <outlet property="updatePyPortalButton" destination="Wfx-Nw-ciT" id="SNE-0k-VDN"/>
                         <segue destination="XFc-0a-KgH" kind="presentation" identifier="AddScreen" id="fAN-zW-Xhd"/>
                         <segue destination="be5-Hg-lTQ" kind="show" identifier="ShowScreen" id="RiB-qh-Wj0"/>
                     </connections>
@@ -311,7 +322,7 @@ Learn to build apps:    gallaugher.com/swift
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="Yuo-YA-4k8">
-                                <rect key="frame" x="0.0" y="64" width="320" height="504"/>
+                                <rect key="frame" x="0.0" y="64" width="320" height="460"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="Cell" rowHeight="102" id="g8Y-zg-JdP" customClass="CheckmarkTableViewCell" customModule="PortKi" customModuleProvider="target">
@@ -375,7 +386,7 @@ Learn to build apps:    gallaugher.com/swift
         <!--Navigation Controller-->
         <scene sceneID="bZW-Y4-1ZY">
             <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="UqF-NZ-pM7" sceneMemberID="viewController">
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" toolbarHidden="NO" id="UqF-NZ-pM7" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="TMN-kz-VNX">
                         <rect key="frame" x="0.0" y="20" width="320" height="44"/>
