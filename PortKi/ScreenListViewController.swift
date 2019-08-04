@@ -16,8 +16,6 @@ class ScreenListViewController: UIViewController {
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var editBarButton: UIBarButtonItem!
     @IBOutlet weak var updatePyPortalButton: UIBarButtonItem!
-    @IBOutlet weak var upButton: UIBarButtonItem!
-    @IBOutlet weak var downButton: UIBarButtonItem!
     
     // used simply to calculate button properties to be used in PyPortal via portkiScreens converted to JSON
     @IBOutlet var screenView: UIView!
@@ -36,8 +34,6 @@ class ScreenListViewController: UIViewController {
         
         tableView.delegate = self
         tableView.dataSource = self
-        upButton.isEnabled = false
-        downButton.isEnabled = false
         
         loadPortkiScreens()
         loadPortkiNodes()
@@ -436,7 +432,8 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
             // let indentAmount = CGFloat(elements.elementArray[indexPath.row].hierarchyLevel*indentBase)
             let indentAmount = CGFloat(portkiNodes[indexPath.row].hierarchyLevel*indentBase)
             newRect = CGRect(x: indentAmount, y: newRect.origin.y, width: newRect.width, height: newRect.height)
-            UIView.animate(withDuration: 0.5, animations: {cell.indentView.frame = newRect})
+            // UIView.animate(withDuration: 0.5, animations: {cell.indentView.frame = newRect})
+            cell.indentView.frame = newRect
             // cell.button.setTitle(elements.elementArray[indexPath.row].elementName, for: .normal)
             cell.button.setTitle(portkiNodes[indexPath.row].nodeName, for: .normal)
             cell.plusButton.isEnabled = tableView.isEditing ? false : true
@@ -449,7 +446,8 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
             // now change x value & reassign to indentview
             let indentAmount = CGFloat(portkiNodes[indexPath.row].hierarchyLevel*indentBase)
             newRect = CGRect(x: indentAmount, y: newRect.origin.y, width: newRect.width, height: newRect.height)
-            UIView.animate(withDuration: 0.5, animations: {cell.indentView.frame = newRect})
+            // UIView.animate(withDuration: 0.5, animations: {cell.indentView.frame = newRect})
+            cell.indentView.frame = newRect
             let parentIndex = portkiNodes.firstIndex(where: {$0.documentID == portkiNodes[indexPath.row].parentID})
             if let parentIndex = parentIndex {
                 if portkiNodes[parentIndex].childrenIDs.count > 1 {
@@ -589,16 +587,14 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-        
+        // TODO: This needs some significant refactoring.
         let cellType = portkiNodes[sourceIndexPath.row].nodeType
         if cellType == "Screen" {
-            // it cannot be inserted below the "Home" screen
-            
-
-            // find parent of nodeToCopy (oldParent)
-            // delete remove nodeToCopy from oldParent's childrenIDs
-            // find newParent of nodeAfterMove - it should be the same as the node above it
-            // find the newParent's childrenIDs and insert the nodeToCopy in the parent's childrenIDs after the node above the nodeAfterMove
+            // TODO: Make sure it can't be inserted below Home
+            guard portkiNodes[destinationIndexPath.row - 1].nodeType != "Home" else {
+                print("Can't put a screen directly under Home. Not sure how to change the rows on the fly.")
+                return
+            }
             
             // First make a copy of the item that you are going to move
             let itemToMove = portkiNodes[sourceIndexPath.row]
@@ -619,22 +615,114 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
                 return
             }
             portkiNodes[oldParentIndex].childrenIDs.remove(at: movedChildIndex)
-            // Find parent of the screen above moved item's current location
-            let siblingAboveMovedItem = portkiNodes[destinationIndexPath.row-1].documentID
-            let newParentId = portkiNodes[destinationIndexPath.row-1].parentID
-            guard let newParentIndex = portkiNodes.firstIndex(where: {$0.documentID == newParentId}) else {
-                print("😡 ERROR: Couldn't find newParentIndex for parent \(newParentId). This shouldn't have happened. Please investigate.")
-                return
-            }
-            guard let siblingAboveIndex = portkiNodes[newParentIndex].childrenIDs.firstIndex(where: {$0 == siblingAboveMovedItem}) else {
-                print("😡 ERROR: Couldn't find screen above insertion point for screenID \(siblingAboveMovedItem) in childrenIDs of parent \(newParentId). This shouldn't have happened. Please investigate.")
-                return
-            }
-            portkiNodes[newParentIndex].childrenIDs.insert(itemToMove.documentID, at: siblingAboveIndex+1)
             
-            portkiNodes[destinationIndexPath.row].parentID = portkiNodes[newParentIndex].documentID
-            // after move, node moved should have the same hierarchy level as the screen above it.
-            portkiNodes[destinationIndexPath.row].hierarchyLevel = portkiNodes[destinationIndexPath.row-1].hierarchyLevel
+            // Check the node above the movedScreen's new location.
+            // If it's also a screen
+            if portkiNodes[destinationIndexPath.row-1].nodeType == "Screen" {
+                // Find parent of the screen above moved item's current location
+                let siblingAboveMovedItem = portkiNodes[destinationIndexPath.row-1].documentID
+                let newParentId = portkiNodes[destinationIndexPath.row-1].parentID
+                guard let newParentIndex = portkiNodes.firstIndex(where: {$0.documentID == newParentId}) else {
+                    print("😡 ERROR: Couldn't find newParentIndex for parent \(newParentId). This shouldn't have happened. Please investigate.")
+                    return
+                }
+                guard let siblingAboveIndex = portkiNodes[newParentIndex].childrenIDs.firstIndex(where: {$0 == siblingAboveMovedItem}) else {
+                    print("😡 ERROR: Couldn't find screen above insertion point for screenID \(siblingAboveMovedItem) in childrenIDs of parent \(newParentId). This shouldn't have happened. Please investigate.")
+                    return
+                }
+                portkiNodes[newParentIndex].childrenIDs.insert(itemToMove.documentID, at: siblingAboveIndex+1)
+                
+                portkiNodes[destinationIndexPath.row].parentID = portkiNodes[newParentIndex].documentID
+                // after move, node moved should have the same hierarchy level as the screen above it.
+                portkiNodes[destinationIndexPath.row].hierarchyLevel = portkiNodes[destinationIndexPath.row-1].hierarchyLevel
+                traverseSiblingsAndChangeHierarchy(nodeIndex: destinationIndexPath.row, hierarchyLevel: portkiNodes[destinationIndexPath.row].hierarchyLevel)
+            } else if portkiNodes[destinationIndexPath.row-1].nodeType == "Button" {
+                // otherwise, if the node above the screen's new destination is a button
+                // Set the button as the current parent
+                // Insert the moved node's ID as the first node in the parent button's childrenIDs
+                portkiNodes[destinationIndexPath.row].parentID = portkiNodes[destinationIndexPath.row-1].documentID
+                portkiNodes[destinationIndexPath.row-1].childrenIDs.insert(portkiNodes[destinationIndexPath.row].documentID, at: 0)
+                portkiNodes[destinationIndexPath.row].hierarchyLevel = portkiNodes[destinationIndexPath.row-1].hierarchyLevel + 1
+                traverseSiblingsAndChangeHierarchy(nodeIndex: destinationIndexPath.row, hierarchyLevel: portkiNodes[destinationIndexPath.row].hierarchyLevel)
+            }
+        } else if cellType == "Button" {
+            // get the node for the button that is the itemToMove
+            var itemToMove = portkiNodes[sourceIndexPath.row]
+            // Remove the reference of the itemToMoved from it's old parent's childrenIDs
+            let oldParent = itemToMove.parentID
+            let foundOldParentIndex = portkiNodes.firstIndex(where: {$0.documentID == oldParent})
+            guard let oldParentIndex = foundOldParentIndex else {
+                print("😡 ERROR: Couldn't find oldParentIndex for parentID \(oldParent). This shouldn't have happened. Please investigate.")
+                return
+            }
+            // remove movedItem from the oldParent's childrenIDs
+            guard let movedChildIndex = portkiNodes[oldParentIndex].childrenIDs.firstIndex(where: {$0 == itemToMove.documentID}) else {
+                print("😡 ERROR: Couldn't find moved item \(itemToMove.documentID) in childrenIDs for parent \(oldParent). This shouldn't have happened. Please investigate.")
+                return
+            }
+            portkiNodes[oldParentIndex].childrenIDs.remove(at: movedChildIndex)
+            
+            // if the item above the destination is a "Button", as well...
+            if portkiNodes[destinationIndexPath.row-1].nodeType == "Button" {
+                // find the parent of the button above the button being moved
+                let newButtonParentId = portkiNodes[destinationIndexPath.row-1].parentID
+                // set movedButton's parent to the new parent
+                itemToMove.parentID = newButtonParentId
+                guard let newParentIndex = portkiNodes.firstIndex(where: {$0.documentID == newButtonParentId}) else {
+                    print("😡 ERROR: Couldn't find index for button's parent button that has a documentID = \(newButtonParentId). This shouldn't have happened. Please investigate.")
+                    return
+                }
+                // Look inside the parent's childrenID and find the index for the button above the button being moved.
+                guard let childIndexOfButtonAboveMovedButton = portkiNodes[newParentIndex].childrenIDs.firstIndex(where: {$0 == portkiNodes[destinationIndexPath.row-1].documentID}) else {
+                    print("😡 ERROR: Couldn't find button above moved button's documentID in their shared parent's childrenIDs. Button above moved button had ID = \(portkiNodes[destinationIndexPath.row-1].documentID). This shouldn't have happened. Please investigate.")
+                    return
+                }
+                // insert the documentID of the button being moved in its parents childrenIDs, just after the index for the button that's above the button being moved.
+                portkiNodes[newParentIndex].childrenIDs.insert(itemToMove.documentID, at: childIndexOfButtonAboveMovedButton + 1)
+                // set movedButton's new heierarchy to 1 + the hierarchy of its parent
+                itemToMove.hierarchyLevel = portkiNodes[newParentIndex].hierarchyLevel + 1
+                // Now move nodes
+                // Delete item from the original location (pre-move)
+                portkiNodes.remove(at: sourceIndexPath.row)
+                // Insert item into the "to", post-move, location
+                portkiNodes.insert(itemToMove, at: destinationIndexPath.row)
+                // at some point, move the button & it's siblings
+                // If this doesn't work, then I may have to find the outtermost offspring of the button above it, and insert the moved button after it.
+                
+                // tranverseSiblingsAndChangeHierarchy for new moved button's index and its new hierarchy
+                traverseSiblingsAndChangeHierarchy(nodeIndex: destinationIndexPath.row, hierarchyLevel: portkiNodes[destinationIndexPath.row].hierarchyLevel)
+            } else if portkiNodes[destinationIndexPath.row-1].nodeType == "Screen" {
+                // if the item above the newly moved button is a screen,
+                // the screen should become the button's parent.
+                itemToMove.parentID = portkiNodes[destinationIndexPath.row-1].documentID
+                // add button as the first in the screen above's childrenIDs
+                portkiNodes[destinationIndexPath.row-1].childrenIDs.insert(itemToMove.documentID, at: 0)
+                // set movedButton's new heierarchy to 1+ the hierarchy of its parent
+                itemToMove.hierarchyLevel = portkiNodes[destinationIndexPath.row-1].hierarchyLevel + 1
+                // Now move nodes
+                // Delete item from the original location (pre-move)
+                portkiNodes.remove(at: sourceIndexPath.row)
+                // Insert item into the "to", post-move, location
+                portkiNodes.insert(itemToMove, at: destinationIndexPath.row)
+                // tranverseSiblingsAndChangeHierarchy for new moved button's index and its new hierarchy
+                traverseSiblingsAndChangeHierarchy(nodeIndex: destinationIndexPath.row, hierarchyLevel: portkiNodes[destinationIndexPath.row].hierarchyLevel)
+            } else if portkiNodes[destinationIndexPath.row-1].nodeType == "Home" { // should be the only other option
+                // get the node for the button that is the itemToMove
+                var itemToMove = portkiNodes[sourceIndexPath.row]
+                // add item to move's .documentID as the first element in Home's childrenIDs
+                portkiNodes[destinationIndexPath.row-1].childrenIDs.insert(itemToMove.documentID, at: 0)
+                // et movedButton's parent as the node above it
+                itemToMove.parentID = portkiNodes[destinationIndexPath.row-1].documentID
+                // set movedButton's new heierarchy to 1+ the hierarchy of its parent
+                itemToMove.hierarchyLevel = portkiNodes[destinationIndexPath.row - 1].hierarchyLevel + 1
+                // Now move nodes
+                // Delete item from the original location (pre-move)
+                portkiNodes.remove(at: sourceIndexPath.row)
+                // Insert item into the "to", post-move, location
+                portkiNodes.insert(itemToMove, at: destinationIndexPath.row)
+                // tranverseSiblingsAndChangeHierarchy for new moved button's index and its new hierarchy
+                traverseSiblingsAndChangeHierarchy(nodeIndex: destinationIndexPath.row, hierarchyLevel: portkiNodes[destinationIndexPath.row].hierarchyLevel)
+            }
         }
         // Now sort nodes based on the move
         guard let home = portkiNodes.first(where: {$0.nodeType == "Home"}) else {
@@ -649,11 +737,6 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
         self.tableView.reloadData()
     }
     
-//    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//        // if row is a button and button's parent is home, and next button up is home, then deselect up
-//        // if row is a screen
-//    }
-    
     //MARK:- tableView methods to freeze the Home cell (first cell in array
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return (indexPath.row != 0 ? true : false)
@@ -662,6 +745,8 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
         return (indexPath.row != 0 ? true : false)
     }
+    
+
     
     func tableView(_ tableView: UITableView, targetIndexPathForMoveFromRowAt sourceIndexPath: IndexPath, toProposedIndexPath proposedDestinationIndexPath: IndexPath) -> IndexPath {
         return (proposedDestinationIndexPath.row == 0 ? sourceIndexPath : proposedDestinationIndexPath)

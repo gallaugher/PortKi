@@ -19,6 +19,7 @@ from adafruit_pyportal import PyPortal
 import storage
 import adafruit_sdcard
 import os
+# import subprocess
 import digitalio
 import busio
 
@@ -29,7 +30,12 @@ DIRECTORY_NAME = "portki-files"
 DIRECTORY = "/"+DIRECTORY_NAME+"/"
 
 try:
-    result = os.rmdir("/"+DIRECTORY_NAME)
+    result = os.mkdir("/"+DIRECTORY_NAME)
+except OSError:
+    print("Directory portki-files already exists - no need to make a new one")
+
+try:
+    #    result = os.rmdir("/"+DIRECTORY_NAME)
     print("Contents of", DIRECTORY, "are:")
     directory_files = os.listdir("portki-files")
     for file in directory_files:
@@ -39,10 +45,6 @@ except OSError as e:
     print("Error:", OSError, e)
     print("No directory named:", DIRECTORY_NAME, " Will try to create one.")
 
-try:
-    result = os.mkdir("/"+DIRECTORY_NAME)
-except OSError:
-    print("Directory portki-files already exists - no need to make a new one")
 
 
 """
