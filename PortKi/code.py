@@ -10,6 +10,12 @@
 # Comments? Find me at twitter: @gallaugher
 # Projects & tutorials at: YouTube: bit.ly/GallaugherYouTube
 # and the web: gallaugher.com
+#
+# Also note, the code below has a bunch of print statements that are
+# commented out. These are useful for debugging, and to help new users
+# understand what's happening in the code. Removing the hashtags will
+# print results to the PyPortal's Serial console in Mu, when the PyPortal
+# is plugged into the same machine running Mu.
 
 import time
 import json
@@ -19,9 +25,20 @@ from adafruit_pyportal import PyPortal
 import storage
 import adafruit_sdcard
 import os
-# import subprocess
 import digitalio
 import busio
+import terminalio
+from adafruit_display_text import label
+from adafruit_bitmap_font import bitmap_font
+
+# Prints version info to the Serial console
+version_info = os.uname()
+print(version_info)
+
+# To use this, the user will need to update the URL below with their
+# own adafruit.io account. It's free!
+#
+DATA_SOURCE = "https://io.adafruit.com/api/v2/gallaugher/feeds/portki/data/"
 
 # code currently removes the portki-files directory & its contents when
 # rebooted. At some point I may want to only remove updated files, but this works.
@@ -29,35 +46,41 @@ import busio
 DIRECTORY_NAME = "portki-files"
 DIRECTORY = "/"+DIRECTORY_NAME+"/"
 
+# If this is a new PyPortal there won't be a portki-files directory
+# so if one isn't found, make one
 try:
     result = os.mkdir("/"+DIRECTORY_NAME)
 except OSError:
-    print("Directory portki-files already exists - no need to make a new one")
+    print("Directory DIRECTORY_NAME already exists - no need to make a new one")
 
+# Each re-boot deletes any files in DIRECTORY_NAME so the freshest contents
+# is downloaded
 try:
-    #    result = os.rmdir("/"+DIRECTORY_NAME)
     print("Contents of", DIRECTORY, "are:")
-    directory_files = os.listdir("portki-files")
+    directory_files = os.listdir(DIRECTORY)
     for file in directory_files:
         print(file)
         os.remove(DIRECTORY+file)
 except OSError as e:
     print("Error:", OSError, e)
-    print("No directory named:", DIRECTORY_NAME, " Will try to create one.")
 
+free_space = os.statvfs("/")[3]
+message = "** freespace AFTER deleting files: " + str(free_space) + "KB"
+print(message)
 
-
-"""
-    tag = subprocess.run('mkdir /portki-files/', shell=True)
-    print(tag)
-    """
-
-DATA_SOURCE = "https://io.adafruit.com/api/v2/gallaugher/feeds/portki/data/"
+# If look in a web browser at json returned from the DATA_SOURCE url,
+# you'll see json can be found inside a list value "[" after the key
+# named "value"
 DATA_LOCATION = [0, "value"]
-
+# Get data from adafruit.io and also display the please wait screen,
+# which should be copied to the PyPortal's default directory
 pyportal = PyPortal(url=DATA_SOURCE,
                     json_path=DATA_LOCATION,
                     default_bg="portki-please-wait.bmp",)
+
+print(message)
+# display_message(message)
+# pyportal.set_text("Hello there!", 0)
 
 p_list = [] # holds points indicating where a press occurred
 # These pins are used as both analog and digital! XL, XR and YU must be analog
@@ -80,6 +103,20 @@ class Screen:
         self.pageID = pageID
         self.buttons = buttons
         self.screenURL = screenURL
+
+def display_message(message):
+    display = board.DISPLAY
+    # Set text, font, and color
+    text = "HELLO WORLD"
+    font = terminalio.FONT
+    color = 0x0000FF
+    # Create the tet label
+    text_area = label.Label(font, text=message, color=0x00FF00)
+    # Set the location
+    text_area.x = 20
+    text_area.y = 40
+    # Show it
+    display.show(text_area)
 
 def read_json_into_screens():
     for i in range(len(screens_list)):
@@ -113,15 +150,6 @@ def read_json_into_screens():
     print("  Button", index, "has coordinates:", screen.buttons[index].x, screen.buttons[index].y, screen.buttons[index].width, screen.buttons[index].height)
     """
 
-def flush(self):
-    """Writes changes to flash"""
-        if self.dirty:
-            with open(self.filename, "wt") as file:
-                file.write(json.dumps(self.data))
-                file.flush()
-            os.sync()
-            self.dirty = False
-
 try:
     response = pyportal.fetch()
     """
@@ -137,28 +165,58 @@ try:
         print(convertedJson[0]["pageID"])
         """
     screens_json = convertedJson
-    
     screens_list = screens_json
-    print("There are", len(screens_list), "screens in this kiosk.")
+    # print("There are", len(screens_list), "screens in this kiosk.")
     screens = []
-
 except RuntimeError as e:
     print("<><><><> SOME ERROR OCCURRED! -", e)
+
+"""
+    # Stuff below shows green text on black background but won't clear for subsequent .set_background() calls.
+    display = board.DISPLAY
+    # Set text, font, and color
+    text = "HELLO WORLD"
+    font = terminalio.FONT
+    color = 0x0000FF
+    # Create the tet label
+    text_area = label.Label(font, text=message, color=0x00FF00)
+    # Set the location
+    text_area.x = 20
+    text_area.y = 20
+    # Show it
+    display.show(text_area)
+    """
 
 read_json_into_screens()
 current_pageID = "Home"
 
+screen_count = 0
 for screen in screens:
     image_url = screen.screenURL
     fileName = screen.pageID+".bmp"
     # print("image_url =", image_url)
     # print("screen.screenURL =", screen.screenURL)
     # print("Saving at:", DIRECTORY+fileName)
-    try:
-        pyportal.wget(pyportal.image_converter_url(image_url,320, 240,color_depth=16), DIRECTORY+fileName, chunk_size=12000)
-    except OSError as e:
-        print("<><><><> SOME ERROR OCCURRED! -", OSError, e)
-        print("Please restart PyPortal by pressing the Reset button on the back of the device")
+    
+    # free_space will be KB free. Each images is 151KB
+    free_space = os.statvfs("/")[3]
+    print("Downloading screen #", screen_count)
+    print("There is", free_space, "KB storage left in the PyPortal")
+    if free_space < 250:
+        print("*** You've run out of free space.")
+        print("*** Your PyPortal only has space for", screen_count, "screens.")
+        break
+    else:
+        try:
+            screen_count = screen_count + 1
+            pyportal.wget(pyportal.image_converter_url(image_url,320, 240,color_depth=16), DIRECTORY+fileName, chunk_size=12000)
+        except OSError as e:
+            print("<><><><> SOME ERROR OCCURRED! -", OSError, e)
+            print("Please restart PyPortal by pressing the Reset button on the back of the device")
+        except RuntimeError as e:
+            print("<><><><> SOME ERROR OCCURRED! -", e)
+            print("Retrying last wget")
+            pyportal.wget(pyportal.image_converter_url(image_url,320, 240,color_depth=16), DIRECTORY+fileName, chunk_size=12000)
 
 print("Setting background to:", DIRECTORY+"Home.bmp")
 pyportal.set_background(DIRECTORY+"Home.bmp")
