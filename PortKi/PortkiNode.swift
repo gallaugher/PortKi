@@ -17,6 +17,7 @@ struct PortkiNode: Codable {
     var hierarchyLevel: Int // level indented, 0 for home, 1 for first buttons + pages, etc...
     var childrenIDs: [String] // IDs of elements this leads to - screens to buttons, buttons to screens.
     var backgroundImageUUID: String // assume no image at first
+    var needsUpdate = false // turn true of screen needs to be opened and saved
     var documentID: String
     
     init(nodeName: String, nodeType: String, parentID: String, hierarchyLevel: Int, childrenIDs: [String], backgroundImageUUID: String, documentID: String) {

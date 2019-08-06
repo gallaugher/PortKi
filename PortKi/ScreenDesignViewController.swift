@@ -637,6 +637,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
             destination.delegate = self
             destination.selectedFont = fieldCollection[selectedTextBlockIndex].font
         case "UwindFromScreenDesign":
+            portkiNode.needsUpdate = false
             print("just lettin' you know I'm unwinding from screen design")
         default:
             print("😡 ERROR: unexpectedly hit the default case in ScreenDesignViewController's prepareForSegue")

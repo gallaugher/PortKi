@@ -407,6 +407,8 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
         return portkiNodes.count
     }
     
+    
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         // Element could be home, a button, or a screen
         
@@ -422,6 +424,7 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
                 cell.plusButton.isEnabled = true
                 cell.disclosureButton.isEnabled = true
             }
+            cell.backgroundColor = (portkiNodes[indexPath.row].needsUpdate ? .lightGray : .clear)
             return cell
         case "Button":
             let cell = tableView.dequeueReusableCell(withIdentifier: "ButtonCell", for: indexPath) as! ButtonTableViewCell
@@ -437,6 +440,7 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
             // cell.button.setTitle(elements.elementArray[indexPath.row].elementName, for: .normal)
             cell.button.setTitle(portkiNodes[indexPath.row].nodeName, for: .normal)
             cell.plusButton.isEnabled = tableView.isEditing ? false : true
+            cell.backgroundColor = (portkiNodes[indexPath.row].needsUpdate ? .lightGray : .clear)
             return cell
         case "Screen":
             let cell = tableView.dequeueReusableCell(withIdentifier: "ScreenCell", for: indexPath) as! ScreenTableViewCell
@@ -463,6 +467,7 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
                 cell.plusButton.isEnabled = true
                 cell.disclosureButton.isEnabled = true
             }
+            cell.backgroundColor = (portkiNodes[indexPath.row].needsUpdate ? .lightGray : .clear)
             return cell
         default:
             print("*** ERROR: cellForRowAt had incorrect case.")
@@ -543,9 +548,6 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        print("Nodes Before Delete")
-        print(portkiNodes)
-        print("")
         if editingStyle == .delete {
             // if it's a screen
             if portkiNodes[indexPath.row].nodeType == "Screen" {
@@ -555,12 +557,28 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
                     if portkiNodes[parentIndex].childrenIDs.count == 1 {
                         deleteNodesFromTable(selectedIndex: parentIndex)
                     } else {
+                        // delete nodes
                         deleteNodesFromTable(selectedIndex: indexPath.row)
+                        // If parent goes from 2 to 1, remaining child needs an update
+                        if portkiNodes[parentIndex].childrenIDs.count == 1 {
+                            guard let childsIndex = portkiNodes.firstIndex(where: {$0.documentID == portkiNodes[parentIndex].childrenIDs[0]}) else {
+                                print("😡 ERROR: Should not have happend. There should be a single childID after deleting child from 2 to 1")
+                                return
+                            }
+                            // find index of first child
+                            portkiNodes[childsIndex].needsUpdate = true
+                        }
                     }
                 } else {
                     print("😡 ERROR: Couldn't find the index of $0.documentIDs parent. This should not have happened. YOU SHOULD NEVER SEE THIS MESSAGE.")
                 }
             } else {
+                // mark parent as needing an update.
+                guard let parentIndex = portkiNodes.firstIndex(where: {$0.documentID == portkiNodes[indexPath.row].parentID}) else {
+                    print("😡 ERROR: Should not have happend. There should be a parent for the button being deleted")
+                    return
+                }
+                portkiNodes[parentIndex].needsUpdate = true
                 // start deleting from selected index.
                 deleteNodesFromTable(selectedIndex: indexPath.row)
             }
@@ -574,8 +592,7 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
         if portkiNodes[nodeIndex].childrenIDs.count > 0 {
             for index in 0..<portkiNodes[nodeIndex].childrenIDs.count {
                 // find node for child
-                let foundChildNodeIndex = portkiNodes.firstIndex(where: {$0.documentID == portkiNodes[nodeIndex].childrenIDs[index] })
-                guard let childNodeIndex = foundChildNodeIndex else {
+                guard let childNodeIndex = portkiNodes.firstIndex(where: {$0.documentID == portkiNodes[nodeIndex].childrenIDs[index] }) else {
                     print("😡 ERROR: couldn't find childNodeIndex of \(portkiNodes[nodeIndex].childrenIDs[index]). This shouldn't have happened. Please investigate.")
                     return
                 }
@@ -595,7 +612,6 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
                 print("Can't put a screen directly under Home. Not sure how to change the rows on the fly.")
                 return
             }
-            
             // First make a copy of the item that you are going to move
             let itemToMove = portkiNodes[sourceIndexPath.row]
             // Delete item from the original location (pre-move)
@@ -615,6 +631,14 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
                 return
             }
             portkiNodes[oldParentIndex].childrenIDs.remove(at: movedChildIndex)
+            // if parent only has one child, then the child will need an update
+            if portkiNodes[oldParentIndex].childrenIDs.count == 1 {
+                guard let childIndex = portkiNodes.firstIndex(where: {$0.documentID == portkiNodes[oldParentIndex].childrenIDs[0]}) else {
+                    print("😡 ERROR: Couldn't find the portkiNode index for screen that'll lose its only sibling \(portkiNodes[oldParentIndex].childrenIDs[0]). This shouldn't have happened. Please investigate.")
+                    return
+                }
+                portkiNodes[childIndex].needsUpdate = true
+            }
             
             // Check the node above the movedScreen's new location.
             // If it's also a screen
@@ -625,6 +649,16 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
                 guard let newParentIndex = portkiNodes.firstIndex(where: {$0.documentID == newParentId}) else {
                     print("😡 ERROR: Couldn't find newParentIndex for parent \(newParentId). This shouldn't have happened. Please investigate.")
                     return
+                }
+                // and if the new parent only had one sibling
+                // then the sibling screen above the new move location will need an update
+                if portkiNodes[newParentIndex].childrenIDs.count == 1 {
+                    portkiNodes[destinationIndexPath.row].needsUpdate = true
+                    if (portkiNodes[oldParentIndex].documentID != portkiNodes[newParentIndex].documentID ) {
+                        // If I'm moving within the same button, I can undo the need to update the parent
+                        portkiNodes[oldParentIndex].needsUpdate = false
+                        portkiNodes[destinationIndexPath.row].needsUpdate = false
+                    }
                 }
                 guard let siblingAboveIndex = portkiNodes[newParentIndex].childrenIDs.firstIndex(where: {$0 == siblingAboveMovedItem}) else {
                     print("😡 ERROR: Couldn't find screen above insertion point for screenID \(siblingAboveMovedItem) in childrenIDs of parent \(newParentId). This shouldn't have happened. Please investigate.")
@@ -638,6 +672,20 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
                 traverseSiblingsAndChangeHierarchy(nodeIndex: destinationIndexPath.row, hierarchyLevel: portkiNodes[destinationIndexPath.row].hierarchyLevel)
             } else if portkiNodes[destinationIndexPath.row-1].nodeType == "Button" {
                 // otherwise, if the node above the screen's new destination is a button
+                
+                // if that button has only one child, that child will need a screen update
+                if portkiNodes[destinationIndexPath.row-1].childrenIDs.count == 1 {
+                    guard let childIndex = portkiNodes.firstIndex(where: { $0.documentID == portkiNodes[destinationIndexPath.row-1].childrenIDs[0]}) else {
+                        print("😡 ERROR: Couldn't the index of the formerly singular portkiNode for screen \(portkiNodes[destinationIndexPath.row-1].childrenIDs[0]).  This shouldn't have happened. Please investigate.")
+                        return
+                    }
+                    portkiNodes[childIndex].needsUpdate = true
+                    // but no screen update of that guy's parent is the same as the oldParent of the item being moved
+                    if portkiNodes[oldParentIndex].documentID == portkiNodes[destinationIndexPath.row-1].documentID {
+                        portkiNodes[childIndex].needsUpdate = false
+                    }
+                }
+                
                 // Set the button as the current parent
                 // Insert the moved node's ID as the first node in the parent button's childrenIDs
                 portkiNodes[destinationIndexPath.row].parentID = portkiNodes[destinationIndexPath.row-1].documentID
@@ -661,6 +709,8 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
                 return
             }
             portkiNodes[oldParentIndex].childrenIDs.remove(at: movedChildIndex)
+            // Also flag the button's parent as needing an update
+            portkiNodes[oldParentIndex].needsUpdate = true
             
             // if the item above the destination is a "Button", as well...
             if portkiNodes[destinationIndexPath.row-1].nodeType == "Button" {
@@ -672,6 +722,8 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
                     print("😡 ERROR: Couldn't find index for button's parent button that has a documentID = \(newButtonParentId). This shouldn't have happened. Please investigate.")
                     return
                 }
+                // the new parent will need an update, too.
+                portkiNodes[newParentIndex].needsUpdate = true
                 // Look inside the parent's childrenID and find the index for the button above the button being moved.
                 guard let childIndexOfButtonAboveMovedButton = portkiNodes[newParentIndex].childrenIDs.firstIndex(where: {$0 == portkiNodes[destinationIndexPath.row-1].documentID}) else {
                     print("😡 ERROR: Couldn't find button above moved button's documentID in their shared parent's childrenIDs. Button above moved button had ID = \(portkiNodes[destinationIndexPath.row-1].documentID). This shouldn't have happened. Please investigate.")
@@ -692,6 +744,8 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
                 // tranverseSiblingsAndChangeHierarchy for new moved button's index and its new hierarchy
                 traverseSiblingsAndChangeHierarchy(nodeIndex: destinationIndexPath.row, hierarchyLevel: portkiNodes[destinationIndexPath.row].hierarchyLevel)
             } else if portkiNodes[destinationIndexPath.row-1].nodeType == "Screen" {
+                // any screen getting a new button will need an update
+                portkiNodes[destinationIndexPath.row-1].needsUpdate = true
                 // if the item above the newly moved button is a screen,
                 // the screen should become the button's parent.
                 itemToMove.parentID = portkiNodes[destinationIndexPath.row-1].documentID
@@ -707,6 +761,8 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
                 // tranverseSiblingsAndChangeHierarchy for new moved button's index and its new hierarchy
                 traverseSiblingsAndChangeHierarchy(nodeIndex: destinationIndexPath.row, hierarchyLevel: portkiNodes[destinationIndexPath.row].hierarchyLevel)
             } else if portkiNodes[destinationIndexPath.row-1].nodeType == "Home" { // should be the only other option
+                // Any button change to home means home needs a new update.
+                    portkiNodes[destinationIndexPath.row-1].needsUpdate = true
                 // get the node for the button that is the itemToMove
                 var itemToMove = portkiNodes[sourceIndexPath.row]
                 // add item to move's .documentID as the first element in Home's childrenIDs
@@ -746,7 +802,7 @@ extension ScreenListViewController: UITableViewDelegate, UITableViewDataSource {
         return (indexPath.row != 0 ? true : false)
     }
     
-
+    
     
     func tableView(_ tableView: UITableView, targetIndexPathForMoveFromRowAt sourceIndexPath: IndexPath, toProposedIndexPath proposedDestinationIndexPath: IndexPath) -> IndexPath {
         return (proposedDestinationIndexPath.row == 0 ? sourceIndexPath : proposedDestinationIndexPath)
@@ -831,6 +887,7 @@ extension ScreenListViewController: PlusAndDisclosureDelegate {
                                 guard let screenName = input else {
                                     return
                                 }
+                                self.portkiNodes[indexPath.row].needsUpdate = true
                                 self.addAButtonAndScreen(buttonName: screenName, indexPath: indexPath)},
                             cancelHandler: nil)
         case "Button":
@@ -838,7 +895,15 @@ extension ScreenListViewController: PlusAndDisclosureDelegate {
                                message: "Create a new screen from button \(portkiNodes[indexPath.row].nodeName):",
                 actionTitle: "Create Screen",
                 cancelTitle: "Cancel",
-                actionHandler: {_ in self.addScreen(indexPath: indexPath)},
+                actionHandler: {_ in
+                    if self.portkiNodes[indexPath.row].childrenIDs.count == 1 {
+                        guard let firstChildsIndex = self.portkiNodes.firstIndex(where: {$0.documentID == self.portkiNodes[indexPath.row].childrenIDs[0]}) else {
+                            print("ERROR: couldn't find first child of node \(self.portkiNodes[indexPath.row].documentID). This should not have happened.")
+                            return
+                        }
+                        self.portkiNodes[firstChildsIndex].needsUpdate = true
+                    }
+                    self.addScreen(indexPath: indexPath)},
                 cancelHandler: nil)
         default:
             print("ERROR in default case of didTapPlusButton")
