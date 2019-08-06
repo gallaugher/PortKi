@@ -26,6 +26,7 @@ import storage
 import adafruit_sdcard
 import os
 import digitalio
+from digitalio import DigitalInOut
 import busio
 import terminalio
 from adafruit_display_text import label
@@ -53,16 +54,18 @@ try:
 except OSError:
     print("Directory DIRECTORY_NAME already exists - no need to make a new one")
 
-# Each re-boot deletes any files in DIRECTORY_NAME so the freshest contents
-# is downloaded
-try:
+"""
+    # Each re-boot deletes any files in DIRECTORY_NAME so the freshest contents
+    # is downloaded
+    try:
     print("Contents of", DIRECTORY, "are:")
     directory_files = os.listdir(DIRECTORY)
     for file in directory_files:
-        print(file)
-        os.remove(DIRECTORY+file)
-except OSError as e:
+    print(file)
+    os.remove(DIRECTORY+file)
+    except OSError as e:
     print("Error:", OSError, e)
+    """
 
 free_space = os.statvfs("/")[3]
 message = "** freespace AFTER deleting files: " + str(free_space) + "KB"
@@ -78,9 +81,9 @@ pyportal = PyPortal(url=DATA_SOURCE,
                     json_path=DATA_LOCATION,
                     default_bg="portki-please-wait.bmp",)
 
+print(os.listdir("/sd"))
+
 print(message)
-# display_message(message)
-# pyportal.set_text("Hello there!", 0)
 
 p_list = [] # holds points indicating where a press occurred
 # These pins are used as both analog and digital! XL, XR and YU must be analog
@@ -175,17 +178,32 @@ except RuntimeError as e:
     # Stuff below shows green text on black background but won't clear for subsequent .set_background() calls.
     display = board.DISPLAY
     # Set text, font, and color
-    text = "HELLO WORLD"
     font = terminalio.FONT
     color = 0x0000FF
     # Create the tet label
-    text_area = label.Label(font, text=message, color=0x00FF00)
+    text_area = label.Label(font, text=">>"+message, color=0x00FF00)
     # Set the location
     text_area.x = 20
     text_area.y = 20
     # Show it
     display.show(text_area)
     """
+"""
+    display = board.DISPLAY
+    # Open the file
+    with open("/portki-please-wait.bmp", "rb") as bitmap_file:
+    # Setup the file as the bitmap data source
+    bitmap = displayio.OnDiskBitmap(bitmap_file)
+    # Create a TileGrid to hold the bitmap
+    tile_grid = displayio.TileGrid(bitmap, pixel_shader=displayio.ColorConverter())
+    # Create a Group to hold the TileGrid
+    group = displayio.Group()
+    # Add the TileGrid to the Group
+    group.append(tile_grid)
+    # Add the Group to the Display
+    display.show(group)
+    """
+#
 
 read_json_into_screens()
 current_pageID = "Home"
@@ -220,6 +238,7 @@ for screen in screens:
 
 print("Setting background to:", DIRECTORY+"Home.bmp")
 pyportal.set_background(DIRECTORY+"Home.bmp")
+# display.show(DIRECTORY+"Home.bmp")
 
 while True:
     p = ts.touch_point
@@ -262,6 +281,10 @@ while True:
                             print("*** Please turn device over and press the Reset button")
                             print("*** If this doesn't work, open the PortKi app and select:")
                             print("***     Update PyPortal   ***")
+                            # Line below will reset things back to home screen
+                            # if there is a problem. Not the best UX, but better
+                            # than a screen-of-death
+                            pyportal.set_background(DIRECTORY+"Home.bmp")
                         break
             if break_outer_loop:
                 break
