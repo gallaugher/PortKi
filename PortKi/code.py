@@ -22,6 +22,7 @@ import json
 import board
 import adafruit_touchscreen
 from adafruit_pyportal import PyPortal
+from adafruit_pyportal import Fake_Requests
 import storage
 import adafruit_sdcard
 import os
@@ -32,6 +33,9 @@ import terminalio
 from adafruit_display_text import label
 from adafruit_bitmap_font import bitmap_font
 
+screens = []
+screens_list = []
+current_pageID = "Home"
 # Prints version info to the Serial console
 version_info = os.uname()
 print(version_info)
@@ -46,30 +50,7 @@ DATA_SOURCE = "https://io.adafruit.com/api/v2/gallaugher/feeds/portki/data/"
 # DIRECTORY = "/sd/" # sd card
 DIRECTORY_NAME = "portki-files"
 DIRECTORY = "/"+DIRECTORY_NAME+"/"
-
-# If this is a new PyPortal there won't be a portki-files directory
-# so if one isn't found, make one
-try:
-    result = os.mkdir("/"+DIRECTORY_NAME)
-except OSError:
-    print("Directory DIRECTORY_NAME already exists - no need to make a new one")
-
-"""
-    # Each re-boot deletes any files in DIRECTORY_NAME so the freshest contents
-    # is downloaded
-    try:
-    print("Contents of", DIRECTORY, "are:")
-    directory_files = os.listdir(DIRECTORY)
-    for file in directory_files:
-    print(file)
-    os.remove(DIRECTORY+file)
-    except OSError as e:
-    print("Error:", OSError, e)
-    """
-
-free_space = os.statvfs("/")[3]
-message = "** freespace AFTER deleting files: " + str(free_space) + "KB"
-print(message)
+LAST_DATE_CHANGED_URL = "https://portki.s3.amazonaws.com/lastDateChecked.json"
 
 # If look in a web browser at json returned from the DATA_SOURCE url,
 # you'll see json can be found inside a list value "[" after the key
@@ -81,17 +62,14 @@ pyportal = PyPortal(url=DATA_SOURCE,
                     json_path=DATA_LOCATION,
                     default_bg="portki-please-wait.bmp",)
 
-print(os.listdir("/sd"))
-
-print(message)
-
-p_list = [] # holds points indicating where a press occurred
 # These pins are used as both analog and digital! XL, XR and YU must be analog
 # and digital capable. YD just need to be digital
 ts = adafruit_touchscreen.Touchscreen(board.TOUCH_XL, board.TOUCH_XR,
                                       board.TOUCH_YD, board.TOUCH_YU,
                                       calibration=((5200, 59000), (5800, 57000)),
                                       size=(320, 240))
+
+
 class Button:
     def __init__(self, buttonText, buttonDestination, x, y, width, height):
         self.buttonText = buttonText
@@ -107,28 +85,81 @@ class Screen:
         self.buttons = buttons
         self.screenURL = screenURL
 
-def display_message(message):
-    display = board.DISPLAY
-    # Set text, font, and color
-    text = "HELLO WORLD"
-    font = terminalio.FONT
-    color = 0x0000FF
-    # Create the tet label
-    text_area = label.Label(font, text=message, color=0x00FF00)
-    # Set the location
-    text_area.x = 20
-    text_area.y = 40
-    # Show it
-    display.show(text_area)
+def check_last_update():
+    print("*** ATTEMPTING TO GET lastDateChecked.json")
+    print("*** LAST_DATE_CHANGED_URL = ", LAST_DATE_CHANGED_URL)
+    print("*** SAVING TO = ", DIRECTORY+"lastDateChecked.json")
+    try:
+        data = pyportal.wget(LAST_DATE_CHANGED_URL, DIRECTORY+"lastDateChecked.json", chunk_size=12000)
+        print("data retrieved = :", data)
+    except OSError as e:
+        print("<><><><> SOME ERROR OCCURRED! -", OSError, e)
+        print("For some reason couldn't read last Date Changed")
+    except RuntimeError as e:
+        print("<><><><> SOME ERROR OCCURRED! -", e)
+    
+    # get lastDateChecked from file read from the AWSS3
+    fakeRequests = Fake_Requests(DIRECTORY+"lastDateChecked.json").json()
+    jsonString = str(fakeRequests["value"])
+    lastDateChecked = json.loads(jsonString)["lastDateChecked"]
+    print(">>>>> lastDateChecked = ", lastDateChecked)
+    return lastDateChecked
 
-def read_json_into_screens():
+def clear_out_directory():
+    # If this is a new PyPortal there won't be a portki-files directory
+    # so if one isn't found, make one
+    try:
+        result = os.mkdir("/"+DIRECTORY_NAME)
+    except OSError:
+        print("Directory DIRECTORY_NAME already exists - no need to make a new one")
+    
+    # Each re-boot deletes any files in DIRECTORY_NAME so the freshest contents
+    # is downloaded
+    try:
+        print("Contents of", DIRECTORY, "are:")
+        directory_files = os.listdir(DIRECTORY)
+        for file in directory_files:
+            print(file)
+            os.remove(DIRECTORY+file)
+    except OSError as e:
+        print("Error:", OSError, e)
+    
+    free_space = os.statvfs("/")[3]
+    message = "** freespace AFTER deleting files: " + str(free_space) + "KB"
+    print(message)
+
+def reload_all_data():
+    clear_out_directory()
+    
+    try:
+        response = pyportal.fetch()
+        """
+            print("%%%% JSON RETRIEVED %%%%")
+            print("??? Len of response: ", len(response))
+            print("*** PRINTING response:\n", response, "\n")
+            print("*** response is of type:\n", type(response), "\n")
+            """
+        convertedJson = json.loads(response)
+        """
+            print("*** convertedJson is of type:\n", type(convertedJson), "\n")
+            print("*** PRINTING convertedJson:\n", convertedJson, "\n")
+            print(convertedJson[0]["pageID"])
+            """
+        screens_list = convertedJson
+        print("There are", len(screens_list), "screens in this kiosk.")
+        screens = []
+    except RuntimeError as e:
+        print("<><><><> SOME ERROR OCCURRED! -", e)
+    
+    # read_json_into_screens()
+    # stuff below as from reload_json_into_screens()
     for i in range(len(screens_list)):
         pageID = screens_list[i]["pageID"]
-        # print("pageID =", pageID)
+        print("pageID =", pageID)
         screenURL = screens_list[i]["screenURL"]
-        # print("screenURL =", screens_list[i]["screenURL"])
+        print("screenURL =", screens_list[i]["screenURL"])
         num_of_buttons = len(screens_list[i]["buttons"])
-        # print("This page has", num_of_buttons, "buttons")
+        print("This page has", num_of_buttons, "buttons")
         buttons = []
         for button_index in range(num_of_buttons):
             buttonText = screens_list[i]["buttons"][button_index]["text"]
@@ -141,128 +172,109 @@ def read_json_into_screens():
             buttons.append(button)
         screen = Screen(pageID, buttons, screenURL)
         screens.append(screen)
+    
+    current_pageID = "Home"
 
-"""
+screen_count = 0
     for screen in screens:
+        image_url = screen.screenURL
+        fileName = screen.pageID+".bmp"
+        print("image_url =", image_url)
+        print("screen.screenURL =", screen.screenURL)
+        print("Saving at:", DIRECTORY+fileName)
+        
+        # free_space will be KB free. Each images is 151KB
+        free_space = os.statvfs("/")[3]
+        print("Downloading screen #", screen_count)
+        print("There is", free_space, "KB storage left in the PyPortal")
+        if free_space < 250:
+            print("*** You've run out of free space.")
+            print("*** Your PyPortal only has space for", screen_count, "screens.")
+            break
+        else:
+            try:
+                screen_count = screen_count + 1
+                pyportal.wget(pyportal.image_converter_url(image_url,320, 240,color_depth=16), DIRECTORY+fileName, chunk_size=12000)
+            except OSError as e:
+                print("<><><><> SOME ERROR OCCURRED! -", OSError, e)
+                print("Please restart PyPortal by pressing the Reset button on the back of the device")
+            except RuntimeError as e:
+                print("<><><><> SOME ERROR OCCURRED! -", e)
+                print("Retrying last wget")
+                pyportal.wget(pyportal.image_converter_url(image_url,320, 240,color_depth=16), DIRECTORY+fileName, chunk_size=12000)
+            except KeyError as e:
+                print("<><><><> SOME ERROR OCCURRED! -", e)
+                print("Retrying last wget")
+                pyportal.wget(pyportal.image_converter_url(image_url,320, 240,color_depth=16), DIRECTORY+fileName, chunk_size=12000)
+
+
+print("Setting background to:", DIRECTORY+"Home.bmp")
+pyportal.set_background(DIRECTORY+"Home.bmp")
+
+for screen in screens:
     print(screen.pageID)
     print(screen.screenURL)
     print("This screen has", len(screen.buttons), "buttons")
     for index in range(len(screen.buttons)):
-    print("  Button", index, "text =", screen.buttons[index].buttonText)
-    print("  Button", index, "buttonDestination =", screen.buttons[index].buttonDestination)
-    print("  Button", index, "has coordinates:", screen.buttons[index].x, screen.buttons[index].y, screen.buttons[index].width, screen.buttons[index].height)
-    """
+        print("  Button", index, "text =", screen.buttons[index].buttonText)
+    return screens
 
-try:
-    response = pyportal.fetch()
-    """
-        print("%%%% JSON RETRIEVED %%%%")
-        print("??? Len of response: ", len(response))
-        print("*** PRINTING response:\n", response, "\n")
-        print("*** response is of type:\n", type(response), "\n")
-        """
-    convertedJson = json.loads(response)
-    """
-        print("*** convertedJson is of type:\n", type(convertedJson), "\n")
-        print("*** PRINTING convertedJson:\n", convertedJson, "\n")
-        print(convertedJson[0]["pageID"])
-        """
-    screens_json = convertedJson
-    screens_list = screens_json
-    # print("There are", len(screens_list), "screens in this kiosk.")
-    screens = []
-except RuntimeError as e:
-    print("<><><><> SOME ERROR OCCURRED! -", e)
+screens = reload_all_data()
 
-"""
-    # Stuff below shows green text on black background but won't clear for subsequent .set_background() calls.
-    display = board.DISPLAY
-    # Set text, font, and color
-    font = terminalio.FONT
-    color = 0x0000FF
-    # Create the tet label
-    text_area = label.Label(font, text=">>"+message, color=0x00FF00)
-    # Set the location
-    text_area.x = 20
-    text_area.y = 20
-    # Show it
-    display.show(text_area)
-    """
-"""
-    display = board.DISPLAY
-    # Open the file
-    with open("/portki-please-wait.bmp", "rb") as bitmap_file:
-    # Setup the file as the bitmap data source
-    bitmap = displayio.OnDiskBitmap(bitmap_file)
-    # Create a TileGrid to hold the bitmap
-    tile_grid = displayio.TileGrid(bitmap, pixel_shader=displayio.ColorConverter())
-    # Create a Group to hold the TileGrid
-    group = displayio.Group()
-    # Add the TileGrid to the Group
-    group.append(tile_grid)
-    # Add the Group to the Display
-    display.show(group)
-    """
-#
+lastDateChecked = check_last_update()
+CHECK_AFTER_MINUTES = 5
+next_check = (CHECK_AFTER_MINUTES * 60) + time.monotonic()
+print("** Current time.monotoic() = ", time.monotonic())
+print("** next_check in: ", next_check)
 
-read_json_into_screens()
-current_pageID = "Home"
+p_list = [] # holds points indicating where a press occurred
 
-screen_count = 0
+print("><><> Screens after returning screens <><><")
 for screen in screens:
-    image_url = screen.screenURL
-    fileName = screen.pageID+".bmp"
-    # print("image_url =", image_url)
-    # print("screen.screenURL =", screen.screenURL)
-    # print("Saving at:", DIRECTORY+fileName)
-    
-    # free_space will be KB free. Each images is 151KB
-    free_space = os.statvfs("/")[3]
-    print("Downloading screen #", screen_count)
-    print("There is", free_space, "KB storage left in the PyPortal")
-    if free_space < 250:
-        print("*** You've run out of free space.")
-        print("*** Your PyPortal only has space for", screen_count, "screens.")
-        break
-    else:
-        try:
-            screen_count = screen_count + 1
-            pyportal.wget(pyportal.image_converter_url(image_url,320, 240,color_depth=16), DIRECTORY+fileName, chunk_size=12000)
-        except OSError as e:
-            print("<><><><> SOME ERROR OCCURRED! -", OSError, e)
-            print("Please restart PyPortal by pressing the Reset button on the back of the device")
-        except RuntimeError as e:
-            print("<><><><> SOME ERROR OCCURRED! -", e)
-            print("Retrying last wget")
-            pyportal.wget(pyportal.image_converter_url(image_url,320, 240,color_depth=16), DIRECTORY+fileName, chunk_size=12000)
-
-print("Setting background to:", DIRECTORY+"Home.bmp")
-pyportal.set_background(DIRECTORY+"Home.bmp")
-# display.show(DIRECTORY+"Home.bmp")
+    print(screen.pageID)
+    print(screen.screenURL)
+    print("This screen has", len(screen.buttons), "buttons")
+    for index in range(len(screen.buttons)):
+        print("  Button", index, "text =", screen.buttons[index].buttonText)
 
 while True:
-    p = ts.touch_point
     
-    if p:
-        print("p = ", p)
-        # append each touch connection to a list
-        # I had an issue with the first touch detected not being accurate
-        p_list.append(p)
+    if time.monotonic() > next_check:
+        print("****** HEY! time.monotonic() > next_check ")
+        print("time.monotonic() = ", time.monotonic(), "next_check = ", next_check)
+        latestLastDateChecked = check_last_update()
+        if latestLastDateChecked > lastDateChecked:
+            # This means the app has posted data later than data on PyPortal
+            screens = reload_all_data()
+        next_check = (CHECK_AFTER_MINUTES * 60) + time.monotonic()
+
+    p = ts.touch_point
+
+if p:
+    print("p = ", p)
+    # append each touch connection to a list
+    # I had an issue with the first touch detected not being accurate
+    p_list.append(p)
         
         #affter three trouch detections have occured.
         if len(p_list) == 3:
-            
-            #discard the first touch detection and average the other two get the x,y of the touch
-            x = (p_list[1][0]+p_list[2][0])/2
+        
+        #discard the first touch detection and average the other two get the x,y of the touch
+        x = (p_list[1][0]+p_list[2][0])/2
         y = (p_list[1][1]+p_list[2][1])/2
         print("!!! TOUCH DETECTED: ", x, y)
         current_touch_point = (x, y)
         # handle_start_press((x, y))
-
+        
         break_outer_loop = False
+        print(" ><>< current_pageID = ",current_pageID)
+        print(" ><>< screens = ", screens)
         for screen in screens:
             
             if current_pageID == screen.pageID:
+                print("screen.pageID = ", screen.pageID)
+                print("  and it has", len(screen.buttons) ,"buttons")
+                print("screen = ", screen)
                 for index in range(len(screen.buttons)):
                     left_side = screen.buttons[index].x
                     right_side = screen.buttons[index].x + screen.buttons[index].width
@@ -289,7 +301,7 @@ while True:
             if break_outer_loop:
                 break
 
-# sleap to avoid pressing two buttons on accident
-time.sleep(.5)
-# clear p
-    p_list = []
+    # sleap to avoid pressing two buttons on accident
+    time.sleep(.5)
+        # clear p
+        p_list = []

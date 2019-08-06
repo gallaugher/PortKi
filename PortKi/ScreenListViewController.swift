@@ -380,14 +380,6 @@ class ScreenListViewController: UIViewController {
         }
     }
     
-    func saveLastDateCheckedToCloud(json: Data) {
-        
-    }
-    
-    @IBAction func dateCheckPressed(_ sender: UIBarButtonItem) {
-        sendLastDateUpdated()
-    }
-    
     @IBAction func editBarButtonPressed(_ sender: UIBarButtonItem) {
         if tableView.isEditing {
             tableView.setEditing(false, animated: true)

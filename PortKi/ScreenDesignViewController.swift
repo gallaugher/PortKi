@@ -87,8 +87,8 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         
         // hide keyboard if we tap outside of a field
         let tap = UITapGestureRecognizer(target: self.view, action: #selector(UIView.endEditing(_:)))
-        tap.cancelsTouchesInView = false
-        self.view.addGestureRecognizer(tap)
+        // tap.cancelsTouchesInView = false
+        // self.view.addGestureRecognizer(tap)
         
         deleteTextButton.isEnabled = false
         editStyleBarButton.isEnabled = false
