@@ -346,6 +346,7 @@ class ScreenListViewController: UIViewController {
                     try json.write(to: fileNameURL, options: .atomic)
                     uploadFileToAWS(fileName: "portki.json", contentType: "application/json", data: json)
                     sendJsonToAdafruitIo(jsonString: jsonString)
+                    sendLastDateUpdated()
                 } catch {
                     print("😡 Grr. json wasn't writte to file \(error.localizedDescription)")
                 }
@@ -353,6 +354,38 @@ class ScreenListViewController: UIViewController {
         } else {
             print("encoding didn't work")
         }
+    }
+    
+    func sendLastDateUpdated() {
+        var lastDateChecked = LastDateChecked(lastDateChecked: Date().timeIntervalSince1970)
+        print("lastDateChecked = \(lastDateChecked.lastDateChecked)")
+        
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        if let encoded = try? encoder.encode(lastDateChecked) {
+            if let jsonString = String(data: encoded, encoding: .utf8) {
+                print(jsonString)
+                let parameters = ["value": jsonString]
+                guard let json = try? JSONSerialization.data(withJSONObject: parameters, options: []) else {
+                    print("😡 Grr. json conversion didn't work")
+                    return
+                }
+                print("** JSON Conversion Worked !!!")
+                print(json)
+                
+                self.uploadFileToAWS(fileName: "lastDateChecked.json", contentType: "application/json", data: json)
+            }
+        } else {
+            print("encoding didn't work")
+        }
+    }
+    
+    func saveLastDateCheckedToCloud(json: Data) {
+        
+    }
+    
+    @IBAction func dateCheckPressed(_ sender: UIBarButtonItem) {
+        sendLastDateUpdated()
     }
     
     @IBAction func editBarButtonPressed(_ sender: UIBarButtonItem) {

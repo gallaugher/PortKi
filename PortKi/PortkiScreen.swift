@@ -31,3 +31,7 @@ struct PortkiImage: Codable {
     var imageFileName: String
     var imageData: Data
 }
+
+struct LastDateChecked: Codable {
+    var lastDateChecked: Double
+}

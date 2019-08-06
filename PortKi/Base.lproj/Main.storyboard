@@ -295,11 +295,18 @@ Learn to build apps:    gallaugher.com/swift
                                 <action selector="editBarButtonPressed:" destination="BYZ-38-t0r" id="fW1-EV-By8"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem key="rightBarButtonItem" title="Update PyPortal" id="Wfx-Nw-ciT">
-                            <connections>
-                                <action selector="updatePyPortalPressed:" destination="BYZ-38-t0r" id="WED-P6-bHr"/>
-                            </connections>
-                        </barButtonItem>
+                        <rightBarButtonItems>
+                            <barButtonItem title="Update PyPortal" id="Wfx-Nw-ciT">
+                                <connections>
+                                    <action selector="updatePyPortalPressed:" destination="BYZ-38-t0r" id="WED-P6-bHr"/>
+                                </connections>
+                            </barButtonItem>
+                            <barButtonItem title="Date Check" id="rkr-y2-1Rw">
+                                <connections>
+                                    <action selector="dateCheckPressed:" destination="BYZ-38-t0r" id="B91-WP-vtX"/>
+                                </connections>
+                            </barButtonItem>
+                        </rightBarButtonItems>
                     </navigationItem>
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
