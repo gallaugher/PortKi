@@ -59,6 +59,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet var actionButtons: [UIButton]! = []
     @IBOutlet weak var backgroundImageView: UIImageView!
     
+    var newTextFieldPressed = false
     var portkiNode: PortkiNode!
     var portkiNodes: [PortkiNode]!
     var portkiScreen: PortkiScreen!
@@ -79,6 +80,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         super.viewDidLoad()
         hexTextField.delegate = self
         imagePicker.delegate = self
+        imagePicker.allowsEditing = true
         
         // sets up observers to alert code when keyboard is shown or hidden
         let notificationCenter = NotificationCenter.default
@@ -298,6 +300,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     
     func setUpBlockAndField(newBlock: TextBlock, newField: UITextField) {
         // selectedTextBlockIndex = textBlocks.textBlocksArray.count-1
+        let oldSelectedTextBlockIndex = selectedTextBlockIndex
         selectedTextBlockIndex = fieldCollection.count-1
         print(">>>> setting up field # \(fieldCollection.count-1)")
         print(">>>> there are \(fieldCollection.count) fields and \(textBlocks.textBlocksArray.count) textBLocks")
@@ -316,12 +319,53 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         } else {
             newField.backgroundColor = UIColor(hexString: newBlock.backgroundColorHexString)
         }
+        
+        if newTextFieldPressed {
+            let newFrame = fieldCollection[oldSelectedTextBlockIndex].frame
+            newField.frame = CGRect(x: newFrame.origin.x, y: newFrame.origin.y+newFrame.height+5, width: newFrame.width, height: newFrame.height)
+            newField.font = fieldCollection[oldSelectedTextBlockIndex].font
+            newField.textColor = fieldCollection[oldSelectedTextBlockIndex].textColor
+            textBlocks.textBlocksArray[selectedTextBlockIndex].textColorHexString = textBlocks.textBlocksArray[oldSelectedTextBlockIndex].textColorHexString
+            textBlocks.textBlocksArray[selectedTextBlockIndex].backgroundColorHexString = textBlocks.textBlocksArray[oldSelectedTextBlockIndex].backgroundColorHexString
+            // field configure bold, italics, underline
+            textBlocks.textBlocksArray[selectedTextBlockIndex].isBold = textBlocks.textBlocksArray[oldSelectedTextBlockIndex].isBold
+            if textBlocks.textBlocksArray[oldSelectedTextBlockIndex].isBold {
+                newField.font = newField.font?.setBoldFnc()
+            }
+            textBlocks.textBlocksArray[selectedTextBlockIndex].isItalic = textBlocks.textBlocksArray[oldSelectedTextBlockIndex].isItalic
+            if textBlocks.textBlocksArray[oldSelectedTextBlockIndex].isItalic {
+                newField.font = newField.font?.setItalicFnc()
+            }
+            textBlocks.textBlocksArray[selectedTextBlockIndex].isUnderlined = textBlocks.textBlocksArray[oldSelectedTextBlockIndex].isUnderlined
+            // underlining doesn't work because there's no attibuted text. I think that's oK.
+            if textBlocks.textBlocksArray[oldSelectedTextBlockIndex].isUnderlined {
+                let field = newField
+                newField.attributedText = NSAttributedString(string: field.text!, attributes:
+                    [.underlineStyle: NSUnderlineStyle.single.rawValue])
+            }
+            // iOS removes alignment after becomefirstresponder is set. Unsure why, so this isn't working, neither is the underline setting.
+            textBlocks.textBlocksArray[selectedTextBlockIndex].alignment = textBlocks.textBlocksArray[oldSelectedTextBlockIndex].alignment
+            newField.textAlignment = fieldCollection[oldSelectedTextBlockIndex].textAlignment
+            if textBlocks.textBlocksArray[oldSelectedTextBlockIndex].backgroundColorHexString == "" {
+                newField.backgroundColor = UIColor.clear
+            } else {
+                newField.backgroundColor = UIColor(hexString: newBlock.backgroundColorHexString)
+            }
+            newField.font?.withSize(newBlock.fontSize)
+            newField.text = newBlock.text
+            newField.textColor = UIColor(hex: newBlock.textColorHexString)
+            
+            newField.backgroundColor = fieldCollection[oldSelectedTextBlockIndex].backgroundColor
+        }
+        
         screenView.addSubview(newField)
         screenView.bringSubviewToFront(newField)
         selectedColorButtonTag = 0 // New field? Select textColor button
         fieldCollection[selectedTextBlockIndex] = newField
+        let lastAlignment = newField.textAlignment
         fieldCollection.last!.delegate = self
         fieldCollection.last!.becomeFirstResponder()
+        fieldCollection.last!.textAlignment = lastAlignment
         if newBlock.backgroundColorHexString == "" { // same as clear {
             enableTextBackgroundColor(false)
         } else {
@@ -677,6 +721,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
     }
     
     @IBAction func addFieldPressed(_ sender: UIButton) {
+        newTextFieldPressed = true
         createNewField()
     }
     
@@ -947,7 +992,7 @@ class ScreenDesignViewController: UIViewController, UITextFieldDelegate {
         // Save background image first. You'll want to update backgroundImageUUID
         // in the portkiNode before savign the current node, below.
         saveBackgroundImage()
-
+        
         if let currentScreenIndex = self.portkiNodes.firstIndex(where: {$0.documentID == portkiNode.documentID}) {
             // update currentScreen
             portkiNodes[currentScreenIndex] = portkiNode
@@ -1069,7 +1114,7 @@ extension ScreenDesignViewController: UINavigationControllerDelegate, UIImagePic
     func calculateImageSize(image: UIImage) {
         // let image = info[UIImagePickerController.InfoKey.originalImage] as! UIImage
         let imgData = NSData(data: (image).jpegData(compressionQuality: 1)!)
-        var imageSize: Int = imgData.count
+        let imageSize: Int = imgData.count
         print("actual size of image in KB: %f ", Double(imageSize) / 1000.0)
     }
     
@@ -1080,31 +1125,16 @@ extension ScreenDesignViewController: UINavigationControllerDelegate, UIImagePic
         let scaleFactor = UIScreen.main.scale
         let scale = CGAffineTransform(scaleX: scaleFactor, y: scaleFactor)
         let size = backgroundImageView.bounds.size.applying(scale)
-        backgroundImageView.image = (info[UIImagePickerController.InfoKey.originalImage] as! UIImage)
-        calculateImageSize(image: backgroundImageView.image!)
-        
-        // scale & show the selected image in the app's backgroundImageView
-        //  backgroundImageView.image = (info[UIImagePickerController.InfoKey.originalImage] as! UIImage)
-        backgroundImageView.image = resizedImage(image: backgroundImageView.image!, for: size)
-        //        portkiNode.backgroundImage = backgroundImageView.image! // and store image in portkiNode
-        //        print("** BEFORE COMPRESSION")
-        //        calculateImageSize(image: element.backgroundImage)
-        
-        backgroundImageView.image = (info[UIImagePickerController.InfoKey.originalImage] as! UIImage)
+        if let image = info[.editedImage] as? UIImage {
+            backgroundImageView.image = image
+        } else if let image = info[.originalImage] as? UIImage {
+            backgroundImageView.image = image
+        } else {
+            print("😡 ERROR: Neither .editedImage nor .originalImage was returned. This should not have happened.")
+        }
         deselectAllFields()
-        //        let renderer = UIGraphicsImageRenderer(size: screenView.bounds.size)
-        //        let grabbedImage = renderer.image { ctx in
-        //            screenView.drawHierarchy(in: screenView.bounds, afterScreenUpdates: true)
-        //        }
-        //        backgroundImageView.image = grabbedImage
-        //        portkiNode.backgroundImage = backgroundImageView.image! // and store image in portkiNode
-        //        print("** AFTER COMPRESSION")
-        //        calculateImageSize(image: element.backgroundImage)
         backgroundImageStatus = .save
         dismiss(animated: true) {
-            // TODO: image saving here
-            //            photo.saveData(spot: self.spot) { (success) in
-            //            }
         }
     }
     

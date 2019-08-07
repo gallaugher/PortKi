@@ -299,6 +299,9 @@ class ScreenListViewController: UIViewController {
         // Go through all portkiScreens + add proper [Button] + Button coordinates for each screen
         // So as long as I have a count of the # of screens I have, I don't need to pass PortkiScreen data back and forth between the view controllers.
         
+        // Got a crash when I had an open AWS session for too long, so I'm going to see if a simple call to setup will make things right, or at least not break anything.
+        setupAWSS3()
+        
         portkiScreens = []
         // Note: Do I even need portkiScreens if I'm rebuilding the array, below?
         for index in 0..<portkiNodes.count {
