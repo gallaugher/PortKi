@@ -12,4 +12,5 @@ import Foundation
 protocol PlusAndDisclosureDelegate: class {
     func didTapPlusButton(at indexPath: IndexPath)
     func didTapDisclosure(at indexPath: IndexPath)
+    func didTapPageButton(at indexPath: IndexPath)
 }

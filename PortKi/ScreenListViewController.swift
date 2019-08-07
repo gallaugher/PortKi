@@ -943,6 +943,29 @@ extension ScreenListViewController: PlusAndDisclosureDelegate {
         self.tableView.selectRow(at: indexPath, animated: true, scrollPosition: .none)
         self.performSegue(withIdentifier: "ShowScreen", sender: nil)
     }
+    
+    func didTapPageButton(at indexPath: IndexPath) {
+         print("*** You Tapped the screenPage Button at \(indexPath.row) for button named \(portkiNodes[indexPath.row].nodeName)")
+        showInputDialog(title: nil,
+                        message: "Enter new name for button currently named '\(portkiNodes[indexPath.row].nodeName)':",
+                        actionTitle: "Change",
+                        cancelTitle: "Cancel",
+                        inputPlaceholder: nil,
+                        inputKeyboardType: .default,
+                        actionHandler: {(input:String?) in
+                            guard let input = input else {
+                                return
+                            }
+                            self.portkiNodes[indexPath.row].nodeName = input
+                            guard let parentIndex = self.portkiNodes.firstIndex(where: { $0.documentID == self.portkiNodes[indexPath.row].parentID}) else {
+                                return
+                            }
+                            self.portkiNodes[parentIndex].needsUpdate = true
+                            self.tableView.reloadData()
+        },
+                        cancelHandler: nil)
+    }
+    
 }
 
 extension ScreenListViewController {
