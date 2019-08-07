@@ -31,6 +31,7 @@
 		3E850D462297169800F4B739 /* Screen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E850D452297169800F4B739 /* Screen.swift */; };
 		3E850D482297176300F4B739 /* ButtonInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E850D472297176300F4B739 /* ButtonInfo.swift */; };
 		3E85BF9322DCD09A00943D81 /* code.py in Resources */ = {isa = PBXBuildFile; fileRef = 3E85BF9222DCD09A00943D81 /* code.py */; };
+		3E8633AD22FB592F00E1441A /* portki-system-files in Resources */ = {isa = PBXBuildFile; fileRef = 3E8633AC22FB592F00E1441A /* portki-system-files */; };
 		3E89CC7D228B86D40067B0F0 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3E89CC7C228B86D40067B0F0 /* GoogleService-Info.plist */; };
 		3E89CC7F228B88550067B0F0 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC7E228B88550067B0F0 /* Constants.swift */; };
 		3E89CC81228B889E0067B0F0 /* Element.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E89CC80228B889E0067B0F0 /* Element.swift */; };
@@ -76,6 +77,7 @@
 		3E850D452297169800F4B739 /* Screen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screen.swift; sourceTree = "<group>"; };
 		3E850D472297176300F4B739 /* ButtonInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonInfo.swift; sourceTree = "<group>"; };
 		3E85BF9222DCD09A00943D81 /* code.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = code.py; sourceTree = "<group>"; };
+		3E8633AC22FB592F00E1441A /* portki-system-files */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "portki-system-files"; sourceTree = "<group>"; };
 		3E89CC7C228B86D40067B0F0 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = SOURCE_ROOT; };
 		3E89CC7E228B88550067B0F0 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		3E89CC80228B889E0067B0F0 /* Element.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Element.swift; sourceTree = "<group>"; };
@@ -120,6 +122,7 @@
 			isa = PBXGroup;
 			children = (
 				3E11E3AF228B8435001599ED /* PortKi */,
+				3E8633AC22FB592F00E1441A /* portki-system-files */,
 				3E11E3AE228B8435001599ED /* Products */,
 				F1BD3AE0E3521354B79503AD /* Pods */,
 				3C7B6ABE1A3D000DB8D86BCD /* Frameworks */,
@@ -256,6 +259,7 @@
 				3E11E3B8228B8436001599ED /* Assets.xcassets in Resources */,
 				3E318C6D22EB697200C2EBCA /* client_109572691793-mu2g9fkm3427f6343sacff688t8fkn60.apps.googleusercontent.com.plist in Resources */,
 				3E85BF9322DCD09A00943D81 /* code.py in Resources */,
+				3E8633AD22FB592F00E1441A /* portki-system-files in Resources */,
 				3E11E3B6228B8435001599ED /* Main.storyboard in Resources */,
 				3E480CE622D6C0510084AF63 /* portki.json in Resources */,
 			);
