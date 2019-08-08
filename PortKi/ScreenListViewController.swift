@@ -55,7 +55,7 @@ class ScreenListViewController: UIViewController {
     
     func setupAWSS3() {
         let credentialsProvider = AWSCognitoCredentialsProvider(regionType:.USEast1,
-                                                                identityPoolId:"us-east-1:93b4d97e-1aaa-43a3-99f3-ae183b5a8b86")
+                                                                identityPoolId:"YOUR_IDENTITY_POOL_CODE_GOES_HERE")
         let configuration = AWSServiceConfiguration(region:.USEast1, credentialsProvider:credentialsProvider)
         AWSServiceManager.default().defaultServiceConfiguration = configuration
     }
