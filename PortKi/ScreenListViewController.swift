@@ -27,7 +27,6 @@ class ScreenListViewController: UIViewController {
     var portkiNodes: [PortkiNode] = []
     var newNodes: [PortkiNode] = []
     let indentBase = 26 // how far to indent button/screen levels
-    var imageURL = "https://gallaugher.com/wp-content/uploads/2009/08/John-White-Border-Beard-Crossed-Arms-Photo.jpg"
     
     override func viewDidLoad() {
         setupAWSS3()
@@ -129,7 +128,8 @@ class ScreenListViewController: UIViewController {
     }
     
     func loadPortkiScreensFromAdafruitIo() {
-        let apiURL = "https://io.adafruit.com/api/v2/gallaugher/feeds/portki"
+        // paste your adafruit api url in the quotes below. It should look like mine: https://io.adafruit.com/api/v2/gallaugher/feeds/portki. This allows public access to your portki feeds and your PyPortal will use this to get data saved by your app.
+        let apiURL = "YOUR ADAFRUIT IO URL HERE"
         Alamofire.request(apiURL).responseJSON { response in
             switch response.result {
             case .success(let value):
@@ -273,7 +273,7 @@ class ScreenListViewController: UIViewController {
     
     func sendJsonToAdafruitIo(jsonString: String) {
         let parameters = ["value": jsonString]
-        guard let url = URL(string: "https://io.adafruit.com/api/feeds/portki/data.json?X-AIO-Key=073cd97c69db42dab2b411062bf15f23") else { return }
+        guard let url = URL(string: "https://io.adafruit.com/api/feeds/portki/data.json?X-AIO-Key=YOUR_KEY_HERE") else { return }
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"

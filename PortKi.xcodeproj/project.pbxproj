@@ -12,6 +12,7 @@
 		3E11E3B6228B8435001599ED /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3E11E3B4228B8435001599ED /* Main.storyboard */; };
 		3E11E3B8228B8436001599ED /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3E11E3B7228B8436001599ED /* Assets.xcassets */; };
 		3E11E3BB228B8436001599ED /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3E11E3B9228B8436001599ED /* LaunchScreen.storyboard */; };
+		3E17DF8122FBAFBD003A3D3E /* boot.py in Resources */ = {isa = PBXBuildFile; fileRef = 3E17DF8022FBAFBC003A3D3E /* boot.py */; };
 		3E185C682293533800A5FB7E /* UIColor+toHex+initHex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E185C672293533800A5FB7E /* UIColor+toHex+initHex.swift */; };
 		3E279ACA229472BA000A20E0 /* ScreenDesignViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E279AC9229472BA000A20E0 /* ScreenDesignViewController.swift */; };
 		3E3CF42922949CF300ACD87B /* UITextField+adjustHeight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E3CF42822949CF300ACD87B /* UITextField+adjustHeight.swift */; };
@@ -26,7 +27,6 @@
 		3E54ACEA22F494A600A6159F /* AboutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E54ACE922F494A600A6159F /* AboutViewController.swift */; };
 		3E8242B722EE2EA70051313D /* FileManager+URLs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8242B622EE2EA70051313D /* FileManager+URLs.swift */; };
 		3E8242B922EE40550051313D /* String+removeEverythingAfter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8242B822EE40550051313D /* String+removeEverythingAfter.swift */; };
-		3E8242BB22EF14F20051313D /* new.json in Resources */ = {isa = PBXBuildFile; fileRef = 3E8242BA22EF14F20051313D /* new.json */; };
 		3E850D462297169800F4B739 /* Screen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E850D452297169800F4B739 /* Screen.swift */; };
 		3E850D482297176300F4B739 /* ButtonInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E850D472297176300F4B739 /* ButtonInfo.swift */; };
 		3E85BF9322DCD09A00943D81 /* code.py in Resources */ = {isa = PBXBuildFile; fileRef = 3E85BF9222DCD09A00943D81 /* code.py */; };
@@ -56,6 +56,7 @@
 		3E11E3B7228B8436001599ED /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3E11E3BA228B8436001599ED /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		3E11E3BC228B8436001599ED /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3E17DF8022FBAFBC003A3D3E /* boot.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = boot.py; sourceTree = SOURCE_ROOT; };
 		3E185C672293533800A5FB7E /* UIColor+toHex+initHex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+toHex+initHex.swift"; sourceTree = "<group>"; };
 		3E279AC9229472BA000A20E0 /* ScreenDesignViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenDesignViewController.swift; sourceTree = "<group>"; };
 		3E3CF42822949CF300ACD87B /* UITextField+adjustHeight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITextField+adjustHeight.swift"; sourceTree = "<group>"; };
@@ -70,7 +71,6 @@
 		3E54ACE922F494A600A6159F /* AboutViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutViewController.swift; sourceTree = "<group>"; };
 		3E8242B622EE2EA70051313D /* FileManager+URLs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FileManager+URLs.swift"; sourceTree = "<group>"; };
 		3E8242B822EE40550051313D /* String+removeEverythingAfter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+removeEverythingAfter.swift"; sourceTree = "<group>"; };
-		3E8242BA22EF14F20051313D /* new.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = new.json; sourceTree = "<group>"; };
 		3E850D452297169800F4B739 /* Screen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screen.swift; sourceTree = "<group>"; };
 		3E850D472297176300F4B739 /* ButtonInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonInfo.swift; sourceTree = "<group>"; };
 		3E85BF9222DCD09A00943D81 /* code.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = code.py; sourceTree = "<group>"; };
@@ -136,6 +136,7 @@
 		3E11E3AF228B8435001599ED /* PortKi */ = {
 			isa = PBXGroup;
 			children = (
+				3E11E3B2228B8435001599ED /* ScreenListViewController.swift */,
 				3E11E3B0228B8435001599ED /* AppDelegate.swift */,
 				3E89CC7E228B88550067B0F0 /* Constants.swift */,
 				3E850D452297169800F4B739 /* Screen.swift */,
@@ -148,7 +149,6 @@
 				3EC8046A2295E85F0007FDC6 /* TextBlocks.swift */,
 				3E4DB79522961F2A00F73F2F /* PaddedTextField.swift */,
 				3E54ACE922F494A600A6159F /* AboutViewController.swift */,
-				3E11E3B2228B8435001599ED /* ScreenListViewController.swift */,
 				3E4DB7972296204F00F73F2F /* ButtonTableViewCell.swift */,
 				3E4DB7992296205000F73F2F /* HomeTableViewCell.swift */,
 				3E4DB7982296205000F73F2F /* ScreenTableViewCell.swift */,
@@ -172,7 +172,7 @@
 				3E11E3B9228B8436001599ED /* LaunchScreen.storyboard */,
 				3E11E3BC228B8436001599ED /* Info.plist */,
 				3E480CE522D6C0510084AF63 /* portki.json */,
-				3E8242BA22EF14F20051313D /* new.json */,
+				3E17DF8022FBAFBC003A3D3E /* boot.py */,
 				3E85BF9222DCD09A00943D81 /* code.py */,
 			);
 			path = PortKi;
@@ -248,12 +248,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				3E11E3BB228B8436001599ED /* LaunchScreen.storyboard in Resources */,
-				3E8242BB22EF14F20051313D /* new.json in Resources */,
 				3E11E3B8228B8436001599ED /* Assets.xcassets in Resources */,
 				3E85BF9322DCD09A00943D81 /* code.py in Resources */,
 				3E8633AD22FB592F00E1441A /* portki-system-files in Resources */,
 				3E11E3B6228B8435001599ED /* Main.storyboard in Resources */,
 				3E480CE622D6C0510084AF63 /* portki.json in Resources */,
+				3E17DF8122FBAFBD003A3D3E /* boot.py in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
